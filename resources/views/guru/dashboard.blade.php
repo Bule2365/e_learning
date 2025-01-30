@@ -5,6 +5,6 @@
 @section('content')
 <div>
     <h1>Selamat Datang, {{Auth::user()->name}}</h1>
-    <p>Ini adalah halaman untuk mengelola pengguna. Anda dapat melihat dan mengelola daftar pengguna di sini.</p>
+    <p>Ini platform e_learning untuk kelas online.</p>
 </div>
 @endsection

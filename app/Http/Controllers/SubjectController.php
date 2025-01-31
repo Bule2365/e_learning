@@ -3,65 +3,74 @@
 namespace App\Http\Controllers;
 
 use App\Models\Subject;
-use App\Models\ClassModel;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class SubjectController extends Controller
 {
-    // Menampilkan daftar mata pelajaran yang diajarkan oleh guru
+    // Menampilkan daftar mata pelajaran yang diajarkan oleh guru (admin dapat melihat semua)
     public function index()
     {
-        $subjects = Subject::where('user_id', Auth::user()->id)->get();
-        return view('guru.subjects.index', compact('subjects'));
+        $subjects = Subject::all();  // Admin melihat semua mata pelajaran
+        return view('admin.subjects.index', compact('subjects'));
     }
 
     // Menampilkan form untuk membuat mata pelajaran baru
     public function create()
     {
-        $classes = ClassModel::all(); // Daftar kelas untuk dipilih
-        return view('admin.subjects.create', compact('classes'));
+        // Ambil data pengguna dengan role 'guru'
+        $users = User::where('role', 'guru')->get();
+        return view('admin.subjects.create', compact('users'));
     }
 
     // Menyimpan mata pelajaran baru
     public function store(Request $request)
     {
+        // Validasi inputan
         $validatedData = $request->validate([
             'name' => 'required|string|max:50',
             'user_id' => 'required|exists:users,id', // Pastikan guru yang dipilih ada
         ]);
 
-        // Menyimpan mata pelajaran
-        $subject = Subject::create($validatedData);
+        // Simpan mata pelajaran ke database
+        Subject::create($validatedData);
 
-        // Mengaitkan mata pelajaran dengan kelas
-        $subject->classes()->attach($request->classes);
-
-        return redirect()->route('admin.subjects.index')->with('success', 'Mata Pelajaran berhasil dibuat!');
+        // Redirect ke daftar mata pelajaran dengan pesan sukses
+        return redirect()->route('subjects.index')->with('success', 'Mata Pelajaran berhasil dibuat!');
     }
 
-    // Menampilkan form edit mata pelajaran
+    // Menampilkan form untuk mengedit mata pelajaran
     public function edit($id)
     {
-        $subject = Subject::findOrFail($id);
-        $classes = ClassModel::all();
-        return view('admin.subjects.edit', compact('subject', 'classes'));
+        $subject = Subject::findOrFail($id);  // Ambil mata pelajaran berdasarkan ID
+        $users = User::where('role', 'guru')->get();  // Ambil data pengguna dengan peran 'guru'
+        return view('admin.subjects.edit', compact('subject', 'users'));
     }
 
-    // Update data mata pelajaran
+    // Mengupdate mata pelajaran
     public function update(Request $request, $id)
     {
+        // Validasi inputan
         $validatedData = $request->validate([
             'name' => 'required|string|max:50',
+            'user_id' => 'required|exists:users,id',  // Pastikan guru yang dipilih ada
         ]);
 
-        $subject = Subject::findOrFail($id);
-        $subject->update($validatedData);
+        $subject = Subject::findOrFail($id);  // Ambil mata pelajaran berdasarkan ID
+        $subject->update($validatedData);  // Update data mata pelajaran
 
-        // Menyimpan pengaitan kembali kelas jika diubah
-        $subject->classes()->sync($request->classes);
+        // Redirect ke daftar mata pelajaran dengan pesan sukses
+        return redirect()->route('subjects.index')->with('success', 'Mata Pelajaran berhasil diperbarui!');
+    }
 
-        return redirect()->route('admin.subjects.index')->with('success', 'Mata Pelajaran berhasil diperbarui!');
+    // Menghapus mata pelajaran
+    public function destroy($id)
+    {
+        $subject = Subject::findOrFail($id);  // Ambil mata pelajaran berdasarkan ID
+        $subject->delete();  // Hapus mata pelajaran
+
+        // Redirect ke daftar mata pelajaran dengan pesan sukses
+        return redirect()->route('subjects.index')->with('success', 'Mata Pelajaran berhasil dihapus!');
     }
 }

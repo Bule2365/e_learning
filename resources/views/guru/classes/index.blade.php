@@ -4,12 +4,6 @@
 <div class="container mt-5">
     <h1 class="mb-4 text-center">Daftar Kelas Anda</h1>
 
-    @if($classes->isEmpty())
-    {{-- <div class="alert alert-info">
-        <p>Belum ada kelas yang Anda masuki. Silakan hubungi admin untuk penugasan kelas.</p>
-        <a href="{{ route('guru.classes.create') }}" class="btn btn-primary">Buat Kelas Baru</a>
-    </div> --}}
-    @else
     <div class="row">
         @foreach($classes as $class)
         <div class="col-md-4 mb-4">
@@ -18,24 +12,31 @@
                     <h5 class="card-title">{{ $class->name }}</h5>
                 </div>
                 <div class="card-body">
+                    <p><strong>Deskripsi:</strong> {{ $class->deskripsi }}</p>
                     <p><strong>Daftar Siswa yang Bergabung:</strong></p>
                     @if($class->siswa->isEmpty())
                     <p>Belum ada siswa yang bergabung.</p>
                     @else
                     <ul>
-                        @foreach($class->siswa as $siswa)
-                        <li>{{ $siswa->name }}</li>
+                        @foreach($class->siswa as $murid)
+                        <li>{{ $murid->name }}</li>
                         @endforeach
                     </ul>
                     @endif
+
+                    @if($myClasses->contains($class))
+                    <p class="text-success">Anda mengajar kelas ini.</p>
+                    @else
+                    <p class="text-muted">Kelas ini tidak diajarkan oleh Anda.</p>
+                    @endif
+
+                    <a href="{{ route('tasks.create', ['class_id' => $class->id]) }}" class="btn btn-primary mt-3">Buat Tugas</a>
                 </div>
             </div>
         </div>
         @endforeach
     </div>
-    @endif
 </div>
-
 @endsection
 
 @push('styles')

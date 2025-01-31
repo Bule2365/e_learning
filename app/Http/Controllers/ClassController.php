@@ -18,16 +18,23 @@ class ClassController extends Controller
     public function index()
     {
         if (Auth::user()->role == 'admin') {
+            // Admin bisa melihat semua kelas dan semua pengguna (guru dan siswa)
             $classes = ClassModel::all();
             $users = User::all();
             return view('admin.classes.index', compact('classes', 'users'));
         }
 
         if (Auth::user()->role == 'guru') {
-            $classes = ClassModel::whereHas('guru', function ($query) {
+            // Guru bisa melihat semua kelas, baik yang diajarkan oleh mereka maupun yang tidak
+            // Pertama-tama, kita ambil semua kelas yang ada
+            $classes = ClassModel::all();
+
+            // Kemudian filter kelas yang diajarkan oleh guru saat ini (jika ada)
+            $myClasses = ClassModel::whereHas('guru', function ($query) {
                 $query->where('user_id', Auth::user()->id);
             })->get();
-            return view('guru.classes.index', compact('classes'));
+
+            return view('guru.classes.index', compact('classes', 'myClasses'));
         }
 
         $user = Auth::user();
@@ -97,18 +104,18 @@ class ClassController extends Controller
             'guru_id' => 'required|array', // Pastikan ini berupa array
             'guru_id.*' => 'exists:users,id', // Validasi ID guru
         ]);
-    
+
         $class = ClassModel::findOrFail($id);
         $class->update([
             'name' => $validatedData['name'],
             'deskripsi' => $validatedData['deskripsi'],
         ]);
-    
+
         // Sinkronkan ID guru yang dipilih
         $class->guru()->sync($validatedData['guru_id']);
-    
+
         return redirect()->route('admin.classes.index')->with('success', 'Kelas berhasil diperbarui!');
-    }    
+    }
 
     public function destroy($id)
     {

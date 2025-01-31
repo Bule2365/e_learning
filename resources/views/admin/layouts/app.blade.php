@@ -175,7 +175,7 @@
         <aside id="sidebar">
             <div>
                 <div class="sidebar-logo">
-                    <a href="{{ route('dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                    <a href="{{ route('dashboard') }}">Dashboard Admin</a>
                 </div>
             </div>
             <ul class="sidebar-nav">

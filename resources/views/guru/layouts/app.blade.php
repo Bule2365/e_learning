@@ -5,24 +5,22 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Dashboard Guru - SMK Informatika Utama')</title>
-    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #2b6cb0;
-            --secondary-color: #3182ce;
-            --accent-color: #63b3ed;
-            --dark-color: #2d3748;
-            --light-color: #f7fafc;
+            --primary-color: #2563eb;
+            --secondary-color: #3b82f6;
+            --accent-color: #60a5fa;
+            --dark-color: #1e3a8a;
+            --light-color: #f0f9ff;
             --sidebar-width: 280px;
             --header-height: 60px;
         }
 
         body {
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background-color: #edf2f7;
+            background-color: #f1f5f9;
             min-height: 100vh;
             overflow-x: hidden;
         }
@@ -32,29 +30,60 @@
             position: fixed;
             width: var(--sidebar-width);
             height: 100vh;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(145deg, var(--primary-color), var(--secondary-color));
             color: white;
             z-index: 1000;
             transition: all 0.3s ease;
-            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
         }
 
         .school-brand {
             padding: 1.5rem;
             background: rgba(0, 0, 0, 0.1);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+
+        .close-sidebar {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: white;
+            /* font-size: 1rem; */
+            cursor: pointer;
+            padding: 0.25rem;
+            display: none;
+            transition: transform 0.3s ease;
+        }
+
+        .close-sidebar i {
+            font-size: 0.95rem;
+        }
+
+        .close-sidebar:hover {
+            transform: translateY(-50%) rotate(90deg);
+        }
+
+        @media (max-width: 992px) {
+            .close-sidebar {
+                display: block;
+            }
         }
 
         .school-brand h3 {
             margin: 0;
             font-size: 1.25rem;
             font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
         }
 
         .school-brand p {
             margin: 0.5rem 0 0;
             font-size: 0.875rem;
-            opacity: 0.8;
+            opacity: 0.9;
         }
 
         nav ul {
@@ -73,12 +102,16 @@
             display: flex;
             align-items: center;
             padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
-            transition: all 0.2s ease;
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+            margin-bottom: 0.5rem;
         }
 
         nav ul li a:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
         }
 
         nav ul li a i {
@@ -98,7 +131,7 @@
         header {
             height: var(--header-height);
             background: white;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             padding: 0 1.5rem;
             position: sticky;
             top: 0;
@@ -112,36 +145,37 @@
             align-items: center;
         }
 
-        .profile-dropdown {
-            position: relative;
-        }
-
-        .profile-menu {
-            position: absolute;
-            right: 0;
-            top: 100%;
-            background: white;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 0.5rem 0;
-            min-width: 200px;
-            display: none;
-        }
-
-        .profile-menu.show {
-            display: block;
-        }
-
-        .profile-menu a {
-            display: block;
+        .profile-dropdown .btn-secondary {
+            background: var(--primary-color);
+            border: none;
             padding: 0.5rem 1rem;
-            color: var(--dark-color);
-            text-decoration: none;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .profile-dropdown .btn-secondary:hover {
+            background: var(--secondary-color);
+        }
+
+        .dropdown-menu {
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 0.75rem;
+        }
+
+        .dropdown-item {
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
             transition: all 0.2s ease;
         }
 
-        .profile-menu a:hover {
+        .dropdown-item:hover {
             background: var(--light-color);
+            color: var(--primary-color);
         }
 
         /* Content Area */
@@ -151,26 +185,30 @@
 
         .content-card {
             background: white;
-            border-radius: 0.5rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             padding: 1.5rem;
         }
 
         /* Alert Styles */
         .alert {
             padding: 1rem;
-            border-radius: 0.5rem;
+            border-radius: 0.75rem;
             margin-bottom: 1rem;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .alert-success {
-            background: #c6f6d5;
-            color: #2f855a;
+            background: #dcfce7;
+            color: #166534;
         }
 
         .alert-danger {
-            background: #fed7d7;
-            color: #c53030;
+            background: #fee2e2;
+            color: #991b1b;
         }
 
         /* Responsive Design */
@@ -201,6 +239,11 @@
             cursor: pointer;
             padding: 0.5rem;
             display: none;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-toggle:hover {
+            transform: rotate(90deg);
         }
 
         @media (max-width: 992px) {
@@ -218,7 +261,9 @@
             right: 0;
             bottom: 0;
             background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(3px);
             z-index: 999;
+            transition: all 0.3s ease;
         }
 
         @media (max-width: 992px) {
@@ -236,6 +281,9 @@
             <div class="school-brand">
                 <h3>SMK Informatika Utama</h3>
                 <p>Kejuruan Teknologi Informasi</p>
+                <button class="close-sidebar" id="closeSidebar">
+                    <i class="bi bi-x-lg"></i>
+                </button>
             </div>
             <nav>
                 <ul>
@@ -266,7 +314,8 @@
                     <div class="profile-dropdown">
                         <div class="dropdown">
                             <button class="btn btn-secondary dropdown-toggle" type="button" id="profileMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-person-circle"></i> Profile
+                                <i class="bi bi-person-circle"></i>
+                                <span>Profil</span>
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="profileMenuButton">
                                 <li>
@@ -287,12 +336,14 @@
             <div class="content-wrapper">
                 @if (session('success'))
                 <div class="alert alert-success">
+                    <i class="bi bi-check-circle-fill"></i>
                     {{ session('success') }}
                 </div>
                 @endif
 
                 @if (session('error'))
                 <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-circle-fill"></i>
                     {{ session('error') }}
                 </div>
                 @endif
@@ -310,10 +361,15 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Sidebar Toggle
+        // Sidebar Toggle & Close
         document.getElementById('sidebarToggle').addEventListener('click', function() {
-            document.querySelector('aside').classList.toggle('active');
-            document.getElementById('sidebarOverlay').classList.toggle('active');
+            document.querySelector('aside').classList.add('active');
+            document.getElementById('sidebarOverlay').classList.add('active');
+        });
+
+        document.getElementById('closeSidebar').addEventListener('click', function() {
+            document.querySelector('aside').classList.remove('active');
+            document.getElementById('sidebarOverlay').classList.remove('active');
         });
 
         // Profile Dropdown
@@ -326,8 +382,8 @@
             const profileDropdown = document.getElementById('profileDropdown');
             const profileMenu = document.getElementById('profileMenu');
 
-            if (!profileDropdown.contains(event.target) && !profileMenu.contains(event.target)) {
-                profileMenu.classList.remove('show');
+            if (!profileDropdown?.contains(event.target) && !profileMenu?.contains(event.target)) {
+                profileMenu?.classList.remove('show');
             }
         });
 

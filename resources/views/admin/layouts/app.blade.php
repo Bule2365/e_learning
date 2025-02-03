@@ -179,14 +179,24 @@
                 </div>
             </div>
             <ul class="sidebar-nav">
+                <!-- Data Pengguna -->
                 <li class="sidebar-item">
                     <a href="{{ route('users.index') }}" class="sidebar-link">
                         <i class="bi bi-people"></i> Data Pengguna
                     </a>
                 </li>
+
+                <!-- Data Kelas -->
                 <li class="sidebar-item">
                     <a href="{{ route('admin.classes.index') }}" class="sidebar-link">
                         <i class="bi bi-book"></i> Data Kelas
+                    </a>
+                </li>
+
+                <!-- Data Mata Pelajaran -->
+                <li class="sidebar-item">
+                    <a href="{{ route('subjects.index') }}" class="sidebar-link">
+                        <i class="bi bi-journal-bookmark"></i> Data Mata Pelajaran
                     </a>
                 </li>
             </ul>
@@ -199,15 +209,15 @@
         </aside>
         <div class="main">
             @if (session('success'))
-            <div class="alert alert-success">
-                <strong>Success!</strong> {{ session('success') }}
-            </div>
+                <div class="alert alert-success">
+                    <strong>Success!</strong> {{ session('success') }}
+                </div>
             @endif
 
             @if (session('error'))
-            <div class="alert alert-danger">
-                <strong>Error!</strong> {{ session('error') }}
-            </div>
+                <div class="alert alert-danger">
+                    <strong>Error!</strong> {{ session('error') }}
+                </div>
             @endif
 
             @yield('content')

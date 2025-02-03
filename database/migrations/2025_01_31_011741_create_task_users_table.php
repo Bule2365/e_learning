@@ -30,6 +30,9 @@ class CreateTaskUsersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('task_users');
+    Schema::disableForeignKeyConstraints();
+    DB::table('task_user')->truncate(); // Hapus semua data
+    Schema::dropIfExists('task_user');
+    Schema::enableForeignKeyConstraints();
     }
 }

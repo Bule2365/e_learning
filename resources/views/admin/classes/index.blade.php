@@ -7,7 +7,7 @@
     <h1 class="text-center mb-4">Daftar Kelas</h1>
 
     <div class="d-flex justify-content-between mb-3">
-        <a href="{{ route('admin.classes.create') }}" class="btn btn-success btn-lg">
+        <a href="{{ route('admin.classes.create') }}" class="btn btn-primary btn-lg">
             <i class="bi bi-plus-circle"></i> Buat Kelas Baru
         </a>
     </div>

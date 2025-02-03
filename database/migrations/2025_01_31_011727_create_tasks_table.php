@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 class CreateTasksTable extends Migration
@@ -14,21 +13,22 @@ class CreateTasksTable extends Migration
      */
     public function up()
     {
+        Schema::disableForeignKeyConstraints(); // Matikan Foreign Key Constraints
+    
         Schema::create('tasks', function (Blueprint $table) {
-            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-
             $table->id();
             $table->string('title');
             $table->text('description');
+            $table->string('file_path')->nullable();
             $table->foreignId('subject_id')->constrained('subjects')->onDelete('cascade');
             $table->foreignId('class_id')->constrained('classes')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->dateTime('due_date');
             $table->timestamps();
-
-            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
         });
-    }
+    
+        Schema::enableForeignKeyConstraints(); // Aktifkan kembali Foreign Key Constraints
+    }    
 
     /**
      * Reverse the migrations.
@@ -37,6 +37,8 @@ class CreateTasksTable extends Migration
      */
     public function down()
     {
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('tasks');
-    }
+        Schema::enableForeignKeyConstraints();
+    }    
 }

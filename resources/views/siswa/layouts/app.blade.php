@@ -43,6 +43,14 @@
                                 <span class="hide-menu">Kelas</span>
                             </a>
                         </li>
+                        <li>
+                            <a href="javascript:void(0);" class="btn btn-outline-primary mx-3 mt-2 d-block"
+                                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
+                            <!-- Form Logout -->
+                            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                                @csrf
+                            </form>
+                        </li>
                     </ul>
                 </nav>
             </div>
@@ -75,7 +83,7 @@
                                     data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="ti ti-settings fs-8"></i>
                                 </a>
-                                <div class="dropdown-menu dropdown-menu-end dropdown-menu-animate-up"
+                                {{-- <div class="dropdown-menu dropdown-menu-end dropdown-menu-animate-up"
                                     aria-labelledby="drop2">
                                     <div class="message-body">
                                         <a href="javascript:void(0);" class="btn btn-outline-primary mx-3 mt-2 d-block"
@@ -86,7 +94,7 @@
                                             @csrf
                                         </form>
                                     </div>
-                                </div>
+                                </div> --}}
                             </li>
                         </ul>
                     </div>

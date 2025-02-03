@@ -1,45 +1,38 @@
 @extends('guru.layouts.app')
 
 @section('content')
-<div class="container">
-    <h1>Form Tugas Baru</h1>
+    <div class="container">
+        <h1>Form Tugas Baru</h1>
 
-    <form action="{{ route('tasks.store') }}" method="POST">
-        @csrf
-        <div class="form-group">
-            <label for="title">Judul Tugas</label>
-            <input type="text" class="form-control" id="title" name="title" required>
-        </div>
+        <form action="{{ route('tasks.store') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+            <div class="mb-3">
+                <label for="title" class="form-label">Judul Tugas</label>
+                <input type="text" name="title" id="title" class="form-control" required>
+            </div>
 
-        <div class="form-group">
-            <label for="description">Deskripsi</label>
-            <textarea class="form-control" id="description" name="description" required></textarea>
-        </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">Deskripsi</label>
+                <textarea name="description" id="description" class="form-control" required></textarea>
+            </div>
 
-        <div class="form-group">
-            <label for="subject_id">Mata Pelajaran</label>
-            <select class="form-control" id="subject_id" name="subject_id" required>
-                @foreach($subjects as $subject)
-                <option value="{{ $subject->id }}">{{ $subject->name }}</option>
-                @endforeach
-            </select>
-        </div>
+            <div class="mb-3">
+                <label for="file" class="form-label">Unggah Tugas (Opsional)</label>
+                <input type="file" name="file" id="file" class="form-control" accept="application/pdf, image/*">
+            </div>
 
-        <div class="form-group">
-            <label for="class_id">Kelas</label>
-            <select class="form-control" id="class_id" name="class_id" required>
-                @foreach($classes as $class)
-                <option value="{{ $class->id }}">{{ $class->name }}</option>
-                @endforeach
-            </select>
-        </div>
+            <div class="mb-3">
+                <label for="due_date" class="form-label">Batas Pengumpulan</label>
+                <input type="datetime-local" name="due_date" id="due_date" class="form-control" required>
+            </div>
 
-        <div class="form-group">
-            <label for="due_date">Tanggal Deadline</label>
-            <input type="date" class="form-control" id="due_date" name="due_date" required>
-        </div>
+            <!-- Hidden input fields for subject and class IDs -->
+            <input type="hidden" name="subject_id" value="{{ $subjects->first()->id ?? '' }}">
+            <input type="hidden" name="class_id" value="{{ $classes->first()->id ?? '' }}">
 
-        <button type="submit" class="btn btn-primary">Buat Tugas</button>
-    </form>
-</div>
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">Simpan Tugas</button>
+            </div>
+        </form>
+    </div>
 @endsection

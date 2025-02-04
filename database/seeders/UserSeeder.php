@@ -3,47 +3,30 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Seeder;
 
 class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        $users = [
-            [
-                'name' => 'Admin',
-                'email' => 'bule2365@gmail.com',
-                'password' => bcrypt('password'),
-                'role' => 'admin',
-            ],
-            [
-                'name' => 'galadi',
-                'email' => 'galadi@gmail.com',
-                'password' => bcrypt('password'),
+        for ($i = 1; $i <= 6; $i++) {
+            User::create([
+                'name' => 'Guru ' . $i,
+                'email' => 'guru' . $i . '@example.com',
+                'password' => Hash::make('password'),
                 'role' => 'guru',
-            ],
-            [
-                'name' => 'kala',
-                'email' => 'kalaaa@gmail.com',
-                'password' => bcrypt('password'),
-                'role' => 'siswa',
-            ],
-            [
-                'name' => 'Agus',
-                'email' => 'agus187@gmail.com',
-                'password' => bcrypt('password'),
-                'role' => 'Guru',
-            ],
-            [
-                'name' => 'maula',
-                'email' => 'maula012@gmail.com',
-                'password' => bcrypt('password'),
-                'role' => 'siswa',
-            ],
-        ];
+            ]);
+        }
 
-        foreach ($users as $user) {
-            User::create($user);
+        // Buat 60 siswa
+        for ($i = 1; $i <= 60; $i++) {
+            User::create([
+                'name' => 'Siswa ' . $i,
+                'email' => 'siswa' . $i . '@example.com',
+                'password' => Hash::make('password'),
+                'role' => 'siswa',
+            ]);
         }
     }
 }

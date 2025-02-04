@@ -289,7 +289,7 @@
                 <ul>
                     <li>
                         <a href="{{ route('dashboard') }}">
-                            <i class="bi bi-speedometer2"></i>
+                            <i class="bi bi-house"></i>
                             Dashboard
                         </a>
                     </li>
@@ -297,6 +297,12 @@
                         <a href="{{ route('guru.classes.index') }}">
                             <i class="bi bi-mortarboard"></i>
                             Kelas Saya
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('tasks.index') }}">
+                            <i class="bi bi-clipboard2"></i>
+                            Tugas Siswa
                         </a>
                     </li>
                 </ul>

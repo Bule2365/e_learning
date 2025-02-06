@@ -1,81 +1,150 @@
 @extends('admin.layouts.app')
-
 @section('title', 'Tambah Pengguna')
-
 @section('content')
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-8 col-md-10 col-12">
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-primary text-white text-center">
-                    <h3>Tambah Pengguna</h3>
+    <div class="container-fluid mt-4">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-8">
+                <!-- Page Header -->
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <a href="{{ route('users.index') }}" class="btn btn-outline-secondary d-flex align-items-center gap-2">
+                        <i class="bi bi-arrow-left"></i>
+                        <span>Kembali</span>
+                    </a>
                 </div>
-                <div class="card-body">
-                    <form action="{{ route('users.store') }}" method="POST">
-                        @csrf
 
-                        <!-- Name Input -->
-                        <div class="mb-3">
-                            <label for="name" class="form-label">Nama:</label>
-                            <input type="text" name="name" id="name" class="form-control" required value="{{ old('name') }}">
-                            @error('name')
-                            <div class="alert alert-danger mt-2">{{ $message }}</div>
-                            @enderror
-                        </div>
+                {{-- Form Card --}}
+                <div class="card shadow-lg border-0 rounded-3">
+                    <div class="card-header bg-primary py-3">
+                        <h3 class="h4 mb-0 text-white fw-bold">
+                            <i class="bi bi-file-plus me-2"></i>Tambah Pengguna Baru
+                        </h3>
+                    </div>
+                    <div class="card-body p-4">
+                        <form action="{{ route('users.store') }}" method="POST" class="needs-validation" novalidate>
+                            @csrf
 
-                        <!-- Email Input -->
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email:</label>
-                            <input type="email" name="email" id="email" class="form-control" required value="{{ old('email') }}">
-                            @error('email')
-                            <div class="alert alert-danger mt-2">{{ $message }}</div>
-                            @enderror
-                        </div>
+                            <div class="row g-3">
+                                <!-- Name Input -->
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        <input type="text" name="name" id="name"
+                                            class="form-control @error('name') is-invalid @enderror"
+                                            placeholder="Nama Lengkap" value="{{ old('name') }}" required>
+                                        <label for="name" class="form-label">
+                                            <i class="bi bi-person-badge me-1"></i>Nama Lengkap
+                                        </label>
+                                        @error('name')
+                                            <div class="invalid-feedback">
+                                                <i class="bi bi-exclamation-circle"></i> {{ $message }}
+                                            </div>
+                                        @enderror
+                                    </div>
+                                </div>
 
-                        <!-- Password Input -->
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password:</label>
-                            <input type="password" name="password" id="password" class="form-control" required>
-                            @error('password')
-                            <div class="alert alert-danger mt-2">{{ $message }}</div>
-                            @enderror
-                        </div>
+                                <!-- Email Input -->
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        <input type="email" name="email" id="email"
+                                            class="form-control @error('email') is-invalid @enderror"
+                                            placeholder="Alamat Email" value="{{ old('email') }}" required>
+                                        <label for="email" class="form-label">
+                                            <i class="bi bi-envelope me-1"></i>Alamat Email
+                                        </label>
+                                        @error('email')
+                                            <div class="invalid-feedback">
+                                                <i class="bi bi-exclamation-circle"></i> {{ $message }}
+                                            </div>
+                                        @enderror
+                                    </div>
+                                </div>
 
-                        <!-- Password Confirmation Input -->
-                        <div class="mb-3">
-                            <label for="password_confirmation" class="form-label">Konfirmasi Password:</label>
-                            <input type="password" name="password_confirmation" id="password_confirmation" class="form-control" required>
-                            @error('password_confirmation')
-                            <div class="alert alert-danger mt-2">{{ $message }}</div>
-                            @enderror
-                        </div>
+                                <!-- Password Input -->
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="password" name="password" id="password"
+                                            class="form-control @error('password') is-invalid @enderror"
+                                            placeholder="Password" required>
+                                        <label for="password" class="form-label">
+                                            <i class="bi bi-lock me-1"></i>Password
+                                        </label>
+                                        <small class="text-muted">Minimal 8 karakter</small>
+                                        @error('password')
+                                            <div class="invalid-feedback">
+                                                <i class="bi bi-exclamation-circle"></i> {{ $message }}
+                                            </div>
+                                        @enderror
+                                    </div>
+                                </div>
 
-                        <!-- Role Select -->
-                        <div class="mb-3">
-                            <label for="role" class="form-label">Role:</label>
-                            <select name="role" id="role" class="form-select" required>
-                                <option value="admin">Admin</option>
-                                <option value="guru">Guru</option>
-                                <option value="siswa">Siswa</option>
-                            </select>
-                            @error('role')
-                            <div class="alert alert-danger mt-2">{{ $message }}</div>
-                            @enderror
-                        </div>
+                                <!-- Password Confirmation -->
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="password" name="password_confirmation" id="password_confirmation"
+                                            class="form-control" placeholder="Konfirmasi Password" required>
+                                        <label for="password_confirmation" class="form-label">
+                                            <i class="bi bi-shield-lock me-1"></i>Konfirmasi Password
+                                        </label>
+                                    </div>
+                                </div>
 
-                        <!-- Submit Button -->
-                        <div class="d-flex justify-content-between">
-                            <button type="submit" class="btn btn-success">
-                                <i class="bi bi-save"></i> Simpan
-                            </button>
-                            <a href="{{ route('users.index') }}" class="btn btn-secondary">
-                                <i class="bi bi-arrow-left-circle"></i> Kembali
-                            </a>
-                        </div>
-                    </form>
+                                <!-- Role Selection -->
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        <select name="role" id="role"
+                                            class="form-select @error('role') is-invalid @enderror" required>
+                                            <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>
+                                                Admin
+                                            </option>
+                                            <option value="guru" {{ old('role') == 'guru' ? 'selected' : '' }}>
+                                                Guru
+                                            </option>
+                                            <option value="siswa" {{ old('role') == 'siswa' ? 'selected' : '' }}>
+                                                Siswa
+                                            </option>
+                                        </select>
+                                        <label for="role" class="form-label">
+                                            <i class="bi bi-person-rolodex me-1"></i>Jenis Pengguna
+                                        </label>
+                                        @error('role')
+                                            <div class="invalid-feedback">
+                                                <i class="bi bi-exclamation-circle"></i> {{ $message }}
+                                            </div>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <!-- Action Buttons -->
+                                <div class="d-flex gap-3">
+                                    <button type="submit"
+                                        class="btn btn-primary py-2 px-4 d-flex align-items-center gap-2">
+                                        <i class="bi bi-save me-1"></i>Simpan Data
+                                    </button>
+                                    <button type="reset" class="btn btn-outline-secondary py-2 px-4">Reset</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+
+    <!-- Client-side Validation Script -->
+    @push('scripts')
+        <script>
+            (() => {
+                'use strict'
+                const forms = document.querySelectorAll('.needs-validation')
+                Array.from(forms).forEach(form => {
+                    form.addEventListener('submit', event => {
+                        if (!form.checkValidity()) {
+                            event.preventDefault()
+                            event.stopPropagation()
+                        }
+                        form.classList.add('was-validated')
+                    }, false)
+                })
+            })()
+        </script>
+    @endpush
 @endsection

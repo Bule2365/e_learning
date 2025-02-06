@@ -11,44 +11,28 @@ class TaskStudentController extends Controller
 {
     public function index()
     {
-        // Mengambil daftar tugas yang tersedia untuk siswa berdasarkan kelas yang diikuti
-        $tasks = Task::whereHas('class', function ($query) {
-            $query->whereHas('siswa', function ($query) {
-                $query->where('user_id', auth()->id());
-            });
+        $tasks = Task::whereHas('kelas.siswa', function ($query) {
+            // Tambahkan alias untuk id pengguna agar SQL bisa membedakan kolom 'id'
+            $query->where('users.id', Auth::id())
+                  ->where('users.role', 'siswa');
         })->get();
-
+        
         return view('siswa.tasks.index', compact('tasks'));
-    }
+    }    
 
-    public function show($taskId)
+    public function show(Task $task)
     {
-        // Menampilkan detail tugas
-        $task = Task::findOrFail($taskId);
-
-        // Cek apakah siswa sudah mengumpulkan tugas
-        $submission = TaskUser::where('task_id', $task->id)
-                              ->where('user_id', auth()->id())
-                              ->first();
-
+        $submission = TaskUser::where('task_id', $task->id)->where('user_id', Auth::id())->first();
         return view('siswa.tasks.show', compact('task', 'submission'));
     }
 
-    public function submit(Request $request, $taskId)
+    public function submit(Request $request, Task $task)
     {
-        $task = Task::findOrFail($taskId);
-
-        // Validasi file yang di-upload
-        $request->validate([
-            'file' => 'required|file|mimes:pdf,jpeg,png,jpg|max:2048',
-        ]);
-
-        // Proses upload file
+        $request->validate(['file' => 'required|file|mimes:pdf,jpeg,png,jpg|max:2048']);
         $filePath = $request->file('file')->store('task_submissions', 'public');
 
-        // Menyimpan file di kolom 'submission' pada tabel pivot 'task_user'
         TaskUser::updateOrCreate(
-            ['task_id' => $task->id, 'user_id' => auth()->id()],
+            ['task_id' => $task->id, 'user_id' => Auth::id()],
             ['submission' => $filePath]
         );
 

@@ -11,9 +11,25 @@ use Illuminate\Support\Facades\Response;
 class UserController extends Controller
 {
     // Menampilkan daftar pengguna
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::all();
+        $query = User::query();
+    
+        // Pencarian berdasarkan nama
+        if ($request->has('search') && $request->search != '') {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+    
+        // Filter berdasarkan role
+        if ($request->has('role') && $request->role != '') {
+            $query->where('role', $request->role);
+        }
+    
+        $users = $query->paginate(10);
+    
+        // Baris berikut menimpa hasil query di atas.  Hapus jika ingin menggunakan hasil filter dan pagination.
+        // $users = User::all(); 
+    
         return view('admin.users.index', compact('users'));
     }
 
@@ -65,7 +81,6 @@ class UserController extends Controller
         $user->name = $request->name;
         $user->email = $request->email;
         $user->role = $request->role;
-        $user->class_id = $request->class_id;
 
         // Hanya update password jika diisi
         if ($request->filled('password')) {

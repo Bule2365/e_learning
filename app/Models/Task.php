@@ -9,29 +9,32 @@ class Task extends Model
 {
     use HasFactory;
 
+    protected $table = 'tasks';
+
     protected $fillable = ['title', 'description', 'file_path', 'subject_id', 'class_id', 'user_id', 'due_date'];
 
     protected $casts = [
         'due_date' => 'datetime',
     ];
 
-    public function subject()
+    public function mataPelajaran()
     {
-        return $this->belongsTo(Subject::class);
+        return $this->belongsTo(Subject::class, 'subject_id');
     }
 
-    public function class()
+    public function kelas()
     {
-        return $this->belongsTo(ClassModel::class);
+        return $this->belongsTo(ClassModel::class, 'class_id');
     }
 
-    public function teacher()
+    public function guru()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function students()
+    public function siswa()
     {
-        return $this->belongsToMany(User::class, 'task_user')->withPivot('submission', 'score');
+        return $this->belongsToMany(User::class, 'task_user', 'task_id', 'user_id')
+                    ->withPivot('submission', 'score');
     }
 }

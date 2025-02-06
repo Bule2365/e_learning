@@ -9,20 +9,17 @@ class Subject extends Model
 {
     use HasFactory;
 
+    protected $table = 'subjects';
+
     protected $fillable = ['name', 'user_id'];
 
-    public function user()
+    public function guru()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
-    public function classes()
+    public function kelas()
     {
-        return $this->belongsToMany(ClassModel::class, 'class_subject');
-    }
-
-        public function classSubjects()
-    {
-        return $this->hasMany(ClassSubject::class);
+        return $this->belongsToMany(ClassModel::class, 'subject_class', 'subject_id', 'class_id');
     }
 }

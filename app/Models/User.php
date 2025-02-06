@@ -11,6 +11,8 @@ class User extends Authenticatable
 {
     use Notifiable, HasFactory;
 
+    protected $table = 'users';
+
     protected $fillable = [
         'name',
         'email',
@@ -23,13 +25,18 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    public function classes()
+    public function kelas()
     {
         return $this->belongsToMany(ClassModel::class, 'class_user', 'user_id', 'class_id');
     }
 
-    public function subjects()
+    public function mataPelajaran()
     {
-        return $this->hasMany(Subject::class);
+        return $this->hasMany(Subject::class, 'user_id');
+    }
+
+    public function tugas()
+    {
+        return $this->hasMany(Task::class, 'user_id');
     }
 }

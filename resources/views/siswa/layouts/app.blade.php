@@ -6,33 +6,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Dashboard')</title>
     <link rel="stylesheet" href="{{ asset('assets/css/styles.min.css') }}" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
 </head>
 
 <body>
-    <!--  Body Wrapper -->
     <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
         data-sidebar-position="fixed" data-header-position="fixed">
-        <!-- Sidebar Start -->
         <aside class="left-sidebar">
-            <!-- Sidebar scroll-->
             <div>
                 <div class="brand-logo d-flex align-items-center justify-content-between">
-                    <a href="./index.html" class="text-nowrap logo-img">
-                        <img src="../assets/images/logos/dark-logo.svg" width="180" alt="" />
+                    <a href="{{ route('dashboard') }}" class="text-nowrap logo-img">
+                        <!-- Ikon untuk Dashboard menggunakan Bootstrap Icons -->
+                        <i class="bi bi-house-door fs-5 me-2"></i>
+                        Dashboard Siswa
                     </a>
                     <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
                         <i class="ti ti-x fs-8"></i>
                     </div>
                 </div>
-                <!-- Sidebar navigation-->
                 <nav class="sidebar-nav scroll-sidebar" data-simplebar="">
                     <ul id="sidebarnav">
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="{{ route('dashboard') }}" aria-expanded="false">
+                            <a class="sidebar-link" href="{{ route('student.tasks.index') }}" aria-expanded="false">
                                 <span>
                                     <i class="ti ti-layout-dashboard"></i>
                                 </span>
-                                <span class="hide-menu">Dashboard</span>
+                                <span class="hide-menu">Tugas</span>
                             </a>
                         </li>
                         <li class="sidebar-item">
@@ -46,7 +46,6 @@
                         <li>
                             <a href="javascript:void(0);" class="btn btn-outline-primary mx-3 mt-2 d-block"
                                 onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
-                            <!-- Form Logout -->
                             <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                                 @csrf
                             </form>
@@ -54,12 +53,8 @@
                     </ul>
                 </nav>
             </div>
-            <!-- End Sidebar scroll-->
         </aside>
-        <!--  Sidebar End -->
-        <!--  Main wrapper -->
         <div class="body-wrapper">
-            <!--  Header Start -->
             <header class="app-header">
                 <nav class="navbar navbar-expand-lg navbar-light">
                     <ul class="navbar-nav">
@@ -69,12 +64,6 @@
                                 <i class="ti ti-menu-2"></i>
                             </a>
                         </li>
-                        {{-- <li class="nav-item">
-                            <a class="nav-link nav-icon-hover" href="javascript:void(0)">
-                                <i class="ti ti-bell-ringing"></i>
-                                <div class="notification bg-primary rounded-circle"></div>
-                            </a>
-                        </li> --}}
                     </ul>
                     <div class="navbar-collapse justify-content-end px-0" id="navbarNav">
                         <ul class="navbar-nav flex-row ms-auto align-items-center justify-content-end">
@@ -83,24 +72,11 @@
                                     data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="ti ti-settings fs-8"></i>
                                 </a>
-                                {{-- <div class="dropdown-menu dropdown-menu-end dropdown-menu-animate-up"
-                                    aria-labelledby="drop2">
-                                    <div class="message-body">
-                                        <a href="javascript:void(0);" class="btn btn-outline-primary mx-3 mt-2 d-block"
-                                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
-                                        <!-- Form Logout -->
-                                        <form id="logout-form" action="{{ route('logout') }}" method="POST"
-                                            style="display: none;">
-                                            @csrf
-                                        </form>
-                                    </div>
-                                </div> --}}
                             </li>
                         </ul>
                     </div>
                 </nav>
             </header>
-            <!--  Header End -->
             <div class="container-fluid">
                 <div class="card">
                     <div class="card-body">

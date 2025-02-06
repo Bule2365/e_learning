@@ -20,10 +20,10 @@ class ClassUserSeeder extends Seeder
 
         foreach ($kelas as $index => $class) {
             // Ambil guru untuk kelas ini (1 guru untuk setiap kelas)
-            $guru = User::where('role', 'guru')->skip($index)->first();
+            // $guru = User::where('role', 'guru')->skip($index)->first();
 
-            // Assign guru ke kelas
-            $class->guru()->attach($guru->id);
+            // // Assign guru ke kelas
+            // $class->guru()->attach($guru->id);
 
             // Assign 10 siswa ke kelas
             $siswa = User::where('role', 'siswa')->skip($index * 10)->take(10)->get();

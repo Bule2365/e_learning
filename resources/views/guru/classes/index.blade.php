@@ -24,11 +24,11 @@
                     </ul>
                     @endif
 
-                    @if($myClasses->contains($class))
+                    {{-- @if($classes->contains($class))
                     <p class="text-success">Anda mengajar kelas ini.</p>
                     @else
                     <p class="text-muted">Kelas ini tidak diajarkan oleh Anda.</p>
-                    @endif
+                    @endif --}}
 
                     <a href="{{ route('tasks.create', ['class_id' => $class->id]) }}" class="btn btn-primary mt-3">Buat Tugas</a>
                 </div>

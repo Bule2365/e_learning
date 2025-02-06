@@ -19,20 +19,20 @@ class TaskSeeder extends Seeder
     {
         // // Ambil semua kelas dan mata pelajaran
         // $kelas = ClassModel::all();
-        // $subjects = Subject::all();
+        // $mataPelajarans = Subject::all();
         // $users = User::where('role', 'guru')->get();
 
         // // Setiap guru akan memberikan tugas
         // foreach ($users as $guru) {
-        //     foreach ($subjects as $subject) {
+        //     foreach ($mataPelajarans as $mataPelajaran) {
         //         // Tentukan kelas yang akan diberikan tugas
         //         foreach ($kelas as $class) {
         //             // Tambahkan tugas
         //             Task::create([
-        //                 'title' => 'Tugas ' . $subject->name . ' - ' . $class->name,
-        //                 'description' => 'Deskripsi Tugas ' . $subject->name . ' untuk kelas ' . $class->name,
+        //                 'title' => 'Tugas ' . $mataPelajaran->name . ' - ' . $class->name,
+        //                 'description' => 'Deskripsi Tugas ' . $mataPelajaran->name . ' untuk kelas ' . $class->name,
         //                 'file_path' => null, // Bisa diisi file jika ada
-        //                 'subject_id' => $subject->id,
+        //                 'subject_id' => $mataPelajaran->id,
         //                 'class_id' => $class->id,
         //                 'user_id' => $guru->id,
         //                 'due_date' => now()->addDays(7),

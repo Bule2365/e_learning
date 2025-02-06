@@ -12,9 +12,9 @@
     </div>
     @endif
 
-    @if(Auth::user()->classes()->count() > 0)
+    @if(Auth::user()->kelas()->count() > 0)
     <p>Selamat datang, {{ Auth::user()->name }}! Anda sudah bergabung dengan kelas
-        @foreach(Auth::user()->classes as $class)
+        @foreach(Auth::user()->kelas as $class)
         {{ $class->name }}
         @endforeach
     </p>

@@ -10,132 +10,94 @@ use Illuminate\Validation\Rule;
 
 class ClassController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('role:admin')->only(['create', 'store', 'edit', 'update', 'destroy']);
-    }
-
     public function index()
     {
         if (Auth::user()->role == 'admin') {
-            // Admin bisa melihat semua kelas dan semua pengguna (guru dan siswa)
             $classes = ClassModel::all();
-            $users = User::all();
-            return view('admin.classes.index', compact('classes', 'users'));
+            return view('admin.classes.index', compact('classes'));
         }
 
         if (Auth::user()->role == 'guru') {
-            // Guru bisa melihat semua kelas, baik yang diajarkan oleh mereka maupun yang tidak
-            // Pertama-tama, kita ambil semua kelas yang ada
+            // $classes = ClassModel::whereHas('guru', function ($query) {
+            //     $query->where('users.id', Auth::id());
+            // })->get();
             $classes = ClassModel::all();
-
-            // Kemudian filter kelas yang diajarkan oleh guru saat ini (jika ada)
-            $myClasses = ClassModel::whereHas('guru', function ($query) {
-                $query->where('user_id', Auth::user()->id);
-            })->get();
-
-            return view('guru.classes.index', compact('classes', 'myClasses'));
+            return view('guru.classes.index', compact('classes'));
         }
 
         $user = Auth::user();
-
-        if ($user->classes()->count() > 0) {
-            return redirect()->route('dashboard')->with('info', 'Anda sudah bergabung dengan kelas.');
-        }
-
         $classes = ClassModel::whereDoesntHave('siswa', function ($query) use ($user) {
-            $query->where('user_id', $user->id);
+            $query->where('users.id', $user->id);
         })->get();
 
-        return view('siswa.classes.index', compact('classes'));
+        return view('siswa.classes.index', compact('classes', 'user'));
     }
 
     public function create()
     {
-        $users = User::where('role', 'guru')->get();
+        $users = User::all();
+
         return view('admin.classes.create', compact('users'));
     }
 
     public function store(Request $request)
     {
-        // Validasi data yang diterima dari form
         $validatedData = $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:50',
-                Rule::unique('classes'),
-            ],
+            'name' => 'required|string|max:50|unique:classes',
             'deskripsi' => 'required|string',
-            'guru_id' => 'required|exists:users,id', // Validasi guru_id untuk memastikan guru valid
         ]);
 
-        // Membuat kelas terlebih dahulu
         $class = ClassModel::create([
             'name' => $validatedData['name'],
             'deskripsi' => $validatedData['deskripsi'],
         ]);
 
-        // Setelah kelas dibuat, tambahkan guru ke kelas
-        if ($request->has('guru_id')) {
-            $class->guru()->attach($validatedData['guru_id']);
-        }
-
-        return redirect()->route('admin.classes.index')->with('success', 'Kelas berhasil dibuat dan guru telah ditambahkan!');
+        return redirect()->route('admin.classes.index')->with('success', 'Kelas berhasil dibuat!');
     }
 
     public function edit($id)
     {
         $class = ClassModel::findOrFail($id);
-        $users = User::where('role', 'guru')->get();
-        return view('admin.classes.edit', compact('class', 'users'));
+
+        return view('admin.classes.edit', compact('class'));
     }
 
     public function update(Request $request, $id)
     {
-        $validatedData = $request->validate([
-            'name' => [
-                'required',
-                'string',
-                'max:50',
-                Rule::unique('classes')->ignore($id),
-            ],
+        // Validasi dengan pengecualian untuk ID kelas yang sedang diperbarui
+        $validated = $request->validate([
+            'name' => 'required|string|max:50|unique:classes,name,' . $id, // Menambahkan pengecualian untuk ID yang sedang diperbarui
             'deskripsi' => 'required|string',
-            'guru_id' => 'required|array', // Pastikan ini berupa array
-            'guru_id.*' => 'exists:users,id', // Validasi ID guru
         ]);
-
+    
+        // Temukan kelas berdasarkan ID dan perbarui
         $class = ClassModel::findOrFail($id);
-        $class->update([
-            'name' => $validatedData['name'],
-            'deskripsi' => $validatedData['deskripsi'],
-        ]);
-
-        // Sinkronkan ID guru yang dipilih
-        $class->guru()->sync($validatedData['guru_id']);
-
-        return redirect()->route('admin.classes.index')->with('success', 'Kelas berhasil diperbarui!');
+        $class->name = $request->name;
+        $class->deskripsi = $request->deskripsi;
+        $class->save();
+    
+        return redirect()->route('admin.classes.index')->with('success', 'Kelas berhasil diperbarui');
     }
 
     public function destroy($id)
     {
         $class = ClassModel::findOrFail($id);
-        $class->guru()->detach();
         $class->delete();
-        return redirect()->route('admin.classes.index')->with('success', 'Kelas berhasil dihapus!');
+        return redirect()->route('admin.classes.index')->with('success', 'Kelas berasil dihapus');
     }
 
     public function join($classId)
     {
         $user = Auth::user();
         $class = ClassModel::findOrFail($classId);
-
-        if ($user->classes()->count() > 0) {
-            return redirect()->route('siswa.dashboard')->with('info', 'Anda sudah bergabung dengan kelas.');
+    
+        // Cek jika siswa sudah tergabung di kelas ini
+        if (!$user->kelas->contains($class)) {
+            // Bergabungkan siswa dengan kelas
+            $class->siswa()->attach($user->id);
+            return redirect()->route('siswa.classes.index')->with('success', 'Anda berhasil bergabung dengan kelas.');
         }
-
-        $class->siswa()->attach($user->id);
-
-        return redirect()->route('siswa.classes.index')->with('success', 'Anda berhasil bergabung dengan kelas.');
-    }
+    
+        return redirect()->route('siswa.classes.index')->with('error', 'Anda sudah tergabung dengan kelas ini.');
+    }    
 }

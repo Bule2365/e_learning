@@ -13,13 +13,13 @@ class TaskUser extends Model
 
     protected $fillable = ['task_id', 'user_id', 'submission', 'score'];
 
-    public function task()
+    public function tugas()
     {
-        return $this->belongsTo(Task::class);
+        return $this->belongsTo(Task::class, 'task_id');
     }
 
-    public function user()
+    public function siswa()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 }

@@ -56,8 +56,9 @@
                     </button>
                     <div class="profile-dropdown">
                         <div class="dropdown">
-                            <button class="btn btn-secondary dropdown-toggle" type="button" id="profileMenuButton"
+                            <button class="btn btn-primary dropdown-toggle" type="button" id="profileMenuButton"
                                 data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-arrow-down-square-fill"></i>
                                 <!-- Profile button content here -->
                             </button>
                             <ul class="dropdown-menu" aria-labelledby="profileMenuButton">
@@ -79,17 +80,17 @@
             <!-- Content Area -->
             <div class="content-wrapper">
                 @if (session('success'))
-                    <div class="alert alert-success">
-                        <i class="bi bi-check-circle-fill"></i>
-                        {{ session('success') }}
-                    </div>
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle-fill"></i>
+                    {{ session('success') }}
+                </div>
                 @endif
 
                 @if (session('error'))
-                    <div class="alert alert-danger">
-                        <i class="bi bi-exclamation-circle-fill"></i>
-                        {{ session('error') }}
-                    </div>
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-circle-fill"></i>
+                    {{ session('error') }}
+                </div>
                 @endif
 
                 <div class="content-card">
@@ -101,7 +102,6 @@
         <!-- Mobile Overlay -->
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-        <!-- Modal Confirmation Logout -->
         <!-- Modal Confirmation Logout -->
         <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
             <div class="modal-dialog">
@@ -125,7 +125,7 @@
                         <!-- Form Logout -->
                         <form action="{{ route('logout') }}" method="POST">
                             @csrf
-                            <button type="submit" class="btn btn-danger" style="transition: 0.3s;">
+                            <button type="submit" class="btn btn-danger me-2" style="transition: 0.3s;">
                                 <i class="bi bi-box-arrow-right"></i> Logout
                             </button>
                         </form>

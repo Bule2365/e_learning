@@ -35,6 +35,11 @@ class Task extends Model
     public function siswa()
     {
         return $this->belongsToMany(User::class, 'task_user', 'task_id', 'user_id')
-                    ->withPivot('submission', 'score');
+            ->withPivot('submission', 'score');
+    }
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class)->withPivot('score');
     }
 }

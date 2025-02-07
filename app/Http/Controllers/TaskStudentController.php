@@ -18,7 +18,7 @@ class TaskStudentController extends Controller
         })->get();
         
         return view('siswa.tasks.index', compact('tasks'));
-    }    
+    }
 
     public function show(Task $task)
     {

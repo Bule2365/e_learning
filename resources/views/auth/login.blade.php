@@ -7,6 +7,7 @@
     <title>Login</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
         :root {
             --primary-color: #1e40af;
@@ -115,12 +116,33 @@
                 max-width: 100%;
             }
         }
+
+        /* Position the back button at the top-left corner */
+        .back-icon {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 30px;
+            color: #007bff;
+            /* You can change the color */
+            text-decoration: none;
+        }
+
+        .back-icon:hover {
+            color: #0056b3;
+            /* Change color on hover */
+        }
     </style>
 </head>
 
 <body>
-    <div class="main-container">
+<div class="main-container">
         <div class="content-wrapper">
+            <!-- Back Button Icon -->
+            <a href="{{ url('/')}}" class="back-icon" id="backButton">
+                <i class="bi bi-arrow-left-circle-fill"></i> <!-- Arrow Back Icon -->
+            </a>
+
             <div class="login-container">
                 @if ($errors->any())
                 <div class="alert alert-danger mb-4" role="alert">
@@ -149,9 +171,7 @@
         </div>
     </div>
 
-    <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-    <!-- Lottie -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.7.6/lottie.min.js"></script>
 
     <script>
@@ -176,7 +196,13 @@
                 animContainer.style.display = 'none';
             }
         });
+
+        // Back button functionality
+        document.getElementById('backButton').addEventListener('click', function() {
+            window.history.back(); // Go back to previous page
+        });
     </script>
+
 </body>
 
 </html>

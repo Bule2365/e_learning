@@ -32,7 +32,7 @@ class User extends Authenticatable
 
     public function mataPelajaran()
     {
-        return $this->hasMany(Subject::class, 'user_id');
+        return $this->hasMany(Subject::class);
     }
 
     public function tugas()
@@ -43,5 +43,10 @@ class User extends Authenticatable
     public function tasks()
     {
         return $this->belongsToMany(Task::class)->withPivot('score');
+    }
+
+    public function ujian()
+    {
+        return $this->belongsToMany(Exam::class, 'exam_attempts');
     }
 }

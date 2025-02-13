@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClassController;
+use App\Http\Controllers\ExamController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskStudentController;
@@ -58,6 +59,13 @@ Route::middleware(['auth', 'role:guru'])->group(function () {
     // Task management routes for Guru
     Route::resource('tasks', TaskController::class);
     Route::put('/tasks/{task}/students/{user}/update-score', [TaskController::class, 'updateScore'])->name('tasks.updateScore');
+
+    // Exam management for guru
+    Route::get('/exams', [ExamController::class, 'index'])->name('guru.exams.index');
+    Route::get('/exams/create', [ExamController::class, 'create'])->name('guru.exams.create');
+    Route::post('/exams', [ExamController::class, 'store'])->name('guru.exams.store');
+    Route::get('/exams/{id}/add-questions', [ExamController::class, 'addQuestions'])->name('guru.exams.add_questions');
+    Route::post('/exams/{id}/add-questions', [ExamController::class, 'storeQuestions'])->name('guru.exams.store_questions');
 });
 
 // Siswa-Specific Routes (only accessible by siswa)

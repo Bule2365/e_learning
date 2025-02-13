@@ -6,7 +6,7 @@
 
     <div class="col-12 col-md-4 mb-3">
         <a href="{{ route('subjects.create') }}" class="btn btn-success w-100 btn-lg" data-bs-toggle="tooltip" title="Tambah Kelas">
-            <i class="bi bi-plus-circle"></i> <span class="d-none d-md-inline">Tambah Kelas</span>
+            <i class="bi bi-plus-circle"></i> <span class="d-none d-md-inline">Tambah Mata Pelajaran</span>
         </a>
     </div>
 

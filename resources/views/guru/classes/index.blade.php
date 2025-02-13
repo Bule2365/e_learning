@@ -30,6 +30,7 @@
                     <p class="text-muted">Kelas ini tidak diajarkan oleh Anda.</p>
                     @endif --}}
 
+                    <a href="{{ route('guru.exams.create', ['class_id' => $class->id]) }}" class="btn btn-primary mt-3">Buat Ujian</a>
                     <a href="{{ route('tasks.create', ['class_id' => $class->id]) }}" class="btn btn-primary mt-3">Buat Tugas</a>
                 </div>
             </div>

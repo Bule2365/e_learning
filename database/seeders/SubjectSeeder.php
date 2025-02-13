@@ -15,18 +15,27 @@ class SubjectSeeder extends Seeder
      */
     public function run()
     {
-    //     // Ambil guru pertama yang akan mengajar semua mata pelajaran
-    //     $guru = User::where('role', 'guru')->first();
+        // Ambil semua guru dari database
+        $gurus = User::where('role', 'guru')->get();
 
-    //     // Daftar mata pelajaran yang ingin dibuat
-    //     $subjects = ['PAI', 'PKN', 'DKV', 'IPA', 'MTK', 'TKJ'];
+        // Daftar mata pelajaran yang ingin dibuat
+        $subjects = ['PAI', 'PKN', 'DKV', 'IPA', 'MTK', 'TKJ'];
 
-    //     foreach ($subjects as $subject) {
-    //         Subject::create([
-    //             'name' => $subject,
-    //             'user_id' => $guru->id, // Asumsikan guru pertama mengajar semua mata pelajaran
-    //         ]);
-    //     }
-    // }
+        // Acak urutan mata pelajaran
+        shuffle($subjects);
+
+        // Pastikan jumlah guru cukup untuk jumlah mata pelajaran
+        if ($gurus->count() < count($subjects)) {
+            // Jika jumlah guru lebih sedikit, ulangi guru yang ada untuk diberikan beberapa mata pelajaran
+            $gurus = $gurus->concat($gurus->take(count($subjects) - $gurus->count()));
+        }
+
+        // Distribusikan mata pelajaran ke guru secara acak
+        foreach ($subjects as $index => $subject) {
+            Subject::create([
+                'name' => $subject,
+                'user_id' => $gurus[$index % $gurus->count()]->id, // Menggunakan modulo untuk mengulang guru jika jumlah guru kurang
+            ]);
+        }
     }
 }

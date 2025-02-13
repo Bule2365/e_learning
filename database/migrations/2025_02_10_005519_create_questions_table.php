@@ -13,6 +13,8 @@ class CreateQuestionsTable extends Migration
      */
     public function up()
     {
+        Schema::disableForeignKeyConstraints();
+
         Schema::create('questions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('exam_id')->constrained()->onDelete('cascade');
@@ -20,8 +22,11 @@ class CreateQuestionsTable extends Migration
             $table->json('options')->nullable(); // Untuk pilihan ganda
             $table->string('correct_answer');
             $table->enum('type', ['multiple_choice', 'essay'])->default('multiple_choice');
+            $table->string('image_path')->nullable();
             $table->timestamps();
         });
+
+        Schema::enableForeignKeyConstraints();
     }
 
     /**

@@ -22,4 +22,9 @@ class Subject extends Model
     {
         return $this->belongsToMany(ClassModel::class, 'subject_class', 'subject_id', 'class_id');
     }
+
+    public function ujian()
+    {
+        return $this->hasMany(Exam::class);
+    }
 }

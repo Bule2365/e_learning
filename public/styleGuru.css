@@ -301,3 +301,99 @@ header {
     /* Warna biru lebih gelap saat hover */
     border-color: #0056b3;
 }
+
+/* Styling untuk ikon */
+.bi-gear {
+    transition: transform 0.5s ease-in-out;
+    /* Transisi halus untuk rotasi */
+}
+
+/* Rotasi saat kelas 'rotate' ditambahkan */
+.bi-gear.rotate {
+    transform: rotate(180deg);
+    /* Rotasi 180 derajat ketika tombol diklik */
+}
+
+/* Styling untuk dropdown menu */
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    /* Mulai sedikit lebih atas */
+    opacity: 0;
+    /* Mulai dengan transparansi */
+    visibility: hidden;
+    /* Dropdown tersembunyi */
+    transition: transform 0.4s ease, opacity 0.4s ease, visibility 0.4s ease;
+    /* Transisi slide dan fade */
+}
+
+/* Menampilkan dropdown dengan animasi slide-down dan fade-in */
+.dropdown-menu.show {
+    opacity: 1;
+    /* Menu menjadi terlihat */
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+    /* Menu bergerak turun ke posisi semula */
+}
+
+/* Efek Hover pada item dropdown */
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+    transform: translateX(10px);
+    /* Bergerak ke kanan sedikit saat hover */
+}
+
+/* Efek hover pada item dropdown */
+.dropdown-item:hover {
+    background-color: #f8d7da;
+    /* Warna latar belakang merah muda */
+    color: #dc3545;
+    /* Warna teks merah */
+    transition: all 0.3s ease;
+    /* Animasi transisi untuk efek hover */
+}
+
+.dropdown-item i {
+    font-size: 1.2rem;
+    /* Ukuran ikon sedikit lebih besar */
+}
+
+/* Tombol Logout */
+.logout-button-container {
+    padding-right: 1.5rem;
+}
+
+#logoutButton {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: all var(--transition-speed);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#logoutButton:hover {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+    transform: translateX(8px);
+}
+
+#logoutButton i {
+    font-size: 1.2rem;
+}
+
+#logoutButton span {
+    font-weight: 600;
+}

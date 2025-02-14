@@ -66,6 +66,7 @@ Route::middleware(['auth', 'role:guru'])->group(function () {
     Route::post('/exams', [ExamController::class, 'store'])->name('guru.exams.store');
     Route::get('/exams/{id}/add-questions', [ExamController::class, 'addQuestions'])->name('guru.exams.add_questions');
     Route::post('/exams/{id}/add-questions', [ExamController::class, 'storeQuestions'])->name('guru.exams.store_questions');
+    Route::get('/guru/exams/{id}', [ExamController::class, 'show'])->name('guru.exams.show');
 });
 
 // Siswa-Specific Routes (only accessible by siswa)

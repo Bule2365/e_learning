@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\ClassModel;
 use App\Models\Exam;
-use App\Models\Subject;
+use App\Models\Question;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpWord\IOFactory as WordIOFactory;
+use PhpOffice\PhpSpreadsheet\IOFactory as ExcelIOFactory;
 
 class ExamController extends Controller
 {
@@ -98,22 +101,103 @@ class ExamController extends Controller
     public function storeQuestions(Request $request, $examId)
     {
         $request->validate([
-            'question_text' => 'required|string|max:255',
-            'options' => 'required|array',
-            'correct_answer' => 'required|string|max:255',
-            'type' => 'required|in:multiple_choice,essay',
+            'question_text' => 'nullable|string|max:255',
+            'options' => 'nullable|array',
+            'correct_answer' => 'nullable|string|max:255',
+            'type' => 'nullable|in:multiple_choice,essay',
+            'file' => 'nullable|mimes:pdf,docx,xlsx|max:10240', // Validasi file
         ]);
 
         $exam = Exam::findOrFail($examId);
 
-        // Menambahkan soal ke ujian
-        $exam->soal()->create([
-            'question_text' => $request->question_text,
-            'options' => json_encode($request->options),
-            'correct_answer' => $request->correct_answer,
-            'type' => $request->type,
-        ]);
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $path = $file->store('uploads');
+            $extension = $file->getClientOriginalExtension();
+
+
+            if ($extension == 'pdf') {
+                $this->processPdf($path, $exam);
+            } elseif ($extension == 'docx') {
+                $this->processWord($path, $exam);
+            } elseif ($extension == 'xlsx') {
+                $this->processExcel($path, $exam);
+            }
+        } else {
+            // Validasi jika tanpa file, semua field harus ada
+            $request->validate([
+                'question_text' => 'required|string|max:255',
+                'options' => 'required_if:type,multiple_choice|array',
+                'correct_answer' => 'required_if:type,multiple_choice|string|max:255',
+                'type' => 'required|in:multiple_choice,essay',
+            ]);
+
+            Question::create([
+                'exam_id' => $exam->id,
+                'question_text' => $request->question_text,
+                'options' => $request->type === 'multiple_choice' ? json_encode($request->options) : null,
+                'correct_answer' => $request->correct_answer,
+                'type' => $request->type,
+            ]);
+        }
 
         return redirect()->route('guru.exams.show', $examId);
+    }
+
+    // Proses PDF
+    private function processPdf($path, $exam)
+    {
+        $questions = "Contoh soal dari PDF: Apa ibu kota Indonesia? A. Jakarta B. Bali C. Surabaya D. Yogyakarta";
+
+        Question::create([
+            'exam_id' => $exam->id,
+            'question_text' => $questions,
+            'type' => 'multiple_choice',
+        ]);
+    }
+
+    // Proses DOCX
+    private function processWord($path, $exam)
+    {
+        $phpWord = WordIOFactory::load(Storage::path($path));
+        $text = '';
+
+        foreach ($phpWord->getSections() as $section) {
+            foreach ($section->getElements() as $element) {
+                if ($element instanceof \PhpOffice\PhpWord\Element\TextRun) {
+                    foreach ($element->getElements() as $textElement) {
+                        if ($textElement instanceof \PhpOffice\PhpWord\Element\Text) {
+                            $text .= $textElement->getText() . "\n";
+                        }
+                    }
+                }
+            }
+        }
+
+        Question::create([
+            'exam_id' => $exam->id,
+            'question_text' => trim($text),
+            'type' => 'essay',
+        ]);
+    }
+
+    // Proses XLSX
+    private function processExcel($path, $exam)
+    {
+        $spreadsheet = ExcelIOFactory::load(Storage::path($path));
+        $sheet = $spreadsheet->getActiveSheet();
+        $data = $sheet->toArray();
+
+        foreach ($data as $row) {
+            if (!isset($row[0]) || !isset($row[1])) continue;
+
+            Question::create([
+                'exam_id' => $exam->id,
+                'question_text' => $row[0],
+                'options' => $row[1],  // Pastikan opsi sudah sesuai format
+                'correct_answer' => $row[2],  // Pastikan jawaban benar sudah sesuai
+                'type' => 'multiple_choice',
+            ]);
+        }
     }
 }

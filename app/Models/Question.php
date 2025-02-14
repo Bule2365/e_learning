@@ -12,25 +12,23 @@ class Question extends Model
     protected $fillable = [
         'exam_id',
         'question_text',
-        'options', // JSON field untuk pilihan ganda
+        'options',
         'correct_answer',
         'type',
+        'image_path',
     ];
 
     protected $casts = [
-        'options' => 'array', // Cast JSON ke array
-        'type' => 'string',   // Enum type: multiple_choice, essay
+        'options' => 'array',
     ];
 
-    // Relasi ke ujian (setiap soal terkait dengan satu ujian)
-    public function ujian()
+    public function exam()
     {
-        return $this->belongsTo(Exam::class, 'exam_id');
+        return $this->belongsTo(Exam::class);
     }
 
-    // Relasi ke jawaban ujian (soal bisa memiliki banyak jawaban yang diberikan oleh pengguna)
-    public function jawaban()
+    public function answers()
     {
-        return $this->hasMany(ExamAnswer::class, 'question_id');
+        return $this->hasMany(ExamAnswer::class);
     }
 }

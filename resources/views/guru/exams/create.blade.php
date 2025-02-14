@@ -1,8 +1,15 @@
 @extends('guru.layouts.app')
 
 @section('content')
-<div class="container mt-5">
-    <h1 class="mb-4">Buat Ujian Baru</h1>
+<div class="container">
+    <a href="{{ route('guru.classes.index') }}" class="btn btn-primary mb-3">
+        <i class="bi bi-arrow-left"></i>
+        <span>
+            Kembali ke Daftar Kelas
+        </span>
+    </a>
+
+    <h1 class="mb-4">Form Ujian Baru</h1>
 
     <!-- Display success message -->
     @if(session('success'))

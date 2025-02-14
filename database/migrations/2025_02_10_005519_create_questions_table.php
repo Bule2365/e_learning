@@ -20,7 +20,7 @@ class CreateQuestionsTable extends Migration
             $table->foreignId('exam_id')->constrained()->onDelete('cascade');
             $table->text('question_text');
             $table->json('options')->nullable(); // Untuk pilihan ganda
-            $table->string('correct_answer');
+            $table->string('correct_answer')->nullable();
             $table->enum('type', ['multiple_choice', 'essay'])->default('multiple_choice');
             $table->string('image_path')->nullable();
             $table->timestamps();

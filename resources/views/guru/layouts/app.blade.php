@@ -25,21 +25,27 @@
             <nav>
                 <ul>
                     <li>
-                        <a href="{{ route('dashboard') }}">
-                            <i class="bi bi-house"></i>
+                        <a href="{{ route('dashboard') }}" class="menu-item">
+                            <i class="bi bi-house fs-4"></i>
                             Dashboard
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('guru.classes.index') }}">
-                            <i class="bi bi-mortarboard"></i>
+                        <a href="{{ route('guru.classes.index') }}" class="menu-item">
+                            <i class="bi bi-mortarboard fs-4"></i>
                             Kelas
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('tasks.index') }}">
-                            <i class="bi bi-clipboard2"></i>
+                        <a href="{{ route('tasks.index') }}" class="menu-item">
+                            <i class="bi bi-clipboard2 fs-4"></i>
                             Tugas Siswa
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('guru.exams.index') }}" class="menu-item">
+                            <i class="bi bi-view-stacked fs-4"></i>
+                            Ujian Siswa
                         </a>
                     </li>
                 </ul>
@@ -54,25 +60,12 @@
                     <button class="sidebar-toggle" id="sidebarToggle">
                         <i class="bi bi-list"></i>
                     </button>
-                    <div class="profile-dropdown">
-                        <div class="dropdown">
-                            <button class="btn btn-primary dropdown-toggle" type="button" id="profileMenuButton"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-arrow-down-square-fill"></i>
-                                <!-- Profile button content here -->
-                            </button>
-                            <ul class="dropdown-menu" aria-labelledby="profileMenuButton">
-                                <li>
-                                    <a class="dropdown-item" href="javascript:void(0);"
-                                        onclick="event.preventDefault(); showLogoutModal();">
-                                        <i class="bi bi-box-arrow-right"></i> Logout
-                                    </a>
-                                </li>
-                            </ul>
-                            <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                                @csrf
-                            </form>
-                        </div>
+                    <div class="logout-button-container">
+                        <!-- Tombol Logout dengan ikon -->
+                        <button class="btn btn-primary d-flex align-items-center gap-2" id="logoutButton" onclick="showLogoutModal()">
+                            <i class="bi bi-box-arrow-right fs-5"></i>
+                            <span class="fw-bold">Logout</span>
+                        </button>
                     </div>
                 </nav>
             </header>
@@ -189,7 +182,16 @@
             var logoutModal = new bootstrap.Modal(document.getElementById('logoutModal'));
             logoutModal.show();
         }
+
+        function rotateGear() {
+            const dropdownMenu = document.querySelector('.dropdown-menu');
+            console.log('Dropdown menu:', dropdownMenu);
+            dropdownMenu.classList.toggle('show'); // Menambahkan/menyembunyikan kelas 'show' untuk menampilkan/hilangkan dropdown
+        }
     </script>
+
+    @stack('scripts')
+
 </body>
 
 </html>

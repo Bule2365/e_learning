@@ -29,6 +29,11 @@ class ExamAttempt extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function exam()
+    {
+        return $this->belongsTo(Exam::class, 'exam_id');
+    }    
+
     // Relasi ke percakapan ujian (jawaban terkait dengan upaya ujian tertentu)
     public function upayaUjian()
     {

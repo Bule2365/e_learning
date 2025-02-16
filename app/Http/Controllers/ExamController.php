@@ -100,68 +100,59 @@ class ExamController extends Controller
     // Menyimpan soal ke ujian
     public function storeQuestions(Request $request, $examId)
     {
-        $request->validate([
-            'question_text' => 'nullable|string|max:255',
-            'options' => 'nullable|array',
-            'correct_answer' => 'nullable|string|max:255',
-            'type' => 'nullable|in:multiple_choice,essay',
-            'file' => 'nullable|mimes:pdf,docx,xlsx|max:10240', // Validasi file
-        ]);
-
         $exam = Exam::findOrFail($examId);
-
-        if ($request->hasFile('file')) {
-            $file = $request->file('file');
-            $path = $file->store('uploads');
-            $extension = $file->getClientOriginalExtension();
-
-
-            if ($extension == 'pdf') {
-                $this->processPdf($path, $exam);
-            } elseif ($extension == 'docx') {
-                $this->processWord($path, $exam);
-            } elseif ($extension == 'xlsx') {
-                $this->processExcel($path, $exam);
-            }
-        } else {
-            // Validasi jika tanpa file, semua field harus ada
+    
+        // Jika input manual
+        if ($request->has('question_text')) {
             $request->validate([
-                'question_text' => 'required|string|max:255',
-                'options' => 'required_if:type,multiple_choice|array',
-                'correct_answer' => 'required_if:type,multiple_choice|string|max:255',
+                'question_text' => 'required|string',
                 'type' => 'required|in:multiple_choice,essay',
+                'options' => 'nullable|array',
+                'correct_answer' => 'nullable|string',
             ]);
-
+    
+            // Jika soal pilihan ganda, ubah options ke JSON
+            $options = $request->type === 'multiple_choice' ? json_encode($request->options) : null;
+    
             Question::create([
                 'exam_id' => $exam->id,
                 'question_text' => $request->question_text,
-                'options' => $request->type === 'multiple_choice' ? json_encode($request->options) : null,
+                'options' => $options,
                 'correct_answer' => $request->correct_answer,
                 'type' => $request->type,
             ]);
+    
+            return redirect()->route('guru.exams.show', $examId)->with('success', 'Soal berhasil ditambahkan!');
         }
+    
+        // Jika upload file
+        if ($request->hasFile('file')) {
+            $request->validate([
+                'file' => 'required|mimes:docx,xlsx|max:10240',
+            ]);
+    
+            $file = $request->file('file');
+            $path = $file->store('uploads');
+            $extension = $file->getClientOriginalExtension();
+    
+            if ($extension === 'docx') {
+                $this->processWord($path, $exam);
+            } elseif ($extension === 'xlsx') {
+                $this->processExcel($path, $exam);
+            }
+    
+            return redirect()->route('guru.exams.show', $examId)->with('success', 'Soal berhasil diunggah!');
+        }
+    
+        return back()->with('error', 'Harap isi form atau unggah file.');
+    }    
 
-        return redirect()->route('guru.exams.show', $examId);
-    }
-
-    // Proses PDF
-    private function processPdf($path, $exam)
-    {
-        $questions = "Contoh soal dari PDF: Apa ibu kota Indonesia? A. Jakarta B. Bali C. Surabaya D. Yogyakarta";
-
-        Question::create([
-            'exam_id' => $exam->id,
-            'question_text' => $questions,
-            'type' => 'multiple_choice',
-        ]);
-    }
-
-    // Proses DOCX
     private function processWord($path, $exam)
     {
-        $phpWord = WordIOFactory::load(Storage::path($path));
+        $phpWord = \PhpOffice\PhpWord\IOFactory::load(Storage::path($path));
         $text = '';
-
+    
+        // Membaca semua teks dari file Word
         foreach ($phpWord->getSections() as $section) {
             foreach ($section->getElements() as $element) {
                 if ($element instanceof \PhpOffice\PhpWord\Element\TextRun) {
@@ -173,31 +164,100 @@ class ExamController extends Controller
                 }
             }
         }
-
-        Question::create([
-            'exam_id' => $exam->id,
-            'question_text' => trim($text),
-            'type' => 'essay',
-        ]);
-    }
-
-    // Proses XLSX
-    private function processExcel($path, $exam)
-    {
-        $spreadsheet = ExcelIOFactory::load(Storage::path($path));
-        $sheet = $spreadsheet->getActiveSheet();
-        $data = $sheet->toArray();
-
-        foreach ($data as $row) {
-            if (!isset($row[0]) || !isset($row[1])) continue;
-
-            Question::create([
-                'exam_id' => $exam->id,
-                'question_text' => $row[0],
-                'options' => $row[1],  // Pastikan opsi sudah sesuai format
-                'correct_answer' => $row[2],  // Pastikan jawaban benar sudah sesuai
-                'type' => 'multiple_choice',
-            ]);
+    
+        // ✅ REGEX diperbaiki agar jawaban hanya mengambil satu kata/huruf
+        $pattern = '/Pertanyaan:\s*(.*?)\n(?:A\.\s*(.*?)\nB\.\s*(.*?)\nC\.\s*(.*?)\nD\.\s*(.*?)\n)?Jawaban:\s*([A-D]?)/s';
+    
+        // Menjalankan regex
+        preg_match_all($pattern, $text, $matches, PREG_SET_ORDER);
+    
+        foreach ($matches as $match) {
+            try {
+                $questionText = trim($match[1]); // Ambil teks pertanyaan
+                $correctAnswer = isset($match[6]) ? trim($match[6]) : null; // Jawaban harus hanya A, B, C, atau D
+                
+                // Cek apakah ini soal Multiple Choice atau Essay
+                $options = [];
+                if (!empty($match[2]) && !empty($match[3]) && !empty($match[4]) && !empty($match[5])) {
+                    $options = [
+                        'A' => trim($match[2]),
+                        'B' => trim($match[3]),
+                        'C' => trim($match[4]),
+                        'D' => trim($match[5]),
+                    ];
+                }
+    
+                // Menentukan tipe soal
+                $type = !empty($options) ? 'multiple_choice' : 'essay';
+    
+                // Jika soal essay, tidak perlu jawaban benar
+                if ($type === 'essay') {
+                    $correctAnswer = null;
+                }
+    
+                // Simpan ke database
+                Question::create([
+                    'exam_id' => $exam->id,
+                    'question_text' => $questionText,
+                    'options' => !empty($options) ? json_encode($options) : null,
+                    'correct_answer' => $correctAnswer,
+                    'type' => $type,
+                ]);
+            } catch (\Exception $e) {
+                \Log::error("Error memproses soal dari Word: " . $e->getMessage());
+                \Log::info("Isi File Word: " . $text);
+            }
         }
     }
+    
+    private function processExcel($path, $exam)
+    {
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load(Storage::path($path));
+        $sheet = $spreadsheet->getActiveSheet();
+        $data = $sheet->toArray();
+    
+        \Log::info("Total Baris dalam Excel: " . count($data));
+    
+        foreach ($data as $index => $row) {
+            if ($index == 0) {
+                \Log::info("Skipping header row.");
+                continue; // Lewati header
+            }
+    
+            if (empty($row[0])) {
+                \Log::warning("Skipping empty row at index: " . $index);
+                continue;
+            }
+    
+            try {
+                $questionText = trim($row[0]); // Pertanyaan
+                $options = json_decode($row[1], true); // Decode JSON
+                $correctAnswer = trim($row[2]); // Jawaban benar
+                $type = trim($row[3]); // Jenis soal
+    
+                \Log::info("Processing row $index: $questionText");
+    
+                if ($type === 'multiple_choice' && !is_array($options)) {
+                    throw new \Exception("Invalid multiple choice options format at row $index.");
+                }
+    
+                if ($type === 'essay') {
+                    $options = null;
+                    $correctAnswer = null;
+                }
+    
+                // Simpan ke database
+                Question::create([
+                    'exam_id' => $exam->id,
+                    'question_text' => $questionText,
+                    'options' => $options ? json_encode($options) : null,
+                    'correct_answer' => $correctAnswer,
+                    'type' => $type,
+                ]);
+    
+            } catch (\Exception $e) {
+                \Log::error("Error processing row $index: " . $e->getMessage());
+            }
+        }
+    }    
 }

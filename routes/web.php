@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClassController;
+use App\Http\Controllers\ExamAttemptController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\TaskController;
@@ -61,22 +62,30 @@ Route::middleware(['auth', 'role:guru'])->group(function () {
     Route::put('/tasks/{task}/students/{user}/update-score', [TaskController::class, 'updateScore'])->name('tasks.updateScore');
 
     // Exam management for guru
-    Route::get('/exams', [ExamController::class, 'index'])->name('guru.exams.index');
+    Route::get('/exams/teacher', [ExamController::class, 'index'])->name('guru.exams.index');
     Route::get('/exams/create', [ExamController::class, 'create'])->name('guru.exams.create');
     Route::post('/exams', [ExamController::class, 'store'])->name('guru.exams.store');
     Route::get('/exams/{id}/add-questions', [ExamController::class, 'addQuestions'])->name('guru.exams.add_questions');
     Route::post('/exams/{id}/add-questions', [ExamController::class, 'storeQuestions'])->name('guru.exams.store_questions');
-    Route::get('/guru/exams/{id}', [ExamController::class, 'show'])->name('guru.exams.show');
+    Route::get('/exams/teacher/{id}', [ExamController::class, 'show'])->name('guru.exams.show');
 });
 
 // Siswa-Specific Routes (only accessible by siswa)
 Route::middleware(['auth', 'role:siswa'])->group(function () {
     // Class routes for Siswa
-    Route::get('to-classes', [ClassController::class, 'index'])->name('siswa.classes.index');
-    Route::post('classes/{id}/join', [ClassController::class, 'join'])->name('siswa.classes.join');
+    Route::get('/classes/student', [ClassController::class, 'index'])->name('siswa.classes.index');
+    Route::post('/classes/student/{id}/join', [ClassController::class, 'join'])->name('siswa.classes.join');
 
     // Task routes for Siswa
     Route::get('/tasks-student', [TaskStudentController::class, 'index'])->name('student.tasks.index');
-    Route::get('/detail-tasks/{task}', [TaskStudentController::class, 'show'])->name('student.tasks.show');
-    Route::post('/post-tasks/{task}/submit', [TaskStudentController::class, 'submit'])->name('student.tasks.submit');
+    Route::get('/tasks/{task}', [TaskStudentController::class, 'show'])->name('student.tasks.show');
+    Route::post('/tasks/{task}/submit', [TaskStudentController::class, 'submit'])->name('student.tasks.submit');
+
+    // Exam routes for Siswa
+    Route::get('/siswa/exams', [ExamAttemptController::class, 'index'])->name('siswa.exams.index');
+    Route::get('/siswa/exams/start/{examId}', [ExamAttemptController::class, 'start'])->name('siswa.exams.start');
+    Route::get('/siswa/exams/show/{examId}/{attemptId}', [ExamAttemptController::class, 'show'])->name('siswa.exams.show');
+    Route::post('/siswa/exams/answer/{attemptId}', [ExamAttemptController::class, 'answer'])->name('siswa.exams.answer');
+    Route::post('/siswa/exams/submit/{attemptId}', [ExamAttemptController::class, 'submit'])->name('siswa.exams.submit');
+    Route::get('/siswa/exams/result/{attemptId}', [ExamAttemptController::class, 'result'])->name('siswa.exams.result');
 });

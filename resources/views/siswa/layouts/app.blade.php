@@ -41,6 +41,14 @@
                                 <span class="hide-menu">Kelas</span>
                             </a>
                         </li>
+                        <li class="sidebar-item">
+                            <a class="sidebar-link" href="{{ route('siswa.exams.index') }}" aria-expanded="false">
+                                <span>
+                                    <i class="ti ti-school"></i>
+                                </span>
+                                <span class="hide-menu">Ujian</span>
+                            </a>
+                        </li>
                         <li>
                             <a href="javascript:void(0);" class="btn btn-outline-primary mx-3 mt-2 d-block"
                                 onclick="showLogoutModal()">Logout</a>

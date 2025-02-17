@@ -6,7 +6,132 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Dashboard')</title>
     <link rel="stylesheet" href="{{ asset('assets/css/styles.min.css') }}" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    @stack('styles')
+    <style>
+        :root {
+            --bs-primary-rgb: 99, 102, 241;
+            --bs-font-sans-serif: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            --bs-body-line-height: 1.6;
+            --bs-body-color: #1f2937;
+        }
+
+        /* Typography */
+        body {
+            font-family: var(--bs-font-sans-serif);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            line-height: var(--bs-body-line-height);
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            color: #111827;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+        }
+
+        /* Sidebar transitions */
+        .left-sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .sidebar-link {
+            transition: all 0.2s ease;
+            position: relative;
+            border-radius: 0.375rem;
+            padding: 0.75rem 1rem;
+            margin: 0 0.5rem;
+        }
+
+        .sidebar-link:hover {
+            background-color: rgba(var(--bs-primary-rgb), 0.1);
+            transform: translateX(4px);
+        }
+
+        .sidebar-link.active {
+            background-color: rgba(var(--bs-primary-rgb), 0.1);
+            color: rgb(var(--bs-primary-rgb));
+        }
+
+        /* Button transitions */
+        .btn {
+            transition: all 0.2s ease;
+            letter-spacing: 0.025em;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Modal animation */
+        .modal-card {
+            transition: transform 0.3s ease-out;
+        }
+
+        .modal-header {
+            border-bottom: none;
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            border-top: none;
+            padding: 1.5rem;
+        }
+
+        /* Notification messages */
+        .alert {
+            transition: opacity 0.3s ease;
+            border: none;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+        }
+
+        .alert-success {
+            background-color: #f0fdf4;
+            color: #166534;
+        }
+
+        .alert-error {
+            background-color: #fef2f2;
+            color: #991b1b;
+        }
+
+        /* Scrollbar styling */
+        .scroll-sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scroll-sidebar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .scroll-sidebar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
+
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
+        }
+    </style>
 </head>
 
 <body>
@@ -50,8 +175,12 @@
                             </a>
                         </li>
                         <li>
-                            <a href="javascript:void(0);" class="btn btn-outline-primary mx-3 mt-2 d-block"
-                                onclick="showLogoutModal()">Logout</a>
+                            <a href="javascript:void(0);"
+                                class="btn btn-outline-primary mx-3 mt-2 d-block shadow-sm hover-shadow"
+                                onclick="showLogoutModal()">
+                                <i class="bi bi-box-arrow-right me-2"></i>
+                                Logout
+                            </a>
                         </li>
                     </ul>
                 </nav>
@@ -75,15 +204,19 @@
                     <div class="card-body">
                         <div>
                             @if (session('success'))
-                            <div>
-                                {{ session('success') }}
-                            </div>
+                                <div
+                                    class="alert alert-success d-flex align-items-center animate__animated animate__fadeIn">
+                                    <i class="bi bi-check-circle-fill me-2"></i>
+                                    {{ session('success') }}
+                                </div>
                             @endif
 
                             @if (session('error'))
-                            <div>
-                                {{ session('error') }}
-                            </div>
+                                <div
+                                    class="alert alert-error d-flex align-items-center animate__animated animate__headShake">
+                                    <i class="bi bi-exclamation-circle-fill me-2"></i>
+                                    {{ session('error') }}
+                                </div>
                             @endif
 
                             @yield('content')
@@ -109,7 +242,8 @@
                         <p class="text-muted">Anda akan logout dari aplikasi ini.</p>
                     </div>
                     <div class="modal-footer d-flex justify-content-center">
-                        <button type="button" class="btn btn-light me-2" data-bs-dismiss="modal" style="transition: 0.3s;">
+                        <button type="button" class="btn btn-light me-2" data-bs-dismiss="modal"
+                            style="transition: 0.3s;">
                             <i class="bi bi-x-circle"></i> Batal
                         </button>
                         <!-- Form Logout -->

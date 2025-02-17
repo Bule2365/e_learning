@@ -1,99 +1,157 @@
 @extends('guru.layouts.app')
 
 @section('content')
-@push('styles')
-<style>
-    /* Styling for the title */
-    .card-title {
-        font-size: 1.25rem;
-        font-weight: 600;
-    }
+    @push('styles')
+        <style>
+            /* Improved Typography */
+            .card-title {
+                font-size: 1.25rem;
+                font-weight: 600;
+                line-height: 1.3;
+                color: #1a237e;
+            }
 
-    /* Styling for the subtitle */
-    .card-subtitle {
-        font-size: 1rem;
-        color: #6c757d;
-        /* Muted color for better readability */
-    }
+            .card-subtitle {
+                font-size: 0.9rem;
+                color: #546e7a;
+                letter-spacing: 0.03em;
+            }
 
-    /* Description should have proper space and respect line breaks */
-    .exam-description {
-        white-space: pre-line;
-        margin-bottom: 1.5rem;
-    }
+            .exam-description {
+                font-size: 0.95rem;
+                color: #455a64;
+                line-height: 1.6;
+                white-space: pre-line;
+                margin-bottom: 1.5rem;
+            }
 
-    /* Badge for status with different colors */
-    .badge {
-        font-size: 0.875rem;
-        padding: 0.5rem;
-    }
+            /* Responsive Card Design */
+            .exam-card {
+                transition: all 0.3s ease;
+                border: 1px solid rgba(0, 0, 0, 0.08);
+                border-radius: 12px;
+                overflow: hidden;
+            }
 
-    /* Spacing between action buttons */
-    .action-buttons .btn {
-        margin-right: 10px;
-        margin-bottom: 10px;
-    }
+            .exam-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            }
 
-    .action-buttons .btn:hover {
-        background-color: #0056b3;
-    }
-</style>
-@endpush
+            /* Status Badge */
+            .status-badge {
+                font-size: 0.8rem;
+                padding: 0.35rem 0.75rem;
+                border-radius: 20px;
+                font-weight: 500;
+            }
 
-<div class="container my-5">
-    <h1 class="display-4 text-center mb-4">Daftar Ujian</h1>
+            /* Responsive Button Group */
+            .action-buttons {
+                display: flex;
+                gap: 0.75rem;
+                flex-wrap: wrap;
+                margin-top: 1.25rem;
+            }
 
-    <!-- Success message -->
-    @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    @endif
+            .action-buttons .btn {
+                flex: 1 1 auto;
+                min-width: 140px;
+                padding: 0.5rem 1rem;
+                font-size: 0.85rem;
+                border-radius: 8px;
+                transition: all 0.2s ease;
+            }
 
-    @if($exams->isEmpty())
-    <div class="col-12">
-        <div class="alert alert-info text-center">
-            Belum ada ujian untuk mata pelajaran yang Anda ajar.
+            /* Mobile Optimization */
+            @media (max-width: 768px) {
+                .container {
+                    padding-left: 1rem;
+                    padding-right: 1rem;
+                }
+
+                .exam-card {
+                    margin-bottom: 1rem;
+                }
+
+                .card-title {
+                    font-size: 1.1rem;
+                }
+
+                .card-subtitle {
+                    font-size: 0.85rem;
+                }
+
+                .action-buttons .btn {
+                    flex: 1 1 100%;
+                    min-width: 100%;
+                }
+            }
+        </style>
+    @endpush
+
+    <div class="container-lg my-4 my-lg-5">
+        <div class="text-center mb-4 mb-lg-5">
+            <h1 class="h2 fw-bold text-primary mb-3">Daftar Ujian</h1>
+            <p class="lead text-muted">Kelola ujian untuk kelas yang Anda ajar</p>
         </div>
-    </div>
-    @else
-    <div class="row">
-        @foreach($exams as $exam)
-        <div class="col-md-4 mb-4">
-            <div class="card shadow-sm border-light">
-                <div class="card-body">
-                    <!-- Title of the exam -->
-                    <h5 class="card-title mb-2">{{ $exam->title }}</h5>
 
-                    <!-- Class Name -->
-                    <h6 class="card-subtitle mb-2 text-muted">{{ $exam->kelas->name }}</h6>
-                    
-                    <!-- Subject Name -->
-                    <h6 class="card-subtitle mb-3 text-muted">{{ $exam->mataPelajaran->name }}</h6>
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <div>{{ session('success') }}</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
 
-                    <!-- Description with line breaks preserved -->
-                    <p class="exam-description">{{ $exam->description }}</p>
-
-                    <!-- Status Badge -->
-                    <span class="badge bg-{{ $exam->status == 'active' ? 'success' : 'warning' }}">
-                        {{ ucfirst($exam->status) }}
-                    </span>
-
-                    <!-- Action buttons: View and Add Questions -->
-                    <div class="action-buttons mt-3">
-                        <a href="{{ route('guru.exams.show', $exam->id) }}" class="btn btn-primary btn-sm">
-                        <i class="bi bi-view-list"></i> Lihat Soal Ujian
-                        </a>
-                        <a href="{{ route('guru.exams.add_questions', $exam->id) }}" class="btn btn-primary btn-sm">
-                            <i class="bi bi-plus-circle"></i> Tambah Soal Ujian
-                        </a>
-                    </div>
+        @if ($exams->isEmpty())
+            <div class="d-flex flex-column align-items-center justify-content-center py-5">
+                <div class="alert alert-info w-100 text-center">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Belum ada ujian untuk mata pelajaran yang Anda ajar
                 </div>
             </div>
-        </div>
-        @endforeach
+        @else
+            <div class="row g-4">
+                @foreach ($exams as $exam)
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <div class="exam-card h-100">
+                            <div class="card-body p-3 p-lg-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <h3 class="card-title mb-1">{{ $exam->title }}</h3>
+                                        <div class="card-subtitle mb-2">
+                                            <span class="d-block">{{ $exam->kelas->name }}</span>
+                                            <span class="d-block">{{ $exam->mataPelajaran->name }}</span>
+                                        </div>
+                                    </div>
+                                    <span
+                                        class="status-badge bg-{{ $exam->status == 'active' ? 'success' : 'warning' }} text-white">
+                                        {{ ucfirst($exam->status) }}
+                                    </span>
+                                </div>
+
+                                @if ($exam->description)
+                                    <div class="exam-description bg-light p-3 rounded-2 mb-3">
+                                        {{ $exam->description }}
+                                    </div>
+                                @endif
+
+                                <div class="action-buttons">
+                                    <a href="{{ route('guru.exams.show', $exam->id) }}"
+                                        class="btn btn-outline-primary d-flex align-items-center justify-content-center">
+                                        <i class="bi bi-eye me-2"></i>Detail
+                                    </a>
+                                    <a href="{{ route('guru.exams.add_questions', $exam->id) }}"
+                                        class="btn btn-primary d-flex align-items-center justify-content-center">
+                                        <i class="bi bi-plus-circle me-2"></i>Tambah Soal
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @endif
     </div>
-    @endif
-</div>
 @endsection

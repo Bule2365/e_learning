@@ -1,26 +1,37 @@
 @extends('admin.layouts.app')
 
-@section('title', 'User Index')
+@section('title', 'Dashboard Admin')
 
 @section('content')
-<div class="container mt-4">
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <h1 class="display-4 mb-3">Selamat Datang, {{ Auth::user()->name }}</h1>
-            <p class="lead text-muted">Ini adalah halaman untuk mengelola pengguna. Anda dapat melihat dan mengelola daftar pengguna di sini.</p>
-        </div>
-    </div>
+    <div class="container mt-4">
+        <h1 class="display-4">Dashboard Admin</h1>
+        <p class="lead text-muted">Ringkasan data sistem</p>
 
-    <div class="card shadow">
-        <div class="card-header bg-primary text-white">
-            <h5 class="card-title mb-0"><i class="fas fa-users"></i> Manajemen Pengguna</h5>
-        </div>
-        <div class="card-body">
-            <!-- Nanti bisa ditambahkan tabel atau daftar pengguna di sini -->
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle"></i> Tambahkan konten manajemen pengguna di sini
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card shadow">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Jumlah Siswa</h5>
+                        <h1 class="display-4">{{ $jumlahSiswa }}</h1>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Jumlah Guru</h5>
+                        <h1 class="display-4">{{ $jumlahGuru }}</h1>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Jumlah Mata Pelajaran</h5>
+                        <h1 class="display-4">{{ $jumlahMapel }}</h1>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-</div>
 @endsection

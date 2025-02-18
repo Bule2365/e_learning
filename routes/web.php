@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClassController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExamAttemptController;
 use App\Http\Controllers\ExamController;
 use App\Http\Controllers\SubjectController;
@@ -31,6 +32,7 @@ Route::middleware(['auth', 'role:admin,guru,siswa'])->group(function () {
 
 // Admin-Specific Routes (only accessible by admin)
 Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard')->middleware(['auth', 'role:admin']);
 
     // User management routes
     Route::get('users/export', [UserController::class, 'export'])->name('users.export');

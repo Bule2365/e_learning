@@ -1,24 +1,23 @@
 @extends('guru.layouts.app')
 
 @section('content')
-    <div class="container">
+    <div class="container my-5">
         <a href="{{ route('guru.classes.index') }}" class="btn btn-primary mb-3">
             <i class="bi bi-arrow-left"></i>
-            <span>
-                Kembali ke Daftar Kelas
-            </span>
+            <span>Kembali ke Daftar Kelas</span>
         </a>
 
-        <h1 class="mb-4">Form Ujian Baru</h1>
+        <h1 class="display-4 text-center mb-4">Form Ujian Baru</h1>
 
         <!-- Display success message -->
         @if (session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle"></i> {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         @endif
 
-        <form action="{{ route('guru.exams.store') }}" method="POST">
+        <form action="{{ route('guru.exams.store') }}" method="POST" class="shadow p-4 rounded bg-light">
             @csrf
 
             <!-- Input hidden untuk class_id -->
@@ -40,7 +39,11 @@
 
             <div class="mb-3">
                 <label for="title" class="form-label">Judul Ujian</label>
-                <input type="text" name="title" id="title" class="form-control" required>
+                <input type="text" name="title" id="title"
+                    class="form-control @error('title') is-invalid @enderror" required>
+                @error('title')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
 
             <div class="mb-3">
@@ -50,13 +53,21 @@
 
             <div class="mb-3">
                 <label for="status" class="form-label">Status</label>
-                <select name="status" id="status" class="form-control" required>
+                <select name="status" id="status" class="form-select @error('status') is-invalid @enderror" required>
                     <option value="draft">Draft</option>
                     <option value="published">Published</option>
                 </select>
+                @error('status')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
 
-            <button type="submit" class="btn btn-primary">Simpan Ujian</button>
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary btn-lg w-100">
+                    <i class="bi bi-floppy2-fill"></i>
+                    <span>Simpan Ujian</span>
+                </button>
+            </div>
         </form>
     </div>
 @endsection

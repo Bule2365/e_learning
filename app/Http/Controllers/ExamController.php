@@ -10,8 +10,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-use PhpOffice\PhpWord\Element\Text;
-use PhpOffice\PhpWord\Element\TextRun;
 use PhpOffice\PhpWord\IOFactory as WordIOFactory;
 use PhpOffice\PhpSpreadsheet\IOFactory as ExcelIOFactory;
 
@@ -130,6 +128,8 @@ class ExamController extends Controller
 
         // Jika upload file
         if ($request->hasFile('file')) {
+            \Log::info('File uploaded:', ['file' => $request->file('file')->getClientOriginalName()]);
+
             $request->validate([
                 'file' => 'required|mimes:docx,xlsx|max:10240',
             ]);
@@ -139,204 +139,96 @@ class ExamController extends Controller
             $extension = $file->getClientOriginalExtension();
 
             if ($extension === 'docx') {
-                $this->processWord($path, $exam);
+                try {
+                    $this->processWord($path, $exam);
+                    return redirect()->route('guru.exams.show', $examId)->with('success', 'Soal berhasil diunggah!');
+                } catch (\Exception $e) {
+                    \Log::error("Error processing Word file: " . $e->getMessage());
+                    return back()->with('error', 'Terjadi kesalahan saat memproses file Word.');
+                }
             } elseif ($extension === 'xlsx') {
-                $this->processExcel($path, $exam);
+                try {
+                    $this->processExcel($path, $exam);
+                    return redirect()->route('guru.exams.show', $examId)->with('success', 'Soal berhasil diunggah!');
+                } catch (\Exception $e) {
+                    \Log::error("Error processing Excel file: " . $e->getMessage());
+                    return back()->with('error', 'Terjadi kesalahan saat memproses file Excel.');
+                }
+            } else {
+                return back()->with('error', 'Tipe file tidak didukung.');
             }
-
-            return redirect()->route('guru.exams.show', $examId)->with('success', 'Soal berhasil diunggah!');
+        } else {
+            \Log::error('No file uploaded.');
         }
 
         return back()->with('error', 'Harap isi form atau unggah file.');
-
-        // $exam = Exam::findOrFail($examId);
-
-        // if ($request->hasFile('file')) {
-        //     $request->validate([
-        //         'file' => 'required|mimes:docx,xlsx|max:10240',
-        //     ]);
-
-        //     try {
-        //         $file = $request->file('file');
-        //         $extension = $file->getClientOriginalExtension();
-
-        //         if ($extension === 'docx') {
-        //             $this->processWord($file, $exam);
-        //         } elseif ($extension === 'xlsx') {
-        //             $this->processExcel($file, $exam);
-        //         }
-
-        //         return redirect()->route('guru.exams.show', $examId)
-        //             ->with('success', 'Soal berhasil diunggah!');
-        //     } catch (\Exception $e) {
-        //         return back()->with('error', 'Gagal memproses file: ' . $e->getMessage());
-        //     }
-        // }
     }
 
-    // private function processWord($path, $exam)
-    // {
-    //     $phpWord = \PhpOffice\PhpWord\IOFactory::load(Storage::path($path));
-    //     $text = '';
-
-    //     // Membaca semua teks dari file Word
-    //     foreach ($phpWord->getSections() as $section) {
-    //         foreach ($section->getElements() as $element) {
-    //             if ($element instanceof \PhpOffice\PhpWord\Element\TextRun) {
-    //                 foreach ($element->getElements() as $textElement) {
-    //                     if ($textElement instanceof \PhpOffice\PhpWord\Element\Text) {
-    //                         $text .= $textElement->getText() . "\n";
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-
-    //     // ✅ REGEX diperbaiki agar jawaban hanya mengambil satu kata/huruf
-    //     $pattern = '/Pertanyaan:\s*(.*?)\n(?:A\.\s*(.*?)\nB\.\s*(.*?)\nC\.\s*(.*?)\nD\.\s*(.*?)\n)?Jawaban:\s*([A-D]?)/s';
-
-    //     // Menjalankan regex
-    //     preg_match_all($pattern, $text, $matches, PREG_SET_ORDER);
-
-    //     foreach ($matches as $match) {
-    //         try {
-    //             $questionText = trim($match[1]); // Ambil teks pertanyaan
-    //             $correctAnswer = isset($match[6]) ? trim($match[6]) : null; // Jawaban harus hanya A, B, C, atau D
-
-    //             // Cek apakah ini soal Multiple Choice atau Essay
-    //             $options = [];
-    //             if (!empty($match[2]) && !empty($match[3]) && !empty($match[4]) && !empty($match[5])) {
-    //                 $options = [
-    //                     'A' => trim($match[2]),
-    //                     'B' => trim($match[3]),
-    //                     'C' => trim($match[4]),
-    //                     'D' => trim($match[5]),
-    //                 ];
-    //             }
-
-    //             // Menentukan tipe soal
-    //             $type = !empty($options) ? 'multiple_choice' : 'essay';
-
-    //             // Jika soal essay, tidak perlu jawaban benar
-    //             if ($type === 'essay') {
-    //                 $correctAnswer = null;
-    //             }
-
-    //             // Simpan ke database
-    //             Question::create([
-    //                 'exam_id' => $exam->id,
-    //                 'question_text' => $questionText,
-    //                 'options' => !empty($options) ? json_encode($options) : null,
-    //                 'correct_answer' => $correctAnswer,
-    //                 'type' => $type,
-    //             ]);
-    //         } catch (\Exception $e) {
-    //             \Log::error("Error memproses soal dari Word: " . $e->getMessage());
-    //             \Log::info("Isi File Word: " . $text);
-    //         }
-    //     }
-    // }
-
-    private function processWord($uploadedFile, $exam)
+    private function processWord($path, $exam)
     {
-        try {
-            // 1. Simpan file ke storage
-            $path = $uploadedFile->store('exam_files', 'public');
-            $fullPath = storage_path('app/public/' . $path);
-
-            // 2. Load file Word
-            $phpWord = WordIOFactory::load($fullPath);
-
-            // 3. Ekstrak teks dengan benar
-            $text = $this->extractTextFromWord($phpWord);
-
-            // 4. Parse pertanyaan
-            $questions = $this->parseQuestionsFromText($text);
-
-            // 5. Simpan ke database dalam transaction
-            DB::beginTransaction();
-            try {
-                foreach ($questions as $question) {
-                    Question::create([
-                        'exam_id' => $exam->id,
-                        'question_text' => $question['question_text'],
-                        'options' => $question['options'],
-                        'correct_answer' => $question['correct_answer'],
-                        'type' => $question['type'],
-                    ]);
-                }
-                DB::commit();
-            } catch (\Exception $e) {
-                DB::rollBack();
-                throw $e;
-            }
-
-            // 6. Hapus file setelah sukses
-            Storage::delete('public/' . $path);
-
-            return count($questions);
-        } catch (\Exception $e) {
-            \Log::error('Error processing Word file: ' . $e->getMessage());
-            throw new \Exception('Gagal memproses file Word: ' . $e->getMessage());
-        }
-    }
-
-    private function extractTextFromWord($phpWord)
-    {
+        $phpWord = \PhpOffice\PhpWord\IOFactory::load(Storage::path($path));
         $text = '';
+
+        // Membaca semua teks dari file Word
         foreach ($phpWord->getSections() as $section) {
             foreach ($section->getElements() as $element) {
-                if ($element instanceof TextRun) {
+                if ($element instanceof \PhpOffice\PhpWord\Element\TextRun) {
                     foreach ($element->getElements() as $textElement) {
-                        if ($textElement instanceof Text) {
+                        if ($textElement instanceof \PhpOffice\PhpWord\Element\Text) {
                             $text .= $textElement->getText() . "\n";
                         }
                     }
-                } elseif ($element instanceof Text) {
-                    $text .= $element->getText() . "\n";
                 }
             }
         }
-        return $text;
-    }
 
-    private function parseQuestionsFromText($text)
-    {
-        $questions = [];
-        $pattern = '/Pertanyaan:\s*(.+?)(\n|$)(?:A\.\s*(.+?)\nB\.\s*(.+?)\nC\.\s*(.+?)\nD\.\s*(.+?)\n)?Jawaban:\s*([A-D]?)(\n|$)/s';
+        // ✅ REGEX diperbaiki agar jawaban hanya mengambil satu kata/huruf
+        $pattern = '/Pertanyaan:\s*(.*?)\n(?:A\.\s*(.*?)\nB\.\s*(.*?)\nC\.\s*(.*?)\nD\.\s*(.*?)\n)?Jawaban:\s*([A-D]?)/s';
 
+        // Menjalankan regex
         preg_match_all($pattern, $text, $matches, PREG_SET_ORDER);
 
+        if (empty($matches)) {
+            \Log::warning('No valid questions found in the Word file.');
+        }
+
         foreach ($matches as $match) {
-            $question = [
-                'question_text' => trim($match[1]),
-                'options' => [],
-                'correct_answer' => null,
-                'type' => 'essay'
-            ];
+            try {
+                $questionText = trim($match[1]); // Ambil teks pertanyaan
+                $correctAnswer = isset($match[6]) ? trim($match[6]) : null; // Jawaban harus hanya A, B, C, atau D
 
-            // Deteksi pilihan ganda
-            if (!empty($match[3]) && !empty($match[4]) && !empty($match[5]) && !empty($match[6])) {
-                $question['type'] = 'multiple_choice';
-                $question['options'] = [
-                    'A' => trim($match[3]),
-                    'B' => trim($match[4]),
-                    'C' => trim($match[5]),
-                    'D' => trim($match[6])
-                ];
+                // Cek apakah ini soal Multiple Choice atau Essay
+                $options = [];
+                if (!empty($match[2]) && !empty($match[3]) && !empty($match[4]) && !empty($match[5])) {
+                    $options = [
+                        'A' => trim($match[2]),
+                        'B' => trim($match[3]),
+                        'C' => trim($match[4]),
+                        'D' => trim($match[5]),
+                    ];
+                }
 
-                $answer = strtoupper(trim($match[7]));
-                $question['correct_answer'] = in_array($answer, ['A', 'B', 'C', 'D']) ? $answer : null;
+                // Menentukan tipe soal
+                $type = !empty($options) ? 'multiple_choice' : 'essay';
+
+                // Jika soal essay, tidak perlu jawaban benar
+                if ($type === 'essay') {
+                    $correctAnswer = null;
+                }
+
+                // Simpan ke database
+                Question::create([
+                    'exam_id' => $exam->id,
+                    'question_text' => $questionText,
+                    'options' => !empty($options) ? json_encode($options) : null,
+                    'correct_answer' => $correctAnswer,
+                    'type' => $type,
+                ]);
+            } catch (\Exception $e) {
+                \Log::error("Error memproses soal dari Word: " . $e->getMessage());
+                \Log::info("Isi File Word: " . $text);
             }
-
-            $questions[] = $question;
         }
-
-        if (empty($questions)) {
-            throw new \Exception('Tidak ditemukan pertanyaan dalam format yang valid');
-        }
-
-        return $questions;
     }
 
     private function processExcel($path, $exam)

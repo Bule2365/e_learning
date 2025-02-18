@@ -65,6 +65,10 @@
         </style>
     @endpush
 
+    <a href="{{ route('guru.exams.index') }}" class="btn btn-primary mb-3">
+        <i class="bi bi-arrow-left"></i>
+        <span>Kembali ke Daftar Ujian</span>
+    </a>
     <div class="container-lg py-4 py-lg-5">
         <div class="text-center mb-4 mb-lg-5">
             <h1 class="h2 fw-bold text-primary mb-3">Tambah Soal Ujian</h1>

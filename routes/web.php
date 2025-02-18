@@ -61,7 +61,7 @@ Route::middleware(['auth', 'role:guru'])->group(function () {
     Route::resource('tasks', TaskController::class);
     Route::put('/tasks/{task}/students/{user}/update-score', [TaskController::class, 'updateScore'])->name('tasks.updateScore');
 
-    // Exam management for guru
+    // 📌 Manajemen Ujian
     Route::get('/exams/teacher', [ExamController::class, 'index'])->name('guru.exams.index');
     Route::get('/exams/create', [ExamController::class, 'create'])->name('guru.exams.create');
     Route::post('/exams', [ExamController::class, 'store'])->name('guru.exams.store');
@@ -78,7 +78,7 @@ Route::middleware(['auth', 'role:siswa'])->group(function () {
 
     // Task routes for Siswa
     Route::get('/tasks-student', [TaskStudentController::class, 'index'])->name('student.tasks.index');
-    Route::get('/tasks/{task}', [TaskStudentController::class, 'show'])->name('student.tasks.show');
+    Route::get('/student/tasks/{task}', [TaskStudentController::class, 'show'])->name('student.tasks.show');
     Route::post('/tasks/{task}/submit', [TaskStudentController::class, 'submit'])->name('student.tasks.submit');
 
     // Exam routes for Siswa

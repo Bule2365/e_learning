@@ -1,7 +1,7 @@
 @extends('guru.layouts.app')
 
 @section('content')
-    <div class="container">
+    <div class="container my-5">
         <a href="{{ route('guru.exams.index') }}" class="btn btn-primary mb-3">
             <i class="bi bi-arrow-left"></i>
             <span>Kembali ke Daftar Ujian</span>
@@ -39,19 +39,18 @@
                     <div class="list-group">
                         @foreach ($exam->soal as $soal)
                             <div class="list-group-item">
-                                <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex justify-content-between align-items-start">
                                     <div>
                                         <h6 class="mb-1">#{{ $loop->iteration }} {{ $soal->question_text }}</h6>
                                         <small class="text-muted">Tipe: {{ ucfirst($soal->type) }}</small>
-
                                         @if ($soal->type === 'multiple_choice' && $soal->options)
                                             @php
                                                 $options = json_decode($soal->options, true); // Decode options from JSON
                                             @endphp
                                             @if (is_array($options) && count($options) > 0)
                                                 <ul class="list-unstyled mt-2">
-                                                    @foreach ($options as $option)
-                                                        <li>{{ $option }}</li>
+                                                    @foreach ($options as $key => $option)
+                                                        <li><strong>{{ $key }}:</strong> {{ $option }}</li>
                                                     @endforeach
                                                 </ul>
                                                 <p class="text-success"><strong>Jawaban Benar:</strong>
@@ -65,7 +64,6 @@
                             </div>
                         @endforeach
                     </div>
-                    {{-- <pre>{{ dd($exam->soal) }}</pre> --}}
                 @endif
             </div>
         </div>

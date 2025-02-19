@@ -96,14 +96,6 @@
             <p class="lead text-muted">Kelola ujian untuk kelas yang Anda ajar</p>
         </div>
 
-        @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
-                <i class="bi bi-check-circle-fill me-2"></i>
-                <div>{{ session('success') }}</div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
-
         @if ($exams->isEmpty())
             <div class="d-flex flex-column align-items-center justify-content-center py-5">
                 <div class="alert alert-info w-100 text-center">
@@ -140,12 +132,24 @@
                                 <div class="action-buttons">
                                     <a href="{{ route('guru.exams.show', $exam->id) }}"
                                         class="btn btn-outline-primary d-flex align-items-center justify-content-center">
-                                        <i class="bi bi-eye me-2"></i>Detail
+                                        <i class="bi bi-eye me-2"></i> Detail
                                     </a>
                                     <a href="{{ route('guru.exams.add_questions', $exam->id) }}"
                                         class="btn btn-primary d-flex align-items-center justify-content-center">
-                                        <i class="bi bi-plus-circle me-2"></i>Tambah Soal
+                                        <i class="bi bi-plus-circle me-2"></i> Tambah Soal
                                     </a>
+                                    <a href="{{ route('guru.exams.edit', $exam->id) }}" class="btn btn-warning">
+                                        <i class="bi bi-pencil-square me-2"></i> Edit
+                                    </a>
+                                    <form action="{{ route('guru.exams.destroy', $exam->id) }}" method="POST"
+                                        onsubmit="return confirm('Apakah Anda yakin ingin menghapus ujian ini?');"
+                                        style="display: inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger">
+                                            <i class="bi bi-trash me-2"></i> Hapus
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                         </div>

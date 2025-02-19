@@ -18,6 +18,11 @@ class Subject extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function kelas()
     {
         return $this->belongsToMany(ClassModel::class, 'subject_class', 'subject_id', 'class_id');

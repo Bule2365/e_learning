@@ -140,7 +140,7 @@
         <aside class="left-sidebar">
             <div>
                 <div class="brand-logo d-flex align-items-center justify-content-between">
-                    <a href="{{ route('dashboard') }}" class="text-nowrap logo-img">
+                    <a href="{{ route('siswa.dashboard') }}" class="text-nowrap logo-img">
                         <i class="bi bi-house-door fs-5 me-2"></i>
                         Dashboard Siswa
                     </a>

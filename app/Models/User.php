@@ -25,6 +25,11 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    public function exams()
+    {
+        return $this->hasMany(Exam::class);
+    }
+
     public function kelas()
     {
         return $this->belongsToMany(ClassModel::class, 'class_user', 'user_id', 'class_id');

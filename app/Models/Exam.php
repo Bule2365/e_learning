@@ -10,6 +10,7 @@ class Exam extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'class_id',
         'subject_id',
         'title',
@@ -20,6 +21,16 @@ class Exam extends Model
     protected $casts = [
         'status' => 'string', // Enum status: draft, published
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function subject()
+    {
+        return $this->belongsTo(Subject::class);
+    }
 
     // Relasi ke tabel Class (asumsi ada model Class)
     public function kelas()

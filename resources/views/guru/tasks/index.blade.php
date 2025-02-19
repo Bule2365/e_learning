@@ -96,14 +96,6 @@
             <p class="lead text-muted">Kelola tugas untuk kelas yang Anda ajar</p>
         </div>
 
-        @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
-                <i class="bi bi-check-circle-fill me-2"></i>
-                <div>{{ session('success') }}</div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
-
         @if ($tasks->isEmpty())
             <div class="d-flex flex-column align-items-center justify-content-center py-5">
                 <div class="alert alert-info w-100 text-center">
@@ -120,12 +112,22 @@
                                 <h3 class="card-title mb-1">{{ $task->title }}</h3>
                                 <h6 class="card-subtitle mb-2 text-muted">{{ $task->mataPelajaran->name }}</h6>
                                 <p class="task-description">Deadline:
-                                    <strong>{{ \Carbon\Carbon::parse($task->due_date)->format('d M Y') }}</strong></p>
+                                    <strong>{{ \Carbon\Carbon::parse($task->due_date)->format('d M Y') }}</strong>
+                                </p>
                                 <div class="action-buttons">
-                                    <a href="{{ route('tasks.show', $task->id) }}"
-                                        class="btn btn-outline-primary d-flex align-items-center justify-content-center">
-                                        <i class="bi bi-eye me-2"></i> Lihat Tugas
-                                    </a>
+                                    <div class="action-buttons">
+                                        <a href="{{ route('tasks.show', $task->id) }}" class="btn btn-outline-primary">
+                                            <i class="bi bi-eye me-2"></i> Lihat
+                                        </a>
+                                        <a href="{{ route('tasks.edit', $task->id) }}" class="btn btn-warning">
+                                            <i class="bi bi-pencil-square me-2"></i> Edit
+                                        </a>
+                                        <button type="button" class="btn btn-danger" data-bs-toggle="modal"
+                                            data-bs-target="#deleteModal" data-task-id="{{ $task->id }}"
+                                            data-task-title="{{ $task->title }}">
+                                            <i class="bi bi-trash me-2"></i> Hapus
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -134,4 +136,47 @@
             </div>
         @endif
     </div>
+
+    <!-- Modal Konfirmasi Hapus -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Konfirmasi Penghapusan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Apakah Anda yakin ingin menghapus tugas <strong id="taskTitle"></strong>?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <form id="deleteForm" action="" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">Hapus</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @push('scripts')
+        <script>
+            // JavaScript untuk menambahkan data ke modal
+            var deleteModal = document.getElementById('deleteModal');
+            deleteModal.addEventListener('show.bs.modal', function(event) {
+                var button = event.relatedTarget; // Tombol yang mengaktifkan modal
+                var taskId = button.getAttribute('data-task-id'); // Ambil ID tugas
+                var taskTitle = button.getAttribute('data-task-title'); // Ambil judul tugas
+
+                // Update konten modal dengan ID dan judul tugas
+                var taskTitleElement = document.getElementById('taskTitle');
+                taskTitleElement.textContent = taskTitle;
+
+                // Update action form dengan ID tugas yang sesuai
+                var form = document.getElementById('deleteForm');
+                form.action = '/tasks/' + taskId;
+            });
+        </script>
+    @endpush
 @endsection

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminExamController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClassController;
 use App\Http\Controllers\DashboardController;
@@ -22,18 +23,40 @@ Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// Dashboard Route (accessible by all roles)
+// Authentication Routes
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Routes for Dashboards based on Role
+Route::middleware(['auth'])->group(function () {
+    // Admin-Specific Dashboard
+    Route::get('/admin/dashboard', [DashboardController::class, 'adminDashboard'])->name('admin.dashboard')->middleware('role:admin');
+    
+    // Guru-Specific Dashboard
+    Route::get('/guru/dashboard', [DashboardController::class, 'guruDashboard'])->name('guru.dashboard')->middleware('role:guru');
+    
+    // Siswa-Specific Dashboard
+    Route::get('/siswa/dashboard', [DashboardController::class, 'siswaDashboard'])->name('siswa.dashboard')->middleware('role:siswa');
+});
+
+// Dashboard Route (this will not be needed if you have individual role-based routes)
 Route::middleware(['auth', 'role:admin,guru,siswa'])->group(function () {
     Route::get('/dashboard', function () {
         $user = Auth::user();
-        return view($user->role . '.dashboard');
-    })->name('dashboard');
+        // Redirect based on user role to the correct dashboard
+        if ($user->role == 'admin') {
+            return redirect()->route('admin.dashboard');
+        } elseif ($user->role == 'guru') {
+            return redirect()->route('guru.dashboard');
+        } elseif ($user->role == 'siswa') {
+            return redirect()->route('siswa.dashboard');
+        }
+    });
 });
 
 // Admin-Specific Routes (only accessible by admin)
 Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/admin/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard')->middleware(['auth', 'role:admin']);
-
     // User management routes
     Route::get('users/export', [UserController::class, 'export'])->name('users.export');
     Route::post('users/import', [UserController::class, 'import'])->name('users.import');
@@ -49,6 +72,9 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('classes/{id}/edit', [ClassController::class, 'edit'])->name('admin.classes.edit');
     Route::put('classes/{id}', [ClassController::class, 'update'])->name('admin.classes.update');
     Route::delete('classes/{id}', [ClassController::class, 'destroy'])->name('admin.classes.destroy');
+
+    Route::get('/exams/admin', [AdminExamController::class, 'index'])->name('exams.index');
+    Route::get('/exams/admin/{id}', [AdminExamController::class, 'show'])->name('exams.show');
 
     // Subject management routes
     Route::resource('subjects', SubjectController::class);
@@ -70,6 +96,43 @@ Route::middleware(['auth', 'role:guru'])->group(function () {
     Route::get('/exams/{id}/add-questions', [ExamController::class, 'addQuestions'])->name('guru.exams.add_questions');
     Route::post('/exams/{id}/add-questions', [ExamController::class, 'storeQuestions'])->name('guru.exams.store_questions');
     Route::get('/exams/teacher/{id}', [ExamController::class, 'show'])->name('guru.exams.show');
+    Route::get('/exams/{exam}/questions/{question}/quick-update', [ExamController::class, 'quickUpdateQuestion'])->name('questions.quickUpdate');
+    Route::get('/exams/{exam}/questions/{question}/quick-delete', [ExamController::class, 'quickDeleteQuestion'])->name('questions.quickDelete');
+    Route::get('/exams/{exam}/edit', [ExamController::class, 'edit'])->name('guru.exams.edit');
+    Route::put('/exams/{exam}', [ExamController::class, 'update'])->name('guru.exams.update');
+    Route::delete('/exams/{exam}', [ExamController::class, 'destroy'])->name('guru.exams.destroy');
+
+    // Update teks soal
+    Route::post('/questions/update/{id}', function ($id) {
+        $soal = App\Models\Question::findOrFail($id);
+        $soal->question_text = request('question_text');
+        $soal->save();
+        return response()->json(['success' => true]);
+    });
+
+    // Update opsi jawaban
+    Route::post('/questions/update-option/{id}', function ($id) {
+        $soal = App\Models\Question::findOrFail($id);
+        $options = json_decode($soal->options, true);
+        $options[request('key')] = request('value');
+        $soal->options = json_encode($options);
+        $soal->save();
+        return response()->json(['success' => true]);
+    });
+
+    // Update jawaban benar
+    Route::post('/questions/update-correct-answer/{id}', function ($id) {
+        $soal = App\Models\Question::findOrFail($id);
+        $soal->correct_answer = request('correct_answer');
+        $soal->save();
+        return response()->json(['success' => true]);
+    });
+
+    // Hapus soal
+    Route::delete('/questions/delete/{id}', function ($id) {
+        App\Models\Question::destroy($id);
+        return response()->json(['success' => true]);
+    });
 });
 
 // Siswa-Specific Routes (only accessible by siswa)

@@ -22,7 +22,17 @@ class AuthController extends Controller
         if (Auth::attempt(['id' => $request->id, 'password' => $request->password])) {
             $request->session()->regenerate();
 
-            return redirect()->intended('/dashboard');
+            // Ambil role user yang sedang login
+            $role = Auth::user()->role;
+
+            // Arahkan ke dashboard yang sesuai berdasarkan role
+            if ($role == 'admin') {
+                return redirect()->route('admin.dashboard');
+            } elseif ($role == 'guru') {
+                return redirect()->route('guru.dashboard');
+            } elseif ($role == 'siswa') {
+                return redirect()->route('siswa.dashboard');
+            }
         }
 
         return back()->withErrors([

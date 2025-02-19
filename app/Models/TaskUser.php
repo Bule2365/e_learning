@@ -22,4 +22,9 @@ class TaskUser extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function kelas()
+    {
+        return $this->belongsToThrough(ClassModel::class, Task::class, 'task_id');
+    }
 }

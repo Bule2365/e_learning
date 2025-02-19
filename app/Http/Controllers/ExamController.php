@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ClassModel;
 use App\Models\Exam;
 use App\Models\Question;
+use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -71,24 +72,75 @@ class ExamController extends Controller
             'description' => 'nullable|string',
             'status' => 'required|in:draft,published',
         ]);
-
-        // Membuat ujian baru
+    
+        // Tambahkan user_id untuk menyimpan siapa yang membuat ujian ini
         Exam::create([
+            'user_id' => auth()->id(),
             'class_id' => $request->class_id,
             'subject_id' => $request->subject_id,
             'title' => $request->title,
             'description' => $request->description,
             'status' => $request->status,
         ]);
-
+    
         return redirect()->route('guru.exams.index')->with('success', 'Ujian berhasil dibuat.');
     }
 
     // Menampilkan detail ujian
     public function show($id)
     {
+        $exams = auth()->user()->exams;
+        // dd($exams);
+
         $exam = Exam::with('kelas', 'mataPelajaran', 'soal')->findOrFail($id);
-        return view('guru.exams.show', compact('exam'));
+        return view('guru.exams.show', compact('exam'));        
+    }
+
+    public function edit($id)
+    {
+        // Menggunakan eager loading untuk memuat soal terkait ujian
+        $exam = Exam::with('soal')->where('id', $id)
+            ->where('user_id', auth()->id()) // Pastikan hanya pemilik ujian yang bisa mengedit
+            ->firstOrFail();
+    
+        // Ambil data kelas dan mata pelajaran
+        $classes = ClassModel::all();
+        $subjects = Subject::all();
+    
+        return view('guru.exams.edit', compact('exam', 'classes', 'subjects'));
+    }
+    
+    public function update(Request $request, $id)
+    {
+        // Ambil ujian hanya jika dibuat oleh user yang sedang login
+        $exam = Exam::where('id', $id)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+    
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'status' => 'required|in:draft,published',
+        ]);
+    
+        $exam->update($validated);
+    
+        return redirect()->route('guru.exams.index')->with('success', 'Ujian berhasil diperbarui.');
+    }
+    
+    public function destroy($id)
+    {
+        $exam = Exam::where('id', $id)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+    
+        // Hapus semua soal yang terkait
+        $exam->soal()->delete();
+    
+        // Hapus ujian
+        $exam->delete();
+    
+        return redirect()->route('guru.exams.index')->with('success', 'Ujian berhasil dihapus.');
     }
 
     // Menampilkan form untuk menambah soal
@@ -162,6 +214,35 @@ class ExamController extends Controller
         }
 
         return back()->with('error', 'Harap isi form atau unggah file.');
+    }
+
+    public function editQuestions($examId)
+    {
+        $exam = Exam::with('soal')->findOrFail($examId); // Ambil ujian beserta soal-soalnya
+        return view('guru.exams.edit_questions', compact('exam'));
+    }
+    
+    // Edit langsung tanpa form (misalnya mengganti jawaban benar menjadi opsi berikutnya)
+    public function quickUpdateQuestion($examId, $questionId)
+    {
+        $question = Question::where('exam_id', $examId)->findOrFail($questionId);
+
+        // Contoh update otomatis (mengubah jawaban benar ke opsi berikutnya)
+        $answers = ['A', 'B', 'C', 'D'];
+        $currentIndex = array_search($question->correct_answer, $answers);
+        $newAnswer = $answers[($currentIndex + 1) % count($answers)]; // Pilih jawaban berikutnya
+
+        $question->update(['correct_answer' => $newAnswer]);
+
+        return redirect()->back()->with('success', 'Jawaban soal diperbarui otomatis.');
+    }
+
+    // Hapus soal langsung tanpa konfirmasi
+    public function quickDeleteQuestion($examId, $questionId)
+    {
+        Question::where('exam_id', $examId)->findOrFail($questionId)->delete();
+
+        return redirect()->back()->with('success', 'Soal berhasil dihapus.');
     }
 
     private function processWord($path, $exam)

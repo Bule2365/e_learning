@@ -19,6 +19,11 @@ class ClassModel extends Model
                     ->where('role', 'siswa');
     }
 
+    public function tugas()
+    {
+        return $this->hasMany(Task::class);
+    }
+
     // public function guru()
     // {
     //     return $this->belongsToMany(User::class, 'class_user', 'class_id', 'user_id')

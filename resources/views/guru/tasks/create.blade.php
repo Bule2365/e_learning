@@ -57,8 +57,12 @@
             </div>
 
             <div class="mb-3">
-                <label for="file" class="form-label">Unggah Tugas (Opsional)</label>
-                <input type="file" name="file" id="file" class="form-control" accept="application/pdf, image/*">
+                <label for="files" class="form-label">Unggah Tugas (Opsional)</label>
+                <input type="file" name="files[]" id="files" class="form-control"
+                    accept="application/pdf, image/*, video/*" multiple>
+                @error('files.*')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
             </div>
 
             <div class="mb-3">

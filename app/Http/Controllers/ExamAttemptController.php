@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Exam;
 use App\Models\ExamAttempt;
 use App\Models\ExamAnswer;
@@ -20,7 +19,7 @@ class ExamAttemptController extends Controller
     }
 
     /**
-     * Menampilkan daftar ujian untuk siswa
+     * Menampilkan daftar ujian
      */
     public function index()
     {
@@ -35,20 +34,13 @@ class ExamAttemptController extends Controller
     {
         $user = Auth::user();
 
-        // Cek jika siswa sudah punya ujian yang belum dikumpulkan
-        $attempt = ExamAttempt::where('exam_id', $examId)
-            ->where('user_id', $user->id)
-            ->whereNull('submitted_at')
-            ->first();
-
-        if (!$attempt) {
-            $attempt = ExamAttempt::create([
-                'exam_id' => $examId,
-                'user_id' => $user->id,
-                'started_at' => Carbon::now(),
-                'score' => null, // Skor nanti dihitung oleh sistem/guru
-            ]);
-        }
+        // Buat attempt baru (tidak menghapus data sebelumnya)
+        $attempt = ExamAttempt::create([
+            'exam_id' => $examId,
+            'user_id' => $user->id,
+            'started_at' => Carbon::now(),
+            'score' => null,
+        ]);
 
         return redirect()->route('siswa.exams.show', ['examId' => $examId, 'attemptId' => $attempt->id]);
     }
@@ -58,101 +50,74 @@ class ExamAttemptController extends Controller
      */
     public function show($examId, $attemptId)
     {
-        // Ambil data attempt beserta exam
-        $attempt = ExamAttempt::with('exam')->where('id', $attemptId)
+        $attempt = ExamAttempt::where('id', $attemptId)
             ->where('exam_id', $examId)
-            ->where('user_id', auth()->id()) // Pastikan hanya siswa terkait yang bisa melihat
-            ->first();
-    
-        // Jika tidak ditemukan, redirect dengan error
-        if (!$attempt || !$attempt->exam) {
-            return redirect()->route('siswa.exams.index')->with('error', 'Ujian tidak ditemukan atau tidak valid.');
-        }
-    
-        // Ambil semua pertanyaan dari ujian
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+
         $questions = Question::where('exam_id', $examId)->get();
-    
+
         return view('siswa.exams.show', compact('attempt', 'questions'));
     }
 
     /**
-     * Menyimpan jawaban siswa
+     * Menyimpan jawaban siswa secara otomatis saat memilih jawaban
      */
-    public function answer(Request $request, $attemptId)
+    public function saveAnswer(Request $request, $attemptId)
     {
         $request->validate([
-            'answers' => 'required|array',
+            'question_id' => 'required|exists:questions,id',
+            'answer' => 'nullable|string',
         ]);
 
         $attempt = ExamAttempt::findOrFail($attemptId);
+        $question = Question::findOrFail($request->question_id);
 
-        foreach ($request->answers as $questionId => $answer) {
-            $question = Question::findOrFail($questionId);
+        $isCorrect = ($question->type === 'multiple_choice')
+            ? strtoupper($request->answer) === strtoupper($question->correct_answer)
+            : null;
 
-            // Cek apakah jawaban benar (hanya untuk Multiple Choice)
-            $isCorrect = null;
-            if ($question->type === 'multiple_choice' && !empty($question->correct_answer)) {
-                $isCorrect = strtoupper($answer) === strtoupper($question->correct_answer);
-            }
+        ExamAnswer::updateOrCreate(
+            [
+                'exam_attempt_id' => $attempt->id,
+                'question_id' => $question->id,
+            ],
+            [
+                'answer' => $request->answer,
+                'is_correct' => $isCorrect,
+            ]
+        );
 
-            // Simpan jawaban siswa
-            ExamAnswer::updateOrCreate(
-                [
-                    'exam_attempt_id' => $attempt->id,
-                    'question_id' => $question->id,
-                ],
-                [
-                    'answer' => $answer,
-                    'is_correct' => $isCorrect,
-                ]
-            );
-        }
-
-        return back()->with('success', 'Jawaban berhasil disimpan!');
+        return response()->json(['message' => 'Jawaban disimpan.']);
     }
 
     /**
-     * Siswa menyelesaikan ujian & sistem menghitung nilai otomatis
+     * Siswa menyelesaikan ujian & sistem menghitung skor otomatis
      */
     public function submit($attemptId)
     {
         $attempt = ExamAttempt::findOrFail($attemptId);
-        $questions = Question::where('exam_id', $attempt->exam_id)->get();
         $answers = ExamAnswer::where('exam_attempt_id', $attempt->id)->get();
+        $questions = Question::where('exam_id', $attempt->exam_id)->get();
 
         $totalQuestions = $questions->count();
         $totalMCQ = $questions->where('type', 'multiple_choice')->count();
         $totalEssay = $totalQuestions - $totalMCQ;
 
-        // Hitung jawaban benar untuk Multiple Choice
+        // Hitung jawaban benar untuk pilihan ganda
         $correctMCQ = $answers->where('is_correct', true)->count();
+        $mcqScore = $totalMCQ > 0 ? ($correctMCQ / $totalMCQ) * 100 : 0;
+        $essayScore = 0;
 
-        // Kalkulasi nilai otomatis
-        $mcqScore = $totalMCQ > 0 ? ($correctMCQ / $totalMCQ) * 100 : 0; 
-        $essayScore = 0; // Default, guru yang akan menilai
+        // Skor akhir ditentukan berdasarkan tipe soal
+        $finalScore = ($totalEssay == 0) ? $mcqScore : ($mcqScore * ($totalMCQ / $totalQuestions));
 
-        // Skor akhir sebelum penilaian essay oleh guru
-        $finalScore = ($mcqScore * ($totalMCQ / $totalQuestions)) + ($essayScore * ($totalEssay / $totalQuestions));
-
-        // Update nilai & waktu submit
+        // Update nilai attempt
         $attempt->update([
             'submitted_at' => Carbon::now(),
-            'score' => round($finalScore, 2), // Dibulatkan 2 desimal
+            'score' => round($finalScore, 2),
         ]);
 
-        return redirect()->route('siswa.exams.result', $attempt->id)->with('success', "Ujian telah dikumpulkan!");
-    }
-
-    /**
-     * Menampilkan hasil ujian siswa
-     */
-    public function result($attemptId)
-    {
-        $attempt = ExamAttempt::where('id', $attemptId)
-            ->where('user_id', auth()->id())
-            ->firstOrFail();
-
-        $answers = ExamAnswer::where('exam_attempt_id', $attempt->id)->get();
-        return view('siswa.exams.result', compact('attempt', 'answers'));
+        return redirect()->route('siswa.exams.index')->with('success', "Ujian telah dikumpulkan!");
     }
 }

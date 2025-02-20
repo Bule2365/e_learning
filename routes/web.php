@@ -74,7 +74,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::delete('classes/{id}', [ClassController::class, 'destroy'])->name('admin.classes.destroy');
 
     Route::get('/exams/admin', [AdminExamController::class, 'index'])->name('exams.index');
-    Route::get('/exams/admin/{id}', [AdminExamController::class, 'show'])->name('exams.show');
+    Route::get('/exams/admin/{id}', [AdminExamController::class, 'show'])->name('admin.exams.show');
 
     // Subject management routes
     Route::resource('subjects', SubjectController::class);
@@ -152,5 +152,4 @@ Route::middleware(['auth', 'role:siswa'])->group(function () {
     Route::get('/siswa/exams/show/{examId}/{attemptId}', [ExamAttemptController::class, 'show'])->name('siswa.exams.show');
     Route::post('/siswa/exams/answer/{attemptId}', [ExamAttemptController::class, 'answer'])->name('siswa.exams.answer');
     Route::post('/siswa/exams/submit/{attemptId}', [ExamAttemptController::class, 'submit'])->name('siswa.exams.submit');
-    Route::get('/siswa/exams/result/{attemptId}', [ExamAttemptController::class, 'result'])->name('siswa.exams.result');
 });

@@ -42,6 +42,23 @@
                             <div class="list-group-item d-flex justify-content-between align-items-start soal-item"
                                 id="soal-{{ $soal->id }}">
                                 <div class="flex-grow-1">
+                                    <h5>{{ $loop->iteration }}</h5>
+
+                                    {{-- Edit Gambar --}}
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        @if ($soal->image_path)
+                                            <!-- Gambar soal sudah ada, bisa diklik untuk mengedit -->
+                                            <a href="{{ route('guru.exams.image', $soal->id) }}">
+                                                <img src="{{ asset('storage/' . $soal->image_path) }}" alt="Gambar Soal"
+                                                    class="img-fluid" style="max-width: 300px;" />
+                                            </a>
+                                        @else
+                                            <!-- Jika soal belum ada gambar, tampilkan tombol untuk menambah gambar -->
+                                            <a href="{{ route('guru.exams.image', $soal->id) }}"
+                                                class="btn btn-primary">Tambah Gambar</a>
+                                        @endif
+                                    </div>
+
                                     <!-- Edit Soal -->
                                     <input type="text" class="form-control soal-text mb-2" data-id="{{ $soal->id }}"
                                         value="{{ $soal->question_text }}" placeholder="Tulis soal di sini..." />
@@ -96,10 +113,10 @@
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
-                            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                            "X-CSRF-TOKEN": "{{ csrf_token() }}",
                         },
                         body: JSON.stringify({
-                            question_text: newText
+                            question_text: newText,
                         })
                     });
                 });
@@ -164,4 +181,5 @@
             });
         });
     </script>
+
 @endsection

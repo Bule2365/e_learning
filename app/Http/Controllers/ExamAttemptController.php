@@ -19,11 +19,12 @@ class ExamAttemptController extends Controller
     }
 
     /**
-     * Menampilkan daftar ujian
+     * Menampilkan daftar ujian untuk siswa
      */
     public function index()
     {
-        $exams = Exam::all();
+        // Mengambil semua ujian beserta soal-soalnya
+        $exams = Exam::with('soal')->orderBy('id', 'desc')->get();
         return view('siswa.exams.index', compact('exams'));
     }
 
@@ -34,7 +35,17 @@ class ExamAttemptController extends Controller
     {
         $user = Auth::user();
 
-        // Buat attempt baru (tidak menghapus data sebelumnya)
+        // Cek apakah siswa sudah pernah mengerjakan ujian ini
+        $existingAttempt = ExamAttempt::where('exam_id', $examId)
+            ->where('user_id', $user->id)
+            ->whereNull('submitted_at') // Belum selesai
+            ->first();
+
+        if ($existingAttempt) {
+            return redirect()->route('siswa.exams.show', ['examId' => $examId, 'attemptId' => $existingAttempt->id]);
+        }
+
+        // Buat attempt baru jika belum ada
         $attempt = ExamAttempt::create([
             'exam_id' => $examId,
             'user_id' => $user->id,
@@ -46,18 +57,20 @@ class ExamAttemptController extends Controller
     }
 
     /**
-     * Menampilkan soal ujian
+     * Menampilkan soal ujian yang sedang dikerjakan siswa
      */
     public function show($examId, $attemptId)
     {
+        // Ambil attempt berdasarkan id
         $attempt = ExamAttempt::where('id', $attemptId)
             ->where('exam_id', $examId)
             ->where('user_id', auth()->id())
             ->firstOrFail();
 
-        $questions = Question::where('exam_id', $examId)->get();
+        // Mengambil soal yang terkait dengan ujian
+        $soal = $attempt->exam->soal; // Memanfaatkan relasi exam->soal
 
-        return view('siswa.exams.show', compact('attempt', 'questions'));
+        return view('siswa.exams.show', compact('attempt', 'soal'));
     }
 
     /**
@@ -67,57 +80,128 @@ class ExamAttemptController extends Controller
     {
         $request->validate([
             'question_id' => 'required|exists:questions,id',
-            'answer' => 'nullable|string',
+            'answer' => 'nullable|string|max:1000', // Batasan karakter jawaban
         ]);
-
+    
+        // Cek apakah attempt ada
         $attempt = ExamAttempt::findOrFail($attemptId);
         $question = Question::findOrFail($request->question_id);
-
-        $isCorrect = ($question->type === 'multiple_choice')
-            ? strtoupper($request->answer) === strtoupper($question->correct_answer)
-            : null;
-
-        ExamAnswer::updateOrCreate(
-            [
-                'exam_attempt_id' => $attempt->id,
-                'question_id' => $question->id,
-            ],
-            [
-                'answer' => $request->answer,
-                'is_correct' => $isCorrect,
-            ]
-        );
-
-        return response()->json(['message' => 'Jawaban disimpan.']);
-    }
+    
+        // Pastikan jawaban MC valid (A, B, C, D) atau essay boleh kosong
+        if ($question->type === 'multiple_choice' && !in_array(strtoupper($request->answer), ['A', 'B', 'C', 'D', ''])) {
+            return response()->json(['success' => false, 'message' => 'Jawaban tidak valid untuk soal pilihan ganda.']);
+        }
+    
+        // Cari apakah sudah ada jawaban sebelumnya
+        $existingAnswer = ExamAnswer::where('exam_attempt_id', $attempt->id)
+            ->where('question_id', $question->id)
+            ->first();
+    
+        try {
+            if (!$existingAnswer) {
+                // Jika belum ada jawaban, buat baru
+                ExamAnswer::create([
+                    'exam_attempt_id' => $attempt->id,
+                    'question_id' => $question->id,
+                    'answer' => $request->answer,
+                    'is_correct' => $question->type === 'multiple_choice' 
+                        ? (strtoupper($request->answer) === strtoupper($question->correct_answer)) 
+                        : null, // Essay tetap null
+                ]);
+            } else {
+                // Jika sudah ada jawaban, update
+                $existingAnswer->update([
+                    'answer' => $request->answer,
+                    'is_correct' => $question->type === 'multiple_choice' 
+                        ? (strtoupper($request->answer) === strtoupper($question->correct_answer)) 
+                        : null, // Essay tetap null
+                ]);
+            }
+    
+            return response()->json(['success' => true, 'message' => 'Jawaban berhasil disimpan.']);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false, 
+                'message' => 'Terjadi kesalahan saat menyimpan jawaban.', 
+                'error' => $e->getMessage()
+            ]);
+        }            
+    }    
 
     /**
      * Siswa menyelesaikan ujian & sistem menghitung skor otomatis
      */
     public function submit($attemptId)
     {
-        $attempt = ExamAttempt::findOrFail($attemptId);
-        $answers = ExamAnswer::where('exam_attempt_id', $attempt->id)->get();
-        $questions = Question::where('exam_id', $attempt->exam_id)->get();
-
-        $totalQuestions = $questions->count();
+        $attempt = ExamAttempt::with(['exam', 'upayaUjian'])->findOrFail($attemptId);
+    
+        // Ambil semua jawaban terkait dengan attempt ini
+        $answers = $attempt->upayaUjian ?? collect(); // Pastikan jawaban tidak null
+        $questions = $attempt->exam->soal;
+    
+        if ($questions->isEmpty()) {
+            return redirect()->route('siswa.exams.index')->with('error', 'Soal tidak ditemukan untuk ujian ini.');
+        }
+    
+        // Hitung jumlah soal berdasarkan tipe
         $totalMCQ = $questions->where('type', 'multiple_choice')->count();
-        $totalEssay = $totalQuestions - $totalMCQ;
-
-        // Hitung jawaban benar untuk pilihan ganda
-        $correctMCQ = $answers->where('is_correct', true)->count();
-        $mcqScore = $totalMCQ > 0 ? ($correctMCQ / $totalMCQ) * 100 : 0;
-        $essayScore = 0;
-
-        // Skor akhir ditentukan berdasarkan tipe soal
-        $finalScore = ($totalEssay == 0) ? $mcqScore : ($mcqScore * ($totalMCQ / $totalQuestions));
-
-        // Update nilai attempt
+        $totalEssay = $questions->where('type', 'essay')->count();
+        $totalQuestions = $totalMCQ + $totalEssay;
+    
+        // **Hitung jawaban Multiple Choice**
+        $mcqCorrect = $answers->where('is_correct', true)->count();
+        $mcqWrong = $answers->where('is_correct', false)->count();
+        $mcqUnanswered = $totalMCQ - ($mcqCorrect + $mcqWrong); // Jika siswa tidak menjawab
+    
+        // **Hitung jawaban Essay**
+        $essayAnswered = $answers->whereNotNull('answer') // Menyaring jawaban esai yang tidak null
+            ->whereIn('question_id', $questions->where('type', 'essay')->pluck('id'))
+            ->count();
+    
+        // Jika jawaban esai null, beri nilai 2, jika tidak null beri nilai 4
+        $essayUnanswered = $totalEssay - $essayAnswered; // Jika siswa tidak menjawab
+    
+        // **Hitung nilai untuk MCQ**
+        $mcqScore = ($mcqCorrect * 4) + ($mcqWrong * 2) + ($mcqUnanswered * 0);
+    
+        // **Hitung nilai untuk Essay**
+        // Jika soal esai dijawab, beri nilai 4, jika tidak beri nilai 2
+        $essayScore = ($essayAnswered * 4) + ($essayUnanswered * 2);
+    
+        // **Skor total (jumlah skor MCQ dan Essay)**
+        $totalScore = $mcqScore + $essayScore;
+    
+        // **Skor maksimal**
+        $maxScore = ($totalMCQ * 4) + ($totalEssay * 4); // Nilai maksimal jika semua soal benar
+    
+        // **Skalakan skor akhir agar selalu antara 0 dan 100**
+        $finalScore = ($maxScore > 0) ? round(($totalScore / $maxScore) * 100, 2) : 0;
+    
+        // Simpan nilai ujian
         $attempt->update([
             'submitted_at' => Carbon::now(),
-            'score' => round($finalScore, 2),
+            'score' => $finalScore,
+        ]);
+    
+        return redirect()->route('siswa.exams.index')->with('success', "Ujian selesai! Nilai Anda: $finalScore");
+    }
+
+    /**
+     * Siswa melakukan remedial jika nilai kurang dari 75
+     */
+    public function remedial($examId)
+    {
+        $user = Auth::user();
+
+        // Buat attempt baru untuk remedial
+        $attempt = ExamAttempt::create([
+            'exam_id' => $examId,
+            'user_id' => $user->id,
+            'started_at' => Carbon::now(),
+            'score' => null, // Reset nilai
         ]);
 
-        return redirect()->route('siswa.exams.index')->with('success', "Ujian telah dikumpulkan!");
+        return redirect()->route('siswa.exams.show', ['examId' => $examId, 'attemptId' => $attempt->id])
+            ->with('info', 'Silakan mengerjakan ulang ujian.');
     }
 }

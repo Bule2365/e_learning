@@ -37,7 +37,7 @@ class ExamAttempt extends Model
     // Relasi ke percakapan ujian (jawaban terkait dengan upaya ujian tertentu)
     public function upayaUjian()
     {
-        return $this->belongsTo(ExamAnswer::class, 'exam_attempt_id');
+        return $this->hasMany(ExamAnswer::class, 'exam_attempt_id');
     }
 
     // Relasi ke soal (jawaban terkait dengan soal tertentu)

@@ -6,6 +6,8 @@ use App\Http\Controllers\ClassController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExamAttemptController;
 use App\Http\Controllers\ExamController;
+use App\Http\Controllers\MaterialController;
+use App\Http\Controllers\StudentMaterialController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\TaskStudentController;
@@ -73,8 +75,9 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::put('classes/{id}', [ClassController::class, 'update'])->name('admin.classes.update');
     Route::delete('classes/{id}', [ClassController::class, 'destroy'])->name('admin.classes.destroy');
 
-    Route::get('/exams/admin', [AdminExamController::class, 'index'])->name('exams.index');
-    Route::get('/exams/admin/{id}', [AdminExamController::class, 'show'])->name('admin.exams.show');
+    Route::get('/exams/admin', [AdminExamController::class, 'index'])->name('admin.exams.index');
+    Route::get('/admin/exams/class/{classId}', [AdminExamController::class, 'examsByClass'])->name('admin.exams.byClass');
+    Route::get('/admin/exams/exam/{examId}', [AdminExamController::class, 'studentsByExam'])->name('admin.exams.studentsByExam');
 
     // Subject management routes
     Route::resource('subjects', SubjectController::class);
@@ -101,6 +104,12 @@ Route::middleware(['auth', 'role:guru'])->group(function () {
     Route::get('/exams/{exam}/edit', [ExamController::class, 'edit'])->name('guru.exams.edit');
     Route::put('/exams/{exam}', [ExamController::class, 'update'])->name('guru.exams.update');
     Route::delete('/exams/{exam}', [ExamController::class, 'destroy'])->name('guru.exams.destroy');
+    Route::get('guru/ujian/{examId}/nilai', [ExamController::class, 'showStudentScores'])->name('guru.exams.scores');
+
+    // Menampilkan halaman untuk mengedit gambar soal
+    Route::get('/question/{questionId}/edit-image', [ExamController::class, 'showImage'])->name('guru.exams.image');
+    // Menangani pengeditan gambar soal
+    Route::post('/question/{questionId}/update-image', [ExamController::class, 'updateImage'])->name('guru.exams.update_image');
 
     // Update teks soal
     Route::post('/questions/update/{id}', function ($id) {
@@ -133,6 +142,27 @@ Route::middleware(['auth', 'role:guru'])->group(function () {
         App\Models\Question::destroy($id);
         return response()->json(['success' => true]);
     });
+
+    // Daftar Materi
+    Route::get('/guru/materials', [MaterialController::class, 'index'])->name('guru.materials.index');
+
+    // Halaman untuk membuat materi baru
+    Route::get('/guru/materials/create', [MaterialController::class, 'create'])->name('guru.materials.create');
+
+    // Menyimpan materi yang baru dibuat
+    Route::post('/guru/materials', [MaterialController::class, 'store'])->name('guru.materials.store');
+
+    // Halaman untuk melihat materi berdasarkan ID
+    Route::get('/guru/materials/{material}', [MaterialController::class, 'show'])->name('guru.materials.show');
+
+    // Halaman untuk mengedit materi berdasarkan ID
+    Route::get('/guru/materials/{material}/edit', [MaterialController::class, 'edit'])->name('guru.materials.edit');
+
+    // Mengupdate materi
+    Route::put('/guru/materials/{material}', [MaterialController::class, 'update'])->name('guru.materials.update');
+
+    // Menghapus materi
+    Route::delete('/guru/materials/{material}', [MaterialController::class, 'destroy'])->name('guru.materials.destroy');
 });
 
 // Siswa-Specific Routes (only accessible by siswa)
@@ -150,6 +180,12 @@ Route::middleware(['auth', 'role:siswa'])->group(function () {
     Route::get('/siswa/exams', [ExamAttemptController::class, 'index'])->name('siswa.exams.index');
     Route::get('/siswa/exams/start/{examId}', [ExamAttemptController::class, 'start'])->name('siswa.exams.start');
     Route::get('/siswa/exams/show/{examId}/{attemptId}', [ExamAttemptController::class, 'show'])->name('siswa.exams.show');
-    Route::post('/siswa/exams/answer/{attemptId}', [ExamAttemptController::class, 'answer'])->name('siswa.exams.answer');
+    Route::post('/siswa/exams/answer/{attemptId}', [ExamAttemptController::class, 'saveAnswer'])->name('siswa.exams.answer');
     Route::post('/siswa/exams/submit/{attemptId}', [ExamAttemptController::class, 'submit'])->name('siswa.exams.submit');
+    Route::get('/siswa/exams/{examId}/remedial', [ExamAttemptController::class, 'remedial'])
+    ->name('siswa.exams.remedial');
+
+    Route::get('/siswa/materials', [StudentMaterialController::class, 'index'])->name('siswa.material.index');
+    Route::get('/siswa/materials/{subject_id}', [StudentMaterialController::class, 'showMaterials'])->name('siswa.material.list');
+    Route::get('/siswa/materials/detail/{id}', [StudentMaterialController::class, 'showMaterialDetail'])->name('siswa.material.detail');
 });

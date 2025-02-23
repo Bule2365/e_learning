@@ -9,13 +9,25 @@ use Illuminate\Support\Facades\Auth;
 
 class TaskStudentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        // Ambil query pencarian dari request
+        $search = $request->input('search');
+        
         $tasks = Task::whereHas('kelas.siswa', function ($query) {
-            // Tambahkan alias untuk id pengguna agar SQL bisa membedakan kolom 'id'
             $query->where('users.id', Auth::id())
                   ->where('users.role', 'siswa');
-        })->get();
+        })
+        ->with(['users' => function ($query) {
+            $query->where('users.id', Auth::id())->withPivot('submission', 'score');
+        }])
+        ->when($search, function ($query, $search) {
+            // Jika ada pencarian, filter tugas berdasarkan judul atau deskripsi
+            return $query->where('title', 'like', '%' . $search . '%')
+                         ->orWhere('description', 'like', '%' . $search . '%');
+        })
+        ->orderByDesc('created_at') // Urutkan berdasarkan tanggal tugas dibuat
+        ->get();
         
         return view('siswa.tasks.index', compact('tasks'));
     }

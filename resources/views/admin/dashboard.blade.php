@@ -1,146 +1,321 @@
 @extends('admin.layouts.app')
+
 @section('title', 'Dashboard Admin')
 
 @push('styles')
     <style>
-        /* Hover Effect pada Kartu */
-        .card {
-            border: none;
-            border-radius: 15px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        .progress-hover {
+            transition: width 0.8s ease-in-out;
         }
 
-        .card:hover {
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        .tooltip-text {
+            z-index: 10;
+            font-size: 12px;
+            white-space: nowrap;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        /* Efek Hover pada Card */
+        .card-hover {
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+
+        .card-hover:hover {
             transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
         }
 
-        /* Menambahkan efek pada card-header */
-        .card-header {
-            font-weight: 600;
-            border-radius: 15px 15px 0 0;
-            padding: 1rem;
+        /* Gradient Border untuk Card */
+        .border-left-primary {
+            border-left: 5px solid #4e73df !important;
+            background: linear-gradient(to right, #f8f9fc, #ffffff);
         }
 
-        /* Gaya tambahan pada card title */
-        .card-title {
-            font-size: 1.75rem;
-            font-weight: 700;
-            margin-bottom: 0;
+        .border-left-success {
+            border-left: 5px solid #1cc88a !important;
+            background: linear-gradient(to right, #f8f9fc, #ffffff);
         }
 
-        /* Gradien pada background kartu */
-        .bg-primary-gradient {
-            background: linear-gradient(to bottom right, #4e73df, #224abe);
+        .border-left-info {
+            border-left: 5px solid #36b9cc !important;
+            background: linear-gradient(to right, #f8f9fc, #ffffff);
         }
 
-        .bg-success-gradient {
-            background: linear-gradient(to bottom right, #1cc88a, #17a673);
+        .border-left-warning {
+            border-left: 5px solid #f6c23e !important;
+            background: linear-gradient(to right, #f8f9fc, #ffffff);
         }
 
-        .bg-warning-gradient {
-            background: linear-gradient(to bottom right, #f6c23e, #d9a42b);
+        /* Ikon dengan Efek Hover */
+        .bi:hover {
+            animation: pulse 1s infinite;
         }
 
-        .bg-info-gradient {
-            background: linear-gradient(to bottom right, #36b9cc, #2c9faf);
-        }
-
-        /* Animasi ikon */
-        .icon-hover {
-            transition: transform 0.3s ease;
-        }
-
-        .icon-hover:hover {
-            transform: scale(1.2);
-        }
-
-        /* Footer card */
-        .card-footer {
-            border-radius: 0 0 15px 15px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border: none;
-        }
-
-        /* Responsive text */
-        @media (max-width: 768px) {
-            .card-title {
-                font-size: 1.5rem;
+        /* Animasi Pulse untuk Ikon */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
             }
 
-            .card-header span {
-                font-size: 0.9rem;
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
             }
         }
     </style>
 @endpush
 
 @section('content')
-    <div class="container mt-4">
-        <h1 class="display-4 fw-bold">Dashboard Admin</h1>
-        <p class="lead text-muted">Ringkasan data sistem</p>
-
-        <!-- Tampilkan data jumlah siswa, guru, kelas, dan mapel -->
-        <div class="row gy-4">
-            <div class="col-md-3 col-sm-6 col-12">
-                <div class="card bg-primary-gradient text-white shadow-sm">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span>Jumlah Siswa</span>
-                        <i class="fas fa-user-graduate fa-2x icon-hover" aria-label="Ikon jumlah siswa"></i>
-                    </div>
-                    <div class="card-body text-center">
-                        <h5 class="card-title">{{ $jumlahSiswa }}</h5>
-                    </div>
-                    <div class="card-footer text-center">
-                        <a href="{{ route('users.index') }}" class="btn btn-light btn-sm">Lihat Detail</a>
+    <div class="container-fluid p-4">
+        <div class="row">
+            <!-- Jumlah Siswa -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-primary shadow h-100 py-2 card-hover">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Jumlah Siswa</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $jumlahSiswa }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-people fs-1 text-primary"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-3 col-sm-6 col-12">
-                <div class="card bg-success-gradient text-white shadow-sm">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span>Jumlah Guru</span>
-                        <i class="fas fa-chalkboard-teacher fa-2x icon-hover" aria-label="Ikon jumlah guru"></i>
-                    </div>
-                    <div class="card-body text-center">
-                        <h5 class="card-title">{{ $jumlahGuru }}</h5>
-                    </div>
-                    <div class="card-footer text-center">
-                        <a href="{{ route('users.index') }}" class="btn btn-light btn-sm">Lihat Detail</a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-3 col-sm-6 col-12">
-                <div class="card bg-warning-gradient text-white shadow-sm">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span>Jumlah Kelas</span>
-                        <i class="fas fa-school fa-2x icon-hover" aria-label="Ikon jumlah kelas"></i>
-                    </div>
-                    <div class="card-body text-center">
-                        <h5 class="card-title">{{ $jumlahKelas }}</h5>
-                    </div>
-                    <div class="card-footer text-center">
-                        <a href="{{ route('admin.classes.index') }}" class="btn btn-light btn-sm">Lihat Detail</a>
+            <!-- Jumlah Guru -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-success shadow h-100 py-2 card-hover">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Jumlah Guru</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $jumlahGuru }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-person-badge fs-1 text-success"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-3 col-sm-6 col-12">
-                <div class="card bg-info-gradient text-white shadow-sm">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <span>Jumlah Mata Pelajaran</span>
-                        <i class="fas fa-book fa-2x icon-hover" aria-label="Ikon jumlah mata pelajaran"></i>
+            <!-- Jumlah Kelas -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-info shadow h-100 py-2 card-hover">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Jumlah Kelas</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $jumlahKelas }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-door-open fs-1 text-info"></i>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-body text-center">
-                        <h5 class="card-title">{{ $jumlahMapel }}</h5>
+                </div>
+            </div>
+
+            <!-- Jumlah Mata Pelajaran -->
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card border-left-warning shadow h-100 py-2 card-hover">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Jumlah Mata Pelajaran
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $jumlahMapel }}</div>
+                            </div>
+                            <div class="col-auto">
+                                <i class="bi bi-book fs-1 text-warning"></i>
+                            </div>
+                        </div>
                     </div>
-                    <div class="card-footer text-center">
-                        <a href="{{ route('subjects.index') }}" class="btn btn-light btn-sm">Lihat Detail</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Revenue Sources Section -->
+        <div class="row">
+            <div class="col-lg-6 mb-4">
+                <div class="card shadow-lg border-0 rounded-3">
+                    <div class="card-header py-3 bg-primary text-white">
+                        <h6 class="m-0 font-weight-bold">Data Sekolah</h6>
+                    </div>
+                    <div class="card-body">
+                        <!-- Jumlah Siswa -->
+                        <div class="mb-4 position-relative">
+                            <p class="text-sm font-weight-bold text-dark">Jumlah Siswa</p>
+                            <div class="progress rounded-pill" style="height: 12px;">
+                                <div class="progress-bar bg-primary progress-hover" role="progressbar"
+                                    style="width: {{ ($jumlahSiswa / ($jumlahSiswa + $jumlahGuru + $jumlahKelas)) * 100 }}%;"
+                                    aria-valuenow="{{ $jumlahSiswa }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <div
+                                class="tooltip-text d-none position-absolute bg-dark text-white px-2 py-1 rounded shadow-sm">
+                                {{ $jumlahSiswa }}
+                            </div>
+                        </div>
+
+                        <!-- Jumlah Guru -->
+                        <div class="mb-4 position-relative">
+                            <p class="text-sm font-weight-bold text-dark">Jumlah Guru</p>
+                            <div class="progress rounded-pill" style="height: 12px;">
+                                <div class="progress-bar bg-success progress-hover" role="progressbar"
+                                    style="width: {{ ($jumlahGuru / ($jumlahSiswa + $jumlahGuru + $jumlahKelas)) * 100 }}%;"
+                                    aria-valuenow="{{ $jumlahGuru }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <div
+                                class="tooltip-text d-none position-absolute bg-dark text-white px-2 py-1 rounded shadow-sm">
+                                {{ $jumlahGuru }}
+                            </div>
+                        </div>
+
+                        <!-- Jumlah Kelas -->
+                        <div class="mb-4 position-relative">
+                            <p class="text-sm font-weight-bold text-dark">Jumlah Kelas</p>
+                            <div class="progress rounded-pill" style="height: 12px;">
+                                <div class="progress-bar bg-warning progress-hover" role="progressbar"
+                                    style="width: {{ ($jumlahKelas / ($jumlahSiswa + $jumlahGuru + $jumlahKelas)) * 100 }}%;"
+                                    aria-valuenow="{{ $jumlahKelas }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <div
+                                class="tooltip-text d-none position-absolute bg-dark text-white px-2 py-1 rounded shadow-sm">
+                                {{ $jumlahKelas }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dropdown and Chart -->
+            <div class="col-lg-6 mb-4">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3 bg-primary text-white">
+                        <h6 class="m-0 font-weight-bold">Pilih Grafik</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="dropdown mb-3">
+                            <button class="btn btn-secondary dropdown-toggle w-100" type="button" id="dropdownChart"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                Pilih Grafik
+                            </button>
+                            <ul class="dropdown-menu w-100" aria-labelledby="dropdownChart">
+                                <li><a class="dropdown-item" href="#" onclick="showChart('siswa')">Grafik Siswa</a>
+                                </li>
+                                <li><a class="dropdown-item" href="#" onclick="showChart('guru')">Grafik Guru</a>
+                                </li>
+                                <li><a class="dropdown-item" href="#" onclick="showChart('kelas')">Grafik Kelas</a>
+                                </li>
+                                <li><a class="dropdown-item" href="#" onclick="showChart('mapel')">Grafik Mata
+                                        Pelajaran</a></li>
+                            </ul>
+                        </div>
+                        <canvas id="chartCanvas"></canvas>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    @push('scripts')
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script>
+            let chart;
+
+            function showChart(type) {
+                console.log("Menampilkan grafik:", type);
+
+                // Data untuk grafik
+                const data = {
+                    siswa: {!! json_encode($jumlahSiswa) !!},
+                    guru: {!! json_encode($jumlahGuru) !!},
+                    kelas: {!! json_encode($jumlahKelas) !!},
+                    mapel: {!! json_encode($jumlahMapel) !!}
+                };
+
+                // Hancurkan grafik sebelumnya jika ada
+                if (chart) chart.destroy();
+
+                // Konfigurasi Chart.js
+                const ctx = document.getElementById('chartCanvas').getContext('2d');
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: Array.from({
+                            length: data[type]
+                        }, (_, i) => i + 1), // Label dari 1 hingga jumlah data
+                        datasets: [{
+                            label: 'Jumlah',
+                            data: Array.from({
+                                length: data[type]
+                            }, () => 0), // Mulai dari 0
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderWidth: 2,
+                            tension: 0.4, // Efek kurva smooth
+                            fill: true,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                display: true,
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    display: false,
+                                }
+                            },
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: '#e5e7eb',
+                                }
+                            }
+                        },
+                        animation: {
+                            duration: 2000, // Durasi animasi dalam milidetik
+                            easing: 'easeInOutBounce', // Efek bouncing
+                        }
+                    }
+                });
+
+                // Animasi memantul untuk menampilkan data
+                setTimeout(() => {
+                    chart.data.datasets[0].data = Array.from({
+                        length: data[type]
+                    }, (_, i) => i + 1); // Isi data sesuai ID
+                    chart.update(); // Perbarui grafik
+                }, 500);
+            }
+
+            // Efek hover untuk progress bar
+            document.querySelectorAll('.progress-hover').forEach((progressBar) => {
+                const tooltip = progressBar.parentElement.nextElementSibling;
+
+                progressBar.addEventListener('mouseenter', (e) => {
+                    tooltip.classList.remove('d-none');
+                    tooltip.style.opacity = "1";
+                    tooltip.style.transform = "translateY(-10px)";
+                    tooltip.style.left = `${e.target.offsetWidth / 2 - tooltip.offsetWidth / 2}px`;
+                });
+
+                progressBar.addEventListener('mouseleave', () => {
+                    tooltip.style.opacity = "0";
+                    tooltip.style.transform = "translateY(0px)";
+                    setTimeout(() => tooltip.classList.add('d-none'), 300);
+                });
+            });
+        </script>
+    @endpush
 @endsection

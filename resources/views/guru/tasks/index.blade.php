@@ -31,11 +31,12 @@
                 border: 1px solid rgba(0, 0, 0, 0.08);
                 border-radius: 12px;
                 overflow: hidden;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             }
 
             .task-card:hover {
                 transform: translateY(-5px);
-                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
             }
 
             /* Status Badge */
@@ -46,7 +47,7 @@
                 font-weight: 500;
             }
 
-            /* Responsive Button Group */
+            /* Button Group */
             .action-buttons {
                 display: flex;
                 gap: 0.75rem;
@@ -60,7 +61,12 @@
                 padding: 0.5rem 1rem;
                 font-size: 0.85rem;
                 border-radius: 8px;
-                transition: all 0.2s ease;
+                transition: all 0.3s ease;
+            }
+
+            .action-buttons .btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             }
 
             /* Mobile Optimization */
@@ -93,7 +99,7 @@
     <div class="container-lg my-4 my-lg-5">
         <div class="text-center mb-4 mb-lg-5">
             <h1 class="h2 fw-bold text-primary mb-3">Daftar Tugas</h1>
-            <p class="lead text-muted">Kelola tugas untuk kelas yang Anda ajar</p>
+            <p class="lead text-muted">Kelola tugas untuk kelas yang Anda ajar dengan mudah.</p>
         </div>
 
         @if ($tasks->isEmpty())
@@ -111,23 +117,22 @@
                             <div class="card-body p-3 p-lg-4">
                                 <h3 class="card-title mb-1">{{ $task->title }}</h3>
                                 <h6 class="card-subtitle mb-2 text-muted">{{ $task->mataPelajaran->name }}</h6>
-                                <p class="task-description">Deadline:
-                                    <strong>{{ \Carbon\Carbon::parse($task->due_date)->format('d M Y') }}</strong>
+                                <p class="task-description">
+                                    Deadline: <strong>{{ \Carbon\Carbon::parse($task->due_date)->format('d M Y') }}</strong>
                                 </p>
+
                                 <div class="action-buttons">
-                                    <div class="action-buttons">
-                                        <a href="{{ route('tasks.show', $task->id) }}" class="btn btn-outline-primary">
-                                            <i class="bi bi-eye me-2"></i> Lihat
-                                        </a>
-                                        <a href="{{ route('tasks.edit', $task->id) }}" class="btn btn-warning">
-                                            <i class="bi bi-pencil-square me-2"></i> Edit
-                                        </a>
-                                        <button type="button" class="btn btn-danger" data-bs-toggle="modal"
-                                            data-bs-target="#deleteModal" data-task-id="{{ $task->id }}"
-                                            data-task-title="{{ $task->title }}">
-                                            <i class="bi bi-trash me-2"></i> Hapus
-                                        </button>
-                                    </div>
+                                    <a href="{{ route('tasks.show', $task->id) }}" class="btn btn-outline-primary">
+                                        <i class="bi bi-eye me-2"></i> Lihat
+                                    </a>
+                                    <a href="{{ route('tasks.edit', $task->id) }}" class="btn btn-warning">
+                                        <i class="bi bi-pencil-square me-2"></i> Edit
+                                    </a>
+                                    <button type="button" class="btn btn-danger" data-bs-toggle="modal"
+                                        data-bs-target="#deleteModal" data-task-id="{{ $task->id }}"
+                                        data-task-title="{{ $task->title }}">
+                                        <i class="bi bi-trash me-2"></i> Hapus
+                                    </button>
                                 </div>
                             </div>
                         </div>

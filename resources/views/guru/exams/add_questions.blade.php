@@ -89,7 +89,8 @@
 
                 <!-- Manual Form -->
                 <div id="manual-form" class="form-section">
-                    <form action="{{ route('guru.exams.store_questions', $exam->id) }}" method="POST">
+                    <form action="{{ route('guru.exams.store_questions', $exam->id) }}" method="POST"
+                        enctype="multipart/form-data">
                         @csrf
                         <div class="mb-4">
                             <label class="form-label fw-semibold">Teks Pertanyaan</label>
@@ -98,6 +99,11 @@
                             @error('question_text')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <label class="form-label fw-semibold">Tambahkan Gambar</label>
+                            <input type="file" class="form-control" name="image">
                         </div>
 
                         <div class="mb-4">

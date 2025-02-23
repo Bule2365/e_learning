@@ -8,10 +8,14 @@
     <link rel="stylesheet" href="{{ asset('assets/css/styles.min.css') }}" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     @stack('styles')
     <style>
         :root {
             --bs-primary-rgb: 99, 102, 241;
+            /* Biru Laut Muda */
+            --bs-secondary-rgb: 255, 255, 255;
+            /* Putih Susu */
             --bs-font-sans-serif: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             --bs-body-line-height: 1.6;
             --bs-body-color: #1f2937;
@@ -73,19 +77,46 @@
             transform: translateY(0);
         }
 
-        /* Modal animation */
-        .modal-card {
+        /* Modal Styling */
+        .modal-content.modal-card {
+            background-color: rgba(255, 255, 255, 0.9);
+            /* Putih Susu */
             transition: transform 0.3s ease-out;
         }
 
         .modal-header {
+            background-color: rgb(99, 102, 241);
+            /* Biru Laut Muda */
+            color: white;
             border-bottom: none;
             padding: 1.5rem;
         }
 
-        .modal-footer {
-            border-top: none;
-            padding: 1.5rem;
+        .modal-header .btn-close {
+            color: white;
+        }
+
+        .modal-footer button {
+            transition: all 0.3s ease;
+        }
+
+        .modal-footer .btn-light {
+            background-color: #f7f7f7;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            /* Border halus untuk tombol batal */
+        }
+
+        .modal-footer .btn-danger {
+            background-color: rgb(99, 102, 241);
+            /* Biru Laut Muda */
+            border: none;
+            color: white;
+        }
+
+        .modal-footer .btn-danger:hover {
+            background-color: rgb(85, 89, 214);
+            /* Warna lebih gelap untuk hover */
+            transform: scale(1.05);
         }
 
         /* Notification messages */
@@ -131,6 +162,154 @@
             transform: translateY(-2px);
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
         }
+
+        /* Sidebar styling */
+        .left-sidebar {
+            background-color: #1a1a1a;
+            /* Warna latar belakang sidebar */
+            color: #fff;
+            /* Warna teks sidebar */
+            transition: transform 0.3s ease-in-out;
+            height: 100vh;
+            padding-top: 20px;
+        }
+
+        .sidebar-item {
+            margin: 15px 0;
+        }
+
+        /* Sidebar Styling */
+        .left-sidebar {
+            background-color: rgb(99, 102, 241);
+            /* Biru Laut Muda */
+            color: #fff;
+            height: 100vh;
+            padding-top: 20px;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .sidebar-link {
+            transition: all 0.2s ease;
+            position: relative;
+            border-radius: 0.375rem;
+            padding: 0.75rem 1rem;
+            margin: 0 0.5rem;
+            color: white;
+            text-decoration: none;
+        }
+
+        .sidebar-link:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            /* Hover dengan warna transparan putih susu */
+            transform: translateX(4px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar-link.active {
+            background-color: rgba(255, 255, 255, 0.4);
+            /* Active dengan efek transparan */
+            color: rgb(99, 102, 241);
+            /* Warna Biru Laut Muda */
+        }
+
+        .sidebar-item .sidebar-link:hover {
+            box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Sidebar Icon */
+        .sidebar-link i {
+            font-size: 20px;
+            margin-right: 10px;
+        }
+
+        /* Hover effects for active sidebar items */
+        .sidebar-link.active:hover {
+            background-color: rgba(255, 255, 255, 0.6);
+            /* Hover active link */
+            color: rgb(99, 102, 241);
+            /* Biru Laut Muda */
+        }
+
+        /* Sidebar Brand Section */
+        .brand-logo {
+            background-color: #b0c9e5;
+            /* Warna latar belakang logo */
+            padding: 1rem;
+            color: #f4b400;
+            /* Warna teks logo */
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .brand-logo .logo-img {
+            display: flex;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+        }
+
+        .brand-logo .logo-img i {
+            font-size: 25px;
+        }
+
+        /* Hover shadow for the sidebar links */
+        .sidebar-item .sidebar-link:hover {
+            box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Logout Button */
+        .sidebar-item .btn-outline-light {
+            color: #fff;
+            border-color: #f4b400;
+            transition: all 0.3s ease;
+            border-radius: 30px;
+            padding: 12px 18px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .sidebar-item .btn-outline-light:hover {
+            background-color: #f4b400;
+            color: #1a1a1a;
+            transform: translateY(-2px);
+        }
+
+        /* Sidebar Toggle (close button) */
+        .sidebartoggler {
+            display: inline-block;
+            position: relative;
+            font-size: 25px;
+            color: white;
+            cursor: pointer;
+            z-index: 9999;
+        }
+
+        /* Sidebar Collapse Icon */
+        .nav-link .ti-menu-2 {
+            color: rgb(99, 102, 241);
+            font-size: 24px;
+        }
+
+        /* Modal Icon Styling */
+        .modal-body .bi-question-circle-fill {
+            font-size: 50px;
+            color: rgb(255, 221, 51);
+            /* Warna kuning */
+        }
+
+        /* Scrollbar styling for sidebar */
+        .scroll-sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .scroll-sidebar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .scroll-sidebar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 10px;
+        }
     </style>
 </head>
 
@@ -138,45 +317,50 @@
     <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
         data-sidebar-position="fixed" data-header-position="fixed">
         <aside class="left-sidebar">
-            <div>
-                <div class="brand-logo d-flex align-items-center justify-content-between">
-                    <a href="{{ route('siswa.dashboard') }}" class="text-nowrap logo-img">
+            <div class="sidebar-container">
+                <!-- Brand Logo Section -->
+                <div class="brand-logo d-flex align-items-center justify-content-between p-3">
+                    <a href="{{ route('siswa.dashboard') }}"
+                        class="logo-img d-flex align-items-center text-white text-decoration-none">
                         <i class="bi bi-house-door fs-5 me-2"></i>
-                        Dashboard Siswa
+                        <span class="fs-5">Dashboard Siswa</span>
                     </a>
                     <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
-                        <i class="ti ti-x fs-8"></i>
+                        <i class="bi bi-x-lg fs-5 text-white"></i>
                     </div>
                 </div>
-                <nav class="sidebar-nav scroll-sidebar" data-simplebar="">
-                    <ul id="sidebarnav">
+
+                <!-- Sidebar Navigation -->
+                <nav class="sidebar-nav scroll-sidebar">
+                    <ul id="sidebarnav" class="list-unstyled mb-0">
+                        <!-- Tugas Link -->
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="{{ route('student.tasks.index') }}" aria-expanded="false">
-                                <span>
-                                    <i class="ti ti-layout-dashboard"></i>
-                                </span>
+                            <a class="sidebar-link d-flex align-items-center px-3 py-2 rounded-3 text-white hover-shadow"
+                                href="{{ route('student.tasks.index') }}" aria-expanded="false">
+                                <i class="bi bi-check-circle me-2 fs-4"></i> <!-- Updated icon for Tugas -->
                                 <span class="hide-menu">Tugas</span>
                             </a>
                         </li>
+                        <!-- Materi Link -->
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="{{ route('siswa.classes.index') }}" aria-expanded="false">
-                                <span>
-                                    <i class="ti ti-school"></i>
-                                </span>
-                                <span class="hide-menu">Kelas</span>
+                            <a class="sidebar-link d-flex align-items-center px-3 py-2 rounded-3 text-white hover-shadow"
+                                href="{{ route('siswa.material.index') }}" aria-expanded="false">
+                                <i class="bi bi-book me-2 fs-4"></i> <!-- Updated icon for Materi -->
+                                <span class="hide-menu">Materi</span> <!-- Corrected "Tugas" to "Materi" -->
                             </a>
                         </li>
+                        <!-- Ujian Link -->
                         <li class="sidebar-item">
-                            <a class="sidebar-link" href="{{ route('siswa.exams.index') }}" aria-expanded="false">
-                                <span>
-                                    <i class="ti ti-school"></i>
-                                </span>
+                            <a class="sidebar-link d-flex align-items-center px-3 py-2 rounded-3 text-white hover-shadow"
+                                href="{{ route('siswa.exams.index') }}" aria-expanded="false">
+                                <i class="bi bi-pencil-square me-2 fs-4"></i> <!-- Updated icon for Ujian -->
                                 <span class="hide-menu">Ujian</span>
                             </a>
                         </li>
-                        <li>
+                        <!-- Logout Button -->
+                        <li class="sidebar-item">
                             <a href="javascript:void(0);"
-                                class="btn btn-outline-primary mx-3 mt-2 d-block shadow-sm hover-shadow"
+                                class="btn btn-outline-light mx-3 mt-4 d-block shadow-sm hover-shadow"
                                 onclick="showLogoutModal()">
                                 <i class="bi bi-box-arrow-right me-2"></i>
                                 Logout
@@ -231,7 +415,7 @@
             <div class="modal-dialog">
                 <div class="modal-content modal-card">
                     <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title" id="logoutModalLabel">
+                        <h5 class="modal-title text-white" id="logoutModalLabel">
                             <i class="bi bi-exclamation-triangle-fill"></i> Konfirmasi Logout
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -279,6 +463,10 @@
             var logoutModal = new bootstrap.Modal(document.getElementById('logoutModal'));
             logoutModal.show();
         }
+
+        document.getElementById('headerCollapse').addEventListener('click', function() {
+            document.querySelector('.left-sidebar').classList.toggle('active');
+        });
     </script>
 </body>
 

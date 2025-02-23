@@ -3,24 +3,37 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\ClassModel;
+use App\Models\Exam;
 use App\Models\ExamAttempt;
 use Illuminate\Http\Request;
 
 class AdminExamController extends Controller
 {
+    /**
+     * Tampilkan daftar kelas
+     */
     public function index()
     {
-        // Ambil semua data siswa yang telah mengikuti ujian
-        $examAttempts = ExamAttempt::with('user', 'exam')->get();
-
-        return view('admin.exams.index', compact('examAttempts'));
+        $classes = ClassModel::all(); // Ambil semua kelas
+        return view('admin.exams.index', compact('classes'));
     }
 
-    public function show($id)
+    /**
+     * Tampilkan daftar ujian berdasarkan kelas yang dipilih
+     */
+    public function examsByClass($classId)
     {
-        // Ambil data detail ujian berdasarkan ID
-        $examAttempt = ExamAttempt::with('user', 'exam', 'upayaUjian')->findOrFail($id);
+        $class = ClassModel::with('ujian')->findOrFail($classId);
+        return view('admin.exams.exams_by_class', compact('class'));
+    }
 
-        return view('admin.exams.show', compact('examAttempt'));
+    /**
+     * Tampilkan daftar siswa berdasarkan ujian yang dipilih
+     */
+    public function studentsByExam($examId)
+    {
+        $exam = Exam::with('upayaUjian.user')->findOrFail($examId);
+        return view('admin.exams.students_by_exam', compact('exam'));
     }
 }

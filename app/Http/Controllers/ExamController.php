@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\ClassModel;
 use App\Models\Exam;
+use App\Models\ExamAttempt;
 use App\Models\Question;
 use App\Models\Subject;
 use Illuminate\Http\Request;
@@ -150,92 +151,123 @@ class ExamController extends Controller
         return view('guru.exams.add_questions', compact('exam'));
     }
 
-    // Menyimpan soal ke ujian
     public function storeQuestions(Request $request, $examId)
     {
         $exam = Exam::findOrFail($examId);
-
-        // Jika input manual
+    
         if ($request->has('question_text')) {
             $request->validate([
                 'question_text' => 'required|string',
                 'type' => 'required|in:multiple_choice,essay',
                 'options' => 'nullable|array',
                 'correct_answer' => 'nullable|string',
+                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             ]);
-
-            // Jika soal pilihan ganda, ubah options ke JSON
+    
+            $imagePath = $request->hasFile('image') ? $request->file('image')->store('question_images', 'public') : null;
             $options = $request->type === 'multiple_choice' ? json_encode($request->options) : null;
-
+    
             Question::create([
                 'exam_id' => $exam->id,
                 'question_text' => $request->question_text,
                 'options' => $options,
                 'correct_answer' => $request->correct_answer,
                 'type' => $request->type,
+                'image_path' => $imagePath,
             ]);
-
+    
             return redirect()->route('guru.exams.show', $examId)->with('success', 'Soal berhasil ditambahkan!');
         }
-
-        // Jika upload file
+    
         if ($request->hasFile('file')) {
-            \Log::info('File uploaded:', ['file' => $request->file('file')->getClientOriginalName()]);
-
-            $request->validate([
-                'file' => 'required|mimes:docx,xlsx|max:10240',
-            ]);
-
             $file = $request->file('file');
-            $path = $file->store('uploads');
             $extension = $file->getClientOriginalExtension();
-
+    
+            if (!in_array($extension, ['docx', 'xlsx'])) {
+                return back()->with('error', 'Format file tidak didukung.');
+            }
+    
+            $path = $file->store('uploads');
+    
             if ($extension === 'docx') {
                 try {
                     $this->processWord($path, $exam);
-                    return redirect()->route('guru.exams.show', $examId)->with('success', 'Soal berhasil diunggah!');
                 } catch (\Exception $e) {
-                    \Log::error("Error processing Word file: " . $e->getMessage());
                     return back()->with('error', 'Terjadi kesalahan saat memproses file Word.');
                 }
             } elseif ($extension === 'xlsx') {
                 try {
                     $this->processExcel($path, $exam);
-                    return redirect()->route('guru.exams.show', $examId)->with('success', 'Soal berhasil diunggah!');
                 } catch (\Exception $e) {
-                    \Log::error("Error processing Excel file: " . $e->getMessage());
                     return back()->with('error', 'Terjadi kesalahan saat memproses file Excel.');
                 }
-            } else {
-                return back()->with('error', 'Tipe file tidak didukung.');
             }
-        } else {
-            \Log::error('No file uploaded.');
+    
+            return redirect()->route('guru.exams.show', $examId)->with('success', 'Soal berhasil diunggah!');
         }
-
+    
         return back()->with('error', 'Harap isi form atau unggah file.');
-    }
+    }    
 
     public function editQuestions($examId)
     {
         $exam = Exam::with('soal')->findOrFail($examId); // Ambil ujian beserta soal-soalnya
         return view('guru.exams.edit_questions', compact('exam'));
     }
-    
-    // Edit langsung tanpa form (misalnya mengganti jawaban benar menjadi opsi berikutnya)
-    public function quickUpdateQuestion($examId, $questionId)
+
+    public function updateQuestion(Request $request, $questionId)
     {
-        $question = Question::where('exam_id', $examId)->findOrFail($questionId);
-
-        // Contoh update otomatis (mengubah jawaban benar ke opsi berikutnya)
-        $answers = ['A', 'B', 'C', 'D'];
-        $currentIndex = array_search($question->correct_answer, $answers);
-        $newAnswer = $answers[($currentIndex + 1) % count($answers)]; // Pilih jawaban berikutnya
-
-        $question->update(['correct_answer' => $newAnswer]);
-
-        return redirect()->back()->with('success', 'Jawaban soal diperbarui otomatis.');
+        $question = Question::findOrFail($questionId);
+    
+        // Validasi input
+        $validated = $request->validate([
+            'soal_text' => 'required|string',
+            'correct_answer' => 'nullable|string',
+        ]);
+    
+        // Update soal teks dan jawaban benar
+        $question->update([
+            'question_text' => $validated['soal_text'],
+            'correct_answer' => $validated['correct_answer'],
+        ]);
+    
+        // Mengembalikan respons dengan data yang diperbarui
+        return response()->json([
+            'success' => true,
+            'new_answer' => $question->correct_answer,
+        ]);
     }
+
+        // Menampilkan gambar soal yang ada (jika ada)
+        public function showImage($questionId)
+        {
+            $question = Question::findOrFail($questionId);
+            $exam = $question->exam;
+    
+            return view('guru.exams.edit_image', compact('question', 'exam'));
+        }
+    
+        // Mengupdate gambar soal
+        public function updateImage(Request $request, $questionId)
+        {
+            $question = Question::findOrFail($questionId);
+    
+            // Validasi gambar
+            $validated = $request->validate([
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Maks 2MB
+            ]);
+    
+            // Hapus gambar lama jika ada
+            if ($question->image_path && Storage::exists('public/' . $question->image_path)) {
+                Storage::delete('public/' . $question->image_path);
+            }
+    
+            // Simpan gambar baru
+            $imagePath = $request->file('image')->store('question_images', 'public');
+            $question->update(['image_path' => $imagePath]);
+    
+            return redirect()->route('guru.exams.image', $questionId)->with('success', 'Gambar berhasil diperbarui.');
+        }
 
     // Hapus soal langsung tanpa konfirmasi
     public function quickDeleteQuestion($examId, $questionId)
@@ -245,12 +277,25 @@ class ExamController extends Controller
         return redirect()->back()->with('success', 'Soal berhasil dihapus.');
     }
 
+    public function showStudentScores($examId)
+    {
+        // Ambil data ujian berdasarkan ID
+        $exam = Exam::findOrFail($examId);
+    
+        // Ambil semua attempt ujian oleh siswa yang mengikuti ujian tersebut
+        $examAttempts = ExamAttempt::with('user.kelas') // Memuat relasi kelas melalui pivot
+            ->where('exam_id', $examId)
+            ->get();
+    
+        return view('guru.exams.scores', compact('exam', 'examAttempts'));
+    }
+
     private function processWord($path, $exam)
     {
-        $phpWord = \PhpOffice\PhpWord\IOFactory::load(Storage::path($path));
+        $phpWord = WordIOFactory::load(Storage::path($path));
         $text = '';
-
-        // Membaca semua teks dari file Word
+        $images = [];
+    
         foreach ($phpWord->getSections() as $section) {
             foreach ($section->getElements() as $element) {
                 if ($element instanceof \PhpOffice\PhpWord\Element\TextRun) {
@@ -259,26 +304,36 @@ class ExamController extends Controller
                             $text .= $textElement->getText() . "\n";
                         }
                     }
+                } elseif ($element instanceof \PhpOffice\PhpWord\Element\Image) {
+                    // Simpan gambar ke storage
+                    $imageData = $element->getImageStringData();
+                    $imageExtension = $element->getImageExtension();
+    
+                    $imageName = 'question_images/' . uniqid() . '.' . $imageExtension;
+                    Storage::put("public/{$imageName}", base64_decode($imageData));
+    
+                    $images[] = $imageName; // Simpan path gambar
                 }
             }
         }
-
-        // ✅ REGEX diperbaiki agar jawaban hanya mengambil satu kata/huruf
+    
+        \Log::info("Isi Word File:\n" . $text);
+        \Log::info("Total Gambar: " . count($images));
+    
+        // Perbaikan regex untuk menangkap soal dan jawaban
         $pattern = '/Pertanyaan:\s*(.*?)\n(?:A\.\s*(.*?)\nB\.\s*(.*?)\nC\.\s*(.*?)\nD\.\s*(.*?)\n)?Jawaban:\s*([A-D]?)/s';
-
-        // Menjalankan regex
+    
         preg_match_all($pattern, $text, $matches, PREG_SET_ORDER);
-
+    
         if (empty($matches)) {
-            \Log::warning('No valid questions found in the Word file.');
+            return back()->with('error', 'Format soal dalam file Word tidak dikenali.');
         }
-
-        foreach ($matches as $match) {
+    
+        foreach ($matches as $index => $match) {
             try {
-                $questionText = trim($match[1]); // Ambil teks pertanyaan
-                $correctAnswer = isset($match[6]) ? trim($match[6]) : null; // Jawaban harus hanya A, B, C, atau D
-
-                // Cek apakah ini soal Multiple Choice atau Essay
+                $questionText = trim($match[1]);
+                $correctAnswer = isset($match[6]) ? trim($match[6]) : null;
+    
                 $options = [];
                 if (!empty($match[2]) && !empty($match[3]) && !empty($match[4]) && !empty($match[5])) {
                     $options = [
@@ -288,73 +343,93 @@ class ExamController extends Controller
                         'D' => trim($match[5]),
                     ];
                 }
-
-                // Menentukan tipe soal
+    
                 $type = !empty($options) ? 'multiple_choice' : 'essay';
-
+    
                 // Jika soal essay, tidak perlu jawaban benar
                 if ($type === 'essay') {
                     $correctAnswer = null;
                 }
-
-                // Simpan ke database
+    
+                // Pastikan gambar terkait soal dimasukkan ke database
+                $imagePath = isset($images[$index]) ? $images[$index] : null;
+    
                 Question::create([
                     'exam_id' => $exam->id,
                     'question_text' => $questionText,
                     'options' => !empty($options) ? json_encode($options) : null,
                     'correct_answer' => $correctAnswer,
                     'type' => $type,
+                    'image_path' => $imagePath, // Simpan gambar jika ada
                 ]);
             } catch (\Exception $e) {
                 \Log::error("Error memproses soal dari Word: " . $e->getMessage());
-                \Log::info("Isi File Word: " . $text);
             }
         }
-    }
+    }    
 
     private function processExcel($path, $exam)
     {
-        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load(Storage::path($path));
+        $spreadsheet = ExcelIOFactory::load(Storage::path($path));
         $sheet = $spreadsheet->getActiveSheet();
         $data = $sheet->toArray();
-
+    
         \Log::info("Total Baris dalam Excel: " . count($data));
-
+    
         foreach ($data as $index => $row) {
             if ($index == 0) {
                 \Log::info("Skipping header row.");
-                continue; // Lewati header
+                continue;
             }
-
+    
             if (empty($row[0])) {
                 \Log::warning("Skipping empty row at index: " . $index);
                 continue;
             }
-
+    
             try {
-                $questionText = trim($row[0]); // Pertanyaan
-                $options = json_decode($row[1], true); // Decode JSON
-                $correctAnswer = trim($row[2]); // Jawaban benar
-                $type = trim($row[3]); // Jenis soal
-
+                $questionText = trim($row[0]);
+                $optionsJson = $row[1];
+                $correctAnswer = trim($row[2]);
+                $type = trim($row[3]);
+                $imageFileName = isset($row[4]) ? trim($row[4]) : null; // Nama file gambar
+    
                 \Log::info("Processing row $index: $questionText");
-
-                if ($type === 'multiple_choice' && !is_array($options)) {
-                    throw new \Exception("Invalid multiple choice options format at row $index.");
+    
+                $options = null;
+                if ($type === 'multiple_choice') {
+                    $options = json_decode($optionsJson, true);
+    
+                    if (!is_array($options)) {
+                        throw new \Exception("Format opsi tidak valid di baris $index.");
+                    }
                 }
-
+    
                 if ($type === 'essay') {
                     $options = null;
                     $correctAnswer = null;
                 }
-
-                // Simpan ke database
+    
+                // Proses gambar
+                $imagePath = null;
+                if ($imageFileName) {
+                    $originalPath = "uploads/excel_images/{$imageFileName}";
+                    if (Storage::exists("public/{$originalPath}")) {
+                        $newPath = 'question_images/' . uniqid() . '.' . pathinfo($imageFileName, PATHINFO_EXTENSION);
+                        Storage::move("public/{$originalPath}", "public/{$newPath}");
+                        $imagePath = $newPath;
+                    } else {
+                        \Log::warning("Gambar tidak ditemukan untuk soal: " . $questionText);
+                    }
+                }
+    
                 Question::create([
                     'exam_id' => $exam->id,
                     'question_text' => $questionText,
                     'options' => $options ? json_encode($options) : null,
                     'correct_answer' => $correctAnswer,
                     'type' => $type,
+                    'image_path' => $imagePath, // Simpan gambar jika ada
                 ]);
             } catch (\Exception $e) {
                 \Log::error("Error processing row $index: " . $e->getMessage());

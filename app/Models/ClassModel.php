@@ -34,4 +34,9 @@ class ClassModel extends Model
     {
         return $this->hasMany(Exam::class, 'class_id');
     }
+
+    public function mataPelajaran()
+    {
+        return $this->hasMany(Subject::class, 'class_id');
+    }
 }

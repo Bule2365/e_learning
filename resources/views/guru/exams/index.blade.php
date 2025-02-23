@@ -31,11 +31,12 @@
                 border: 1px solid rgba(0, 0, 0, 0.08);
                 border-radius: 12px;
                 overflow: hidden;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             }
 
             .exam-card:hover {
                 transform: translateY(-5px);
-                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+                box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
             }
 
             /* Status Badge */
@@ -61,6 +62,10 @@
                 font-size: 0.85rem;
                 border-radius: 8px;
                 transition: all 0.2s ease;
+            }
+
+            .action-buttons .btn:hover {
+                transform: translateY(-2px);
             }
 
             /* Mobile Optimization */
@@ -93,7 +98,7 @@
     <div class="container-lg my-4 my-lg-5">
         <div class="text-center mb-4 mb-lg-5">
             <h1 class="h2 fw-bold text-primary mb-3">Daftar Ujian</h1>
-            <p class="lead text-muted">Kelola ujian untuk kelas yang Anda ajar</p>
+            <p class="lead text-muted">Kelola ujian untuk kelas yang Anda ajar dengan mudah.</p>
         </div>
 
         @if ($exams->isEmpty())
@@ -123,12 +128,6 @@
                                     </span>
                                 </div>
 
-                                @if ($exam->description)
-                                    <div class="exam-description bg-light p-3 rounded-2 mb-3">
-                                        {{ $exam->description }}
-                                    </div>
-                                @endif
-
                                 <div class="action-buttons">
                                     <a href="{{ route('guru.exams.show', $exam->id) }}"
                                         class="btn btn-outline-primary d-flex align-items-center justify-content-center">
@@ -140,6 +139,9 @@
                                     </a>
                                     <a href="{{ route('guru.exams.edit', $exam->id) }}" class="btn btn-warning">
                                         <i class="bi bi-pencil-square me-2"></i> Edit
+                                    </a>
+                                    <a href="{{ route('guru.exams.scores', $exam->id) }}" class="btn btn-info">
+                                        <i class="bi bi-bar-chart-line me-2"></i> Lihat Nilai Siswa
                                     </a>
                                     <form action="{{ route('guru.exams.destroy', $exam->id) }}" method="POST"
                                         onsubmit="return confirm('Apakah Anda yakin ingin menghapus ujian ini?');"

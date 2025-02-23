@@ -42,4 +42,9 @@ class Task extends Model
     {
         return $this->belongsToMany(User::class)->withPivot('score');
     }
+
+    public function tugas()
+    {
+        return $this->belongsTo(ClassModel::class, 'class_id');
+    }
 }

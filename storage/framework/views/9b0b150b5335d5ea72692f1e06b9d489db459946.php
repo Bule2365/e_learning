@@ -1,0 +1,166 @@
+
+
+<?php $__env->startSection('content'); ?>
+    <?php $__env->startPush('styles'); ?>
+        <style>
+            /* Improved Typography */
+            .card-title {
+                font-size: 1.25rem;
+                font-weight: 600;
+                line-height: 1.3;
+                color: #1a237e;
+            }
+
+            .card-subtitle {
+                font-size: 0.9rem;
+                color: #546e7a;
+                letter-spacing: 0.03em;
+            }
+
+            .exam-description {
+                font-size: 0.95rem;
+                color: #455a64;
+                line-height: 1.6;
+                white-space: pre-line;
+                margin-bottom: 1.5rem;
+            }
+
+            /* Responsive Card Design */
+            .exam-card {
+                transition: all 0.3s ease;
+                border: 1px solid rgba(0, 0, 0, 0.08);
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            }
+
+            .exam-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+            }
+
+            /* Status Badge */
+            .status-badge {
+                font-size: 0.8rem;
+                padding: 0.35rem 0.75rem;
+                border-radius: 20px;
+                font-weight: 500;
+            }
+
+            /* Responsive Button Group */
+            .action-buttons {
+                display: flex;
+                gap: 0.75rem;
+                flex-wrap: wrap;
+                margin-top: 1.25rem;
+            }
+
+            .action-buttons .btn {
+                flex: 1 1 auto;
+                min-width: 140px;
+                padding: 0.5rem 1rem;
+                font-size: 0.85rem;
+                border-radius: 8px;
+                transition: all 0.2s ease;
+            }
+
+            .action-buttons .btn:hover {
+                transform: translateY(-2px);
+            }
+
+            /* Mobile Optimization */
+            @media (max-width: 768px) {
+                .container {
+                    padding-left: 1rem;
+                    padding-right: 1rem;
+                }
+
+                .exam-card {
+                    margin-bottom: 1rem;
+                }
+
+                .card-title {
+                    font-size: 1.1rem;
+                }
+
+                .card-subtitle {
+                    font-size: 0.85rem;
+                }
+
+                .action-buttons .btn {
+                    flex: 1 1 100%;
+                    min-width: 100%;
+                }
+            }
+        </style>
+    <?php $__env->stopPush(); ?>
+
+    <div class="container-lg my-4 my-lg-5">
+        <div class="text-center mb-4 mb-lg-5">
+            <h1 class="h2 fw-bold text-primary mb-3">Daftar Ujian</h1>
+            <p class="lead text-muted">Kelola ujian untuk kelas yang Anda ajar dengan mudah.</p>
+        </div>
+
+        <?php if($exams->isEmpty()): ?>
+            <div class="d-flex flex-column align-items-center justify-content-center py-5">
+                <div class="alert alert-info w-100 text-center">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Belum ada ujian untuk mata pelajaran yang Anda ajar
+                </div>
+            </div>
+        <?php else: ?>
+            <div class="row g-4">
+                <?php $__currentLoopData = $exams; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $exam): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <div class="exam-card h-100">
+                            <div class="card-body p-3 p-lg-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <div>
+                                        <h3 class="card-title mb-1"><?php echo e($exam->title); ?></h3>
+                                        <div class="card-subtitle mb-2">
+                                            <span class="d-block"><?php echo e($exam->kelas->name); ?></span>
+                                            <span class="d-block"><?php echo e($exam->mataPelajaran->name); ?></span>
+                                        </div>
+                                    </div>
+                                    <span
+                                        class="status-badge bg-<?php echo e($exam->status == 'active' ? 'success' : 'warning'); ?> text-white">
+                                        <?php echo e(ucfirst($exam->status)); ?>
+
+                                    </span>
+                                </div>
+
+                                <div class="action-buttons">
+                                    <a href="<?php echo e(route('guru.exams.show', $exam->id)); ?>"
+                                        class="btn btn-outline-primary d-flex align-items-center justify-content-center">
+                                        <i class="bi bi-eye me-2"></i> Detail
+                                    </a>
+                                    <a href="<?php echo e(route('guru.exams.add_questions', $exam->id)); ?>"
+                                        class="btn btn-primary d-flex align-items-center justify-content-center">
+                                        <i class="bi bi-plus-circle me-2"></i> Tambah Soal
+                                    </a>
+                                    <a href="<?php echo e(route('guru.exams.edit', $exam->id)); ?>" class="btn btn-warning">
+                                        <i class="bi bi-pencil-square me-2"></i> Edit
+                                    </a>
+                                    <a href="<?php echo e(route('guru.exams.scores', $exam->id)); ?>" class="btn btn-info">
+                                        <i class="bi bi-bar-chart-line me-2"></i> Lihat Nilai Siswa
+                                    </a>
+                                    <form action="<?php echo e(route('guru.exams.destroy', $exam->id)); ?>" method="POST"
+                                        onsubmit="return confirm('Apakah Anda yakin ingin menghapus ujian ini?');"
+                                        style="display: inline;">
+                                        <?php echo csrf_field(); ?>
+                                        <?php echo method_field('DELETE'); ?>
+                                        <button type="submit" class="btn btn-danger">
+                                            <i class="bi bi-trash me-2"></i> Hapus
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            </div>
+        <?php endif; ?>
+    </div>
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('guru.layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\xampp\htdocs\e_learning\resources\views/guru/exams/index.blade.php ENDPATH**/ ?>

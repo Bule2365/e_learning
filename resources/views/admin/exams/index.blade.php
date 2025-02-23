@@ -1,36 +1,44 @@
 @extends('admin.layouts.app')
 
-@section('content')
-    <div class="container">
-        <h1 class="mb-4">Daftar Siswa yang Mengikuti Ujian</h1>
+@section('title', 'Daftar Ujian Siswa')
 
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>No</th>
-                    <th>Nama Siswa</th>
-                    <th>Nama Ujian</th>
-                    <th>Waktu Mulai</th>
-                    <th>Waktu Selesai</th>
-                    <th>Nilai</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($examAttempts as $key => $attempt)
-                    <tr>
-                        <td>{{ $key + 1 }}</td>
-                        <td>{{ $attempt->user->name }}</td>
-                        <td>{{ $attempt->exam->title }}</td>
-                        <td>{{ $attempt->started_at }}</td>
-                        <td>{{ $attempt->submitted_at ?? 'Belum selesai' }}</td>
-                        <td>{{ $attempt->score ?? 'Belum dinilai' }}</td>
-                        <td>
-                            <a href="{{ route('admin.exams.show', $attempt->id) }}" class="btn btn-info btn-sm">Detail</a>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+@push('styles')
+    <style>
+        .hover-effect {
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+        }
+
+        .hover-effect:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+@endpush
+
+@section('content')
+    <div class="container mt-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold text-primary">Daftar Kelas</h2>
+        </div>
+
+        <div class="row">
+            @foreach ($classes as $class)
+                <div class="col-md-4 mb-4">
+                    <a href="{{ route('admin.exams.byClass', $class->id) }}" class="text-decoration-none">
+                        <div class="card shadow-lg border-0 rounded-3 hover-effect">
+                            <div class="card-body d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="fw-bold text-dark mb-0">{{ $class->name }}</h5>
+                                    <p class="text-muted small">Klik untuk melihat ujian</p>
+                                </div>
+                                <div>
+                                    <i class="bi bi-arrow-right-circle text-primary fs-2"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            @endforeach
+        </div>
     </div>
 @endsection

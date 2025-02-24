@@ -62,6 +62,26 @@
             border-radius: 10px;
             text-align: center;
         }
+
+        .pagination {
+            flex-wrap: wrap;
+        }
+
+        .pagination .page-item {
+            margin: 2px;
+        }
+
+        .pagination .page-link {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 576px) {
+            .pagination .page-link {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+            }
+        }
     </style>
 @endpush
 
@@ -73,7 +93,7 @@
                 <h2 class="fw-bold text-primary">Data Pengguna</h2>
             </div>
             <div class="d-flex gap-2">
-                <a href="{{ route('users.create')}}" class="btn btn-primary shadow-sm btn-action">
+                <a href="{{ route('users.create') }}" class="btn btn-primary shadow-sm btn-action">
                     <i class="bi bi-plus-circle me-2"></i> Tambah Pengguna
                 </a>
                 <button type="button" class="btn btn-success shadow-sm btn-action" data-bs-toggle="modal"
@@ -225,23 +245,49 @@
         <!-- Pagination -->
         <div class="d-flex justify-content-center mt-4">
             <ul class="pagination">
+                <!-- Previous Button -->
                 @if ($users->onFirstPage())
                     <li class="page-item disabled">
                         <span class="page-link">&laquo; Previous</span>
                     </li>
                 @else
                     <li class="page-item">
-                        <a class="page-link" href="{{ $users->previousPageUrl() }}" rel="prev">&laquo;
-                            Previous</a>
+                        <a class="page-link" href="{{ $users->previousPageUrl() }}" rel="prev">&laquo; Previous</a>
                     </li>
                 @endif
 
-                @for ($i = 1; $i <= $users->lastPage(); $i++)
+                <!-- First Page Link -->
+                @if ($users->currentPage() > 3)
+                    <li class="page-item">
+                        <a class="page-link" href="{{ $users->url(1) }}">1</a>
+                    </li>
+                    @if ($users->currentPage() > 4)
+                        <li class="page-item disabled d-none d-sm-block">
+                            <span class="page-link">...</span>
+                        </li>
+                    @endif
+                @endif
+
+                <!-- Middle Pages -->
+                @for ($i = max(1, $users->currentPage() - 2); $i <= min($users->lastPage(), $users->currentPage() + 2); $i++)
                     <li class="page-item {{ $users->currentPage() == $i ? 'active' : '' }}">
                         <a class="page-link" href="{{ $users->url($i) }}">{{ $i }}</a>
                     </li>
                 @endfor
 
+                <!-- Last Page Link -->
+                @if ($users->currentPage() < $users->lastPage() - 2)
+                    @if ($users->currentPage() < $users->lastPage() - 3)
+                        <li class="page-item disabled d-none d-sm-block">
+                            <span class="page-link">...</span>
+                        </li>
+                    @endif
+                    <li class="page-item">
+                        <a class="page-link" href="{{ $users->url($users->lastPage()) }}">{{ $users->lastPage() }}</a>
+                    </li>
+                @endif
+
+                <!-- Next Button -->
                 @if ($users->hasMorePages())
                     <li class="page-item">
                         <a class="page-link" href="{{ $users->nextPageUrl() }}" rel="next">Next &raquo;</a>

@@ -15,7 +15,17 @@ class AdminExamController extends Controller
      */
     public function index()
     {
-        $classes = ClassModel::all(); // Ambil semua kelas
+        // Ambil semua kelas beserta jumlah ujiannya
+        $classes = ClassModel::withCount('ujian')->get();
+
+        // Cek apakah ada kelas yang tersedia
+        if ($classes->isEmpty()) {
+            return view('admin.exams.index', [
+                'classes' => [],
+                'message' => 'Tidak ada kelas tersedia.'
+            ]);
+        }
+
         return view('admin.exams.index', compact('classes'));
     }
 

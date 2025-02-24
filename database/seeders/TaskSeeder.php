@@ -40,5 +40,20 @@ class TaskSeeder extends Seeder
         //         }
         //     }
         // }
+
+        // Buat 60 tugas
+        $tasks = Task::factory()->count(60)->create();
+
+        // Hubungkan tugas dengan kelas, mata pelajaran, dan guru
+        $classes = ClassModel::all();
+        $subjects = Subject::all();
+        $teachers = User::where('role', 'guru')->get();
+
+        foreach ($tasks as $task) {
+            $task->class_id = $classes->random()->id; // Random kelas
+            $task->subject_id = $subjects->random()->id; // Random mata pelajaran
+            $task->user_id = $teachers->random()->id; // Random guru
+            $task->save();
+        }
     }
 }

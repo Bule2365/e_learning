@@ -25,7 +25,7 @@ class UserController extends Controller
             $query->where('role', $request->role);
         }
     
-        $users = $query->paginate(10);
+        $users = $query->paginate(35);
     
         // Baris berikut menimpa hasil query di atas.  Hapus jika ingin menggunakan hasil filter dan pagination.
         // $users = User::all(); 

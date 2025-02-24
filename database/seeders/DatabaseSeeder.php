@@ -1,6 +1,7 @@
 <?php
 
 namespace Database\Seeders;
+
 use App\Models\User;
 
 use Illuminate\Database\Seeder;
@@ -49,9 +50,13 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UserSeeder::class,
             ClassSeeder::class,
-            ClassUserSeeder::class,
             SubjectSeeder::class,
+            ExamSeeder::class,
             TaskSeeder::class,
+            MaterialSeeder::class,
+            QuestionSeeder::class,
+            ExamAttemptSeeder::class,
+            ExamAnswerSeeder::class,
         ]);
     }
 }

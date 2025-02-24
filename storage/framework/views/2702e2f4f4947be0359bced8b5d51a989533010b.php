@@ -62,6 +62,26 @@
             border-radius: 10px;
             text-align: center;
         }
+
+        .pagination {
+            flex-wrap: wrap;
+        }
+
+        .pagination .page-item {
+            margin: 2px;
+        }
+
+        .pagination .page-link {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 576px) {
+            .pagination .page-link {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+            }
+        }
     </style>
 <?php $__env->stopPush(); ?>
 
@@ -225,23 +245,49 @@
         <!-- Pagination -->
         <div class="d-flex justify-content-center mt-4">
             <ul class="pagination">
+                <!-- Previous Button -->
                 <?php if($users->onFirstPage()): ?>
                     <li class="page-item disabled">
                         <span class="page-link">&laquo; Previous</span>
                     </li>
                 <?php else: ?>
                     <li class="page-item">
-                        <a class="page-link" href="<?php echo e($users->previousPageUrl()); ?>" rel="prev">&laquo;
-                            Previous</a>
+                        <a class="page-link" href="<?php echo e($users->previousPageUrl()); ?>" rel="prev">&laquo; Previous</a>
                     </li>
                 <?php endif; ?>
 
-                <?php for($i = 1; $i <= $users->lastPage(); $i++): ?>
+                <!-- First Page Link -->
+                <?php if($users->currentPage() > 3): ?>
+                    <li class="page-item">
+                        <a class="page-link" href="<?php echo e($users->url(1)); ?>">1</a>
+                    </li>
+                    <?php if($users->currentPage() > 4): ?>
+                        <li class="page-item disabled d-none d-sm-block">
+                            <span class="page-link">...</span>
+                        </li>
+                    <?php endif; ?>
+                <?php endif; ?>
+
+                <!-- Middle Pages -->
+                <?php for($i = max(1, $users->currentPage() - 2); $i <= min($users->lastPage(), $users->currentPage() + 2); $i++): ?>
                     <li class="page-item <?php echo e($users->currentPage() == $i ? 'active' : ''); ?>">
                         <a class="page-link" href="<?php echo e($users->url($i)); ?>"><?php echo e($i); ?></a>
                     </li>
                 <?php endfor; ?>
 
+                <!-- Last Page Link -->
+                <?php if($users->currentPage() < $users->lastPage() - 2): ?>
+                    <?php if($users->currentPage() < $users->lastPage() - 3): ?>
+                        <li class="page-item disabled d-none d-sm-block">
+                            <span class="page-link">...</span>
+                        </li>
+                    <?php endif; ?>
+                    <li class="page-item">
+                        <a class="page-link" href="<?php echo e($users->url($users->lastPage())); ?>"><?php echo e($users->lastPage()); ?></a>
+                    </li>
+                <?php endif; ?>
+
+                <!-- Next Button -->
                 <?php if($users->hasMorePages()): ?>
                     <li class="page-item">
                         <a class="page-link" href="<?php echo e($users->nextPageUrl()); ?>" rel="next">Next &raquo;</a>

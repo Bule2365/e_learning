@@ -3,43 +3,26 @@
 @section('content')
     @push('styles')
         <style>
-            /* Improved Typography */
+            /* Typography Improvements */
             .card-title {
                 font-size: 1.25rem;
                 font-weight: 600;
-                line-height: 1.3;
                 color: #1a237e;
             }
 
-            .card-subtitle {
-                font-size: 0.9rem;
-                color: #546e7a;
-                letter-spacing: 0.03em;
-            }
-
-            .task-description {
-                font-size: 0.95rem;
-                color: #455a64;
-                line-height: 1.6;
-                white-space: pre-line;
-                margin-bottom: 1.5rem;
-            }
-
-            /* Responsive Card Design */
             .task-card {
                 transition: all 0.3s ease;
-                border: 1px solid rgba(0, 0, 0, 0.08);
                 border-radius: 12px;
-                overflow: hidden;
-                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                border: none;
             }
 
             .task-card:hover {
                 transform: translateY(-5px);
-                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+                box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
             }
 
-            /* Status Badge */
+            /* Task Status Badge */
             .status-badge {
                 font-size: 0.8rem;
                 padding: 0.35rem 0.75rem;
@@ -52,21 +35,32 @@
                 display: flex;
                 gap: 0.75rem;
                 flex-wrap: wrap;
-                margin-top: 1.25rem;
+                margin-top: 1rem;
             }
 
             .action-buttons .btn {
                 flex: 1 1 auto;
-                min-width: 140px;
+                min-width: 120px;
                 padding: 0.5rem 1rem;
-                font-size: 0.85rem;
                 border-radius: 8px;
-                transition: all 0.3s ease;
+                transition: all 0.2s ease;
             }
 
             .action-buttons .btn:hover {
                 transform: translateY(-2px);
                 box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            }
+
+            /* Modal Styling */
+            .modal-content {
+                border-radius: 12px;
+            }
+
+            .modal-header {
+                background: #ff6f61;
+                color: white;
+                border-top-left-radius: 12px;
+                border-top-right-radius: 12px;
             }
 
             /* Mobile Optimization */
@@ -80,14 +74,6 @@
                     margin-bottom: 1rem;
                 }
 
-                .card-title {
-                    font-size: 1.1rem;
-                }
-
-                .card-subtitle {
-                    font-size: 0.85rem;
-                }
-
                 .action-buttons .btn {
                     flex: 1 1 100%;
                     min-width: 100%;
@@ -96,28 +82,26 @@
         </style>
     @endpush
 
-    <div class="container-lg my-4 my-lg-5">
-        <div class="text-center mb-4 mb-lg-5">
-            <h1 class="h2 fw-bold text-primary mb-3">Daftar Tugas</h1>
-            <p class="lead text-muted">Kelola tugas untuk kelas yang Anda ajar dengan mudah.</p>
+    <div class="container-lg my-4">
+        <div class="text-center mb-4">
+            <h1 class="h2 fw-bold text-primary">Daftar Tugas</h1>
+            <p class="lead text-muted">Kelola tugas untuk kelas Anda dengan mudah.</p>
         </div>
 
         @if ($tasks->isEmpty())
-            <div class="d-flex flex-column align-items-center justify-content-center py-5">
-                <div class="alert alert-info w-100 text-center">
-                    <i class="bi bi-info-circle me-2"></i>
-                    Belum ada tugas yang tersedia.
-                </div>
+            <div class="alert alert-info text-center">
+                <i class="bi bi-info-circle me-2"></i> Belum ada tugas yang tersedia.
             </div>
         @else
             <div class="row g-4">
                 @foreach ($tasks->sortByDesc('created_at') as $task)
                     <div class="col-12 col-md-6 col-xl-4">
-                        <div class="task-card h-100">
-                            <div class="card-body p-3 p-lg-4">
-                                <h3 class="card-title mb-1">{{ $task->title }}</h3>
-                                <h6 class="card-subtitle mb-2 text-muted">{{ $task->mataPelajaran->name }}</h6>
-                                <p class="task-description">
+                        <div class="task-card card h-100">
+                            <div class="card-body">
+                                <h3 class="card-title">{{ $task->title }}</h3>
+                                <h6 class="text-muted mb-2">{{ $task->mataPelajaran->name }}</h6>
+                                <p class="text-dark mb-2">
+                                    <i class="bi bi-calendar-event me-1"></i>
                                     Deadline: <strong>{{ \Carbon\Carbon::parse($task->due_date)->format('d M Y') }}</strong>
                                 </p>
 
@@ -126,7 +110,7 @@
                                         <i class="bi bi-eye me-2"></i> Lihat
                                     </a>
                                     <a href="{{ route('tasks.edit', $task->id) }}" class="btn btn-warning">
-                                        <i class="bi bi-pencil-square me-2"></i> Edit
+                                        <i class="bi bi-pencil me-2"></i> Edit
                                     </a>
                                     <button type="button" class="btn btn-danger" data-bs-toggle="modal"
                                         data-bs-target="#deleteModal" data-task-id="{{ $task->id }}"
@@ -147,11 +131,14 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="deleteModalLabel">Konfirmasi Penghapusan</h5>
+                    <h5 class="modal-title" id="deleteModalLabel">
+                        <i class="bi bi-exclamation-triangle"></i> Konfirmasi Penghapusan
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p>Apakah Anda yakin ingin menghapus tugas <strong id="taskTitle"></strong>?</p>
+                    <p>Apakah Anda yakin ingin menghapus tugas <strong id="taskTitle"></strong>? Tindakan ini tidak dapat
+                        dibatalkan.</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
@@ -167,18 +154,18 @@
 
     @push('scripts')
         <script>
-            // JavaScript untuk menambahkan data ke modal
+            // Mengatur data pada modal saat tombol hapus diklik
             var deleteModal = document.getElementById('deleteModal');
             deleteModal.addEventListener('show.bs.modal', function(event) {
-                var button = event.relatedTarget; // Tombol yang mengaktifkan modal
-                var taskId = button.getAttribute('data-task-id'); // Ambil ID tugas
-                var taskTitle = button.getAttribute('data-task-title'); // Ambil judul tugas
+                var button = event.relatedTarget; // Tombol yang diklik
+                var taskId = button.getAttribute('data-task-id'); // ID tugas
+                var taskTitle = button.getAttribute('data-task-title'); // Judul tugas
 
-                // Update konten modal dengan ID dan judul tugas
+                // Update isi modal
                 var taskTitleElement = document.getElementById('taskTitle');
                 taskTitleElement.textContent = taskTitle;
 
-                // Update action form dengan ID tugas yang sesuai
+                // Update action pada form hapus
                 var form = document.getElementById('deleteForm');
                 form.action = '/tasks/' + taskId;
             });

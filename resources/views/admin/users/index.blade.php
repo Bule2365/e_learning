@@ -76,11 +76,32 @@
             font-size: 0.875rem;
         }
 
+        /* Menyesuaikan modal agar pas di layar kecil */
         @media (max-width: 576px) {
-            .pagination .page-link {
-                padding: 0.25rem 0.5rem;
-                font-size: 0.75rem;
+            .modal-dialog {
+                max-width: 90%;
+                margin: auto;
             }
+        }
+
+        /* Pastikan tabel tetap dalam ukuran yang bisa digulir */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        /* Menghindari pemotongan teks di layar kecil */
+        @media (max-width: 768px) {
+
+            .table th,
+            .table td {
+                white-space: nowrap;
+                /* Hindari pemotongan teks */
+            }
+        }
+
+        /* Tambahkan efek hover untuk pengalaman lebih baik */
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 123, 255, 0.1);
         }
     </style>
 @endpush
@@ -124,8 +145,7 @@
                         <!-- Role Dropdown with Smooth Transition -->
                         <select name="role" class="form-select w-25 shadow-sm border-start-0"
                             onchange="this.form.submit()">
-                            <option value="">Semua Role</option>
-                            <option value="admin" {{ request()->role == 'admin' ? 'selected' : '' }}>Admin</option>
+                            <option value="">Semua</option>
                             <option value="guru" {{ request()->role == 'guru' ? 'selected' : '' }}>Guru</option>
                             <option value="siswa" {{ request()->role == 'siswa' ? 'selected' : '' }}>Siswa</option>
                         </select>
@@ -138,82 +158,51 @@
         <div class="card shadow table-custom">
             <div class="card-body">
                 @if ($users->isEmpty())
-                    <div class="empty-alert">
+                    <div class="alert alert-warning text-center">
                         Tidak ada pengguna yang tersedia.
                     </div>
                 @else
                     <div class="table-responsive">
-                        <table class="table table-bordered">
-                            <thead>
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-primary">
                                 <tr>
                                     <th>#</th>
                                     <th>Nama</th>
                                     <th>Email</th>
                                     <th>Role</th>
-                                    <th>Aksi</th>
+                                    <th class="text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($users as $user)
                                     <tr>
                                         <td>{{ $loop->iteration }}</td>
-                                        <td>{{ $user->name }}</td>
-                                        <td>{{ $user->email }}</td>
-                                        <td>{{ ucfirst($user->role) }}</td>
+                                        <td class="text-nowrap">{{ $user->name }}</td>
+                                        <td class="text-nowrap">{{ $user->email }}</td>
+                                        <td class="text-nowrap">{{ ucfirst($user->role) }}</td>
                                         <td>
-                                            <div class="d-flex justify-content-center gap-2">
+                                            <div class="d-flex justify-content-center flex-wrap gap-2">
                                                 <a href="{{ route('users.edit', $user) }}"
-                                                    class="btn btn-outline-primary btn-sm">
-                                                    <i class="bi bi-pencil-square me-1"></i> Edit
+                                                    class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-pencil-square"></i> Edit
                                                 </a>
-                                                <button type="button" class="btn btn-outline-danger btn-sm"
+                                                <button type="button" class="btn btn-sm btn-outline-danger"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#deleteModal{{ $user->id }}">
-                                                    <i class="bi bi-trash me-1"></i> Hapus
+                                                    <i class="bi bi-trash"></i> Hapus
                                                 </button>
-
-                                                <!-- Delete Confirmation Modal -->
-                                                <div class="modal fade" id="deleteModal{{ $user->id }}" tabindex="-1"
-                                                    aria-labelledby="deleteModalLabel{{ $user->id }}"
-                                                    aria-hidden="true">
-                                                    <div class="modal-dialog">
-                                                        <div class="modal-content">
-                                                            <div class="modal-header">
-                                                                <h5 class="modal-title"
-                                                                    id="deleteModalLabel{{ $user->id }}">
-                                                                    Konfirmasi Penghapusan</h5>
-                                                                <button type="button" class="btn-close"
-                                                                    data-bs-dismiss="modal" aria-label="Close"></button>
-                                                            </div>
-                                                            <div class="modal-body">
-                                                                Apakah Anda yakin ingin menghapus pengguna
-                                                                <strong>{{ $user->name }}</strong>?
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <button type="button" class="btn btn-secondary"
-                                                                    data-bs-dismiss="modal">Batal</button>
-                                                                <form action="{{ route('users.destroy', $user) }}"
-                                                                    method="POST">
-                                                                    @csrf
-                                                                    @method('DELETE')
-                                                                    <button type="submit"
-                                                                        class="btn btn-danger">Hapus</button>
-                                                                </form>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
                                             </div>
                                         </td>
                                     </tr>
 
-                                    <!-- Delete Confirmation Modal -->
+                                    <!-- Modal Konfirmasi Hapus -->
                                     <div class="modal fade" id="deleteModal{{ $user->id }}" tabindex="-1"
-                                        aria-labelledby="deleteModalLabel" aria-hidden="true">
+                                        aria-labelledby="deleteModalLabel{{ $user->id }}" aria-hidden="true">
                                         <div class="modal-dialog modal-dialog-centered">
                                             <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="deleteModalLabel">Konfirmasi Penghapusan
+                                                <div class="modal-header bg-danger text-white">
+                                                    <h5 class="modal-title" id="deleteModalLabel{{ $user->id }}">
+                                                        Konfirmasi Penghapusan
                                                     </h5>
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                         aria-label="Close"></button>
@@ -224,8 +213,10 @@
                                                 </div>
                                                 <div class="modal-footer">
                                                     <button type="button" class="btn btn-secondary"
-                                                        data-bs-dismiss="modal">Batal</button>
-                                                    <form action="{{ route('users.destroy', $user->id) }}" method="POST">
+                                                        data-bs-dismiss="modal">
+                                                        Batal
+                                                    </button>
+                                                    <form action="{{ route('users.destroy', $user) }}" method="POST">
                                                         @csrf
                                                         @method('DELETE')
                                                         <button type="submit" class="btn btn-danger">Hapus</button>

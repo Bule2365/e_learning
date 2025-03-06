@@ -21,59 +21,65 @@ class MaterialController extends Controller
     {
         // Ambil ID kelas dari query string URL
         $classId = $request->query('class_id');
-        
+
         // Ambil semua mata pelajaran yang relevan untuk guru
         $subjects = Subject::where('user_id', Auth::id())->get();
-        
+
         // Ambil kelas berdasarkan ID jika ada
         $classes = ClassModel::find($classId);
-    
+
         if (!$classes) {
             // Jika kelas tidak ditemukan, arahkan ke halaman sebelumnya atau tampilkan error
             return redirect()->back()->with('error', 'Kelas dengan ID ' . $classId . ' tidak ditemukan.');
         }
-    
+
+        if ($subjects->isEmpty()) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki mata pelajaran yang dapat diajar.');
+        }
+
         // Pass kelas yang terpilih ke view
         return view('guru.materials.create', compact('subjects', 'classes'));
     }
 
     public function store(Request $request)
     {
-        // Validasi data yang diterima
+        // Validasi data
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'files' => 'nullable|array|max:5', // Membatasi hanya 5 file
-            'files.*' => 'file|mimes:pdf,jpeg,png,jpg,mp4,avi,mov|max:102400', // Validasi file (maks 100MB)
-            'subject_id' => 'required|exists:subjects,id',
-            'class_id' => 'required|exists:classes,id',
+            'title'       => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'files'       => 'nullable|array|max:5', // Maksimal 5 file
+            'files.*'     => 'file|mimes:pdf,jpeg,png,jpg,mp4,avi,mov|max:102400', // Maksimal 100MB per file
+            'subject_id'  => 'required|exists:subjects,id',
+            'class_id'    => 'required|exists:classes,id',
         ]);
 
-        // Menyimpan setiap file
+        // Array untuk menyimpan path file
         $filePaths = [];
+
+        // Simpan setiap file yang diunggah
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
-                // Memastikan file yang di-upload tidak lebih dari 100MB
-                if ($file->getSize() > 102400000) {
-                    return redirect()->back()->with('error', 'Ukuran file tidak boleh lebih dari 100MB.');
-                }
-
-                // Menyimpan file ke dalam direktori 'materials' dan menyimpan path-nya
+                // Simpan file ke direktori 'materials'
                 $filePaths[] = $file->store('materials', 'public');
             }
         }
 
-        // Membuat data materi baru
-        $material = Material::create([
-            'title' => $validated['title'],
+        // Pastikan file_paths tetap dalam batas 255 karakter
+        $filePathsJson = json_encode($filePaths);
+        if (strlen($filePathsJson) > 255) {
+            return redirect()->back()->with('error', 'Total panjang path file melebihi batas yang diizinkan.');
+        }
+
+        // Simpan ke database
+        Material::create([
+            'title'       => $validated['title'],
             'description' => $validated['description'],
-            'file_path'   => json_encode(array_map('str_replace', ['\\'], ['/'], $filePaths)), // Menyimpan array file dalam format JSON
-            'subject_id' => $validated['subject_id'],
-            'class_id' => $validated['class_id'],
-            'user_id' => Auth::id(),
+            'file_path'   => $filePathsJson, // Simpan path dalam format JSON
+            'subject_id'  => $validated['subject_id'],
+            'class_id'    => $validated['class_id'],
+            'user_id'     => Auth::id(),
         ]);
 
-        // Redirect setelah materi berhasil dibuat
         return redirect()->route('guru.materials.index')->with('success', 'Materi berhasil dibuat');
     }
 
@@ -102,7 +108,7 @@ class MaterialController extends Controller
         if ($material->user_id !== Auth::id()) {
             return redirect()->route('guru.materials.index')->with('error', 'Anda tidak memiliki akses untuk mengubah materi ini.');
         }
-    
+
         // Validasi input tanpa subject_id dan class_id karena akan otomatis diisi
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -110,17 +116,17 @@ class MaterialController extends Controller
             'files' => 'nullable|array|max:5', // Maksimal 5 file
             'files.*' => 'file|mimes:pdf,jpeg,png,jpg,mp4,avi,mov|max:102400', // Maksimal 100MB
         ]);
-    
+
         // Ambil file lama dari database
         $filePaths = json_decode($material->file_path, true) ?? [];
-    
+
         // Jika ada file baru yang diunggah, hapus file lama dan simpan yang baru
         if ($request->hasFile('files')) {
             // Hapus file lama dari storage
             foreach ($filePaths as $file) {
                 \Storage::disk('public')->delete($file);
             }
-    
+
             // Simpan file baru
             $filePaths = [];
             foreach ($request->file('files') as $file) {
@@ -130,16 +136,16 @@ class MaterialController extends Controller
                 $filePaths[] = $file->store('materials', 'public');
             }
         }
-    
+
         // Update materi, hanya ubah field yang diubah
         $material->update([
             'title' => $validated['title'] !== $material->title ? $validated['title'] : $material->title,
             'description' => $validated['description'] !== $material->description ? $validated['description'] : $material->description,
             'file_path' => count($filePaths) > 0 ? json_encode($filePaths) : $material->file_path, // Hanya update file jika ada file baru
         ]);
-    
+
         return redirect()->route('guru.materials.index')->with('success', 'Materi berhasil diperbarui.');
-    }    
+    }
 
     public function destroy(Material $material)
     {

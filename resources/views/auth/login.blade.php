@@ -7,7 +7,8 @@
     <title>Login</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css"
+        rel="stylesheet">
     <style>
         :root {
             --primary-color: #1e40af;
@@ -136,30 +137,32 @@
 </head>
 
 <body>
-<div class="main-container">
+    <div class="main-container">
         <div class="content-wrapper">
             <!-- Back Button Icon -->
-            <a href="{{ url('/')}}" class="back-icon" id="backButton">
+            <a href="{{ url('/') }}" class="back-icon" id="backButton">
                 <i class="bi bi-arrow-left-circle-fill"></i> <!-- Arrow Back Icon -->
             </a>
 
             <div class="login-container">
                 @if ($errors->any())
-                <div class="alert alert-danger mb-4" role="alert">
-                    <strong>Oops!</strong>
-                    <span>{{ $errors->first() }}</span>
-                </div>
+                    <div class="alert alert-danger mb-4" role="alert">
+                        <strong>Oops!</strong>
+                        <span>{{ $errors->first() }}</span>
+                    </div>
                 @endif
 
                 <form action="{{ route('login') }}" method="POST">
                     @csrf
                     <div class="mb-4">
                         <label for="id" class="form-label fw-semibold">ID:</label>
-                        <input type="text" class="form-control" name="id" id="id" required placeholder="Enter your ID">
+                        <input type="text" class="form-control" name="id" id="id" required
+                            placeholder="Enter your ID">
                     </div>
                     <div class="mb-4">
                         <label for="password" class="form-label fw-semibold">Password:</label>
-                        <input type="password" class="form-control" name="password" id="password" required placeholder="Enter your password">
+                        <input type="password" class="form-control" name="password" id="password" required
+                            placeholder="Enter your password">
                     </div>
                     <button type="submit" class="btn btn-primary">
                         Sign In

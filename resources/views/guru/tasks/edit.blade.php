@@ -2,6 +2,12 @@
 
 @section('content')
     <div class="container my-5">
+
+        <a href="{{ route('tasks.index') }}" class="btn btn-primary mb-3">
+            <i class="bi bi-arrow-left"></i>
+            <span>Kembali ke Daftar Tugas</span>
+        </a>
+
         @if ($errors->any())
             <ul>
                 @foreach ($errors->all() as $error)

@@ -2,6 +2,11 @@
 
 @section('content')
     <div class="container mt-5">
+        <a href="{{ route('guru.materials.index') }}" class="btn btn-primary mb-3">
+            <i class="bi bi-arrow-left"></i>
+            <span>Kembali ke Daftar Kelas</span>
+        </a>
+
         <h1 class="mb-4 text-center">{{ $material->title }}</h1>
 
         <p><strong>Deskripsi:</strong> {{ $material->description }}</p>
@@ -41,7 +46,5 @@
                 </div>
             @endforeach
         </div>
-
-        <a href="{{ route('guru.materials.index') }}" class="btn btn-secondary mt-3">Kembali ke Daftar Materi</a>
     </div>
 @endsection

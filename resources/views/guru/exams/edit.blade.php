@@ -2,6 +2,11 @@
 
 @section('content')
     <div class="container my-5">
+        <a href="{{ route('guru.exams.index') }}" class="btn btn-primary mb-3">
+            <i class="bi bi-arrow-left"></i>
+            <span>Kembali ke Daftar Ujian</span>
+        </a>
+
         <h1 class="display-4 text-center mb-4">Edit Ujian</h1>
 
         <form action="{{ route('guru.exams.update', $exam->id) }}" method="POST" class="shadow p-4 rounded bg-light">
@@ -38,9 +43,11 @@
                 @enderror
             </div>
 
-            <div class="d-flex justify-content-between">
-                <button type="submit" class="btn btn-primary btn-lg w-100">Simpan Perubahan</button>
-                <a href="{{ route('guru.exams.index') }}" class="btn btn-secondary btn-lg w-100 ms-3">Batal</a>
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary btn-lg w-100">
+                    <i class="bi bi-floppy2-fill"></i>
+                    <span>Simpan Ujian</span>
+                </button>
             </div>
         </form>
     </div>

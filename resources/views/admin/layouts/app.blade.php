@@ -96,19 +96,29 @@
     <!-- Modal Konfirmasi Logout -->
     <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="logoutModalLabel">Konfirmasi Logout</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold" id="logoutModalLabel">
+                        <i class="bi bi-box-arrow-right me-2"></i> Konfirmasi Logout
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <p>Apakah Anda yakin ingin keluar dari aplikasi?</p>
+                <div class="modal-body text-center">
+                    <i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 3rem;"></i>
+                    <p class="mt-3 fs-5 text-secondary">
+                        Apakah Anda yakin ingin keluar dari aplikasi?
+                    </p>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <div class="modal-footer border-0 d-flex justify-content-center">
+                    <button type="button" class="btn btn-light px-4 shadow-sm" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i> Batal
+                    </button>
                     <form action="{{ route('logout') }}" method="POST" id="logoutForm">
                         @csrf
-                        <button type="submit" class="btn btn-danger">Logout</button>
+                        <button type="submit" class="btn btn-danger px-4 shadow-sm">
+                            <i class="bi bi-box-arrow-right me-1"></i> Logout
+                        </button>
                     </form>
                 </div>
             </div>

@@ -140,182 +140,61 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Revenue Sources Section -->
-        <div class="row">
-            <div class="col-lg-6 mb-4">
-                <div class="card shadow-lg border-0 rounded-3">
-                    <div class="card-header py-3 bg-primary text-white">
-                        <h6 class="m-0 font-weight-bold">Data Sekolah</h6>
-                    </div>
-                    <div class="card-body">
-                        <!-- Jumlah Siswa -->
-                        <div class="mb-4 position-relative">
-                            <p class="text-sm font-weight-bold text-dark">Jumlah Siswa</p>
-                            <div class="progress rounded-pill" style="height: 12px;">
-                                <div class="progress-bar bg-primary progress-hover" role="progressbar"
-                                    style="width: {{ ($jumlahSiswa / ($jumlahSiswa + $jumlahGuru + $jumlahKelas)) * 100 }}%;"
-                                    aria-valuenow="{{ $jumlahSiswa }}" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                            <div
-                                class="tooltip-text d-none position-absolute bg-dark text-white px-2 py-1 rounded shadow-sm">
-                                {{ $jumlahSiswa }}
-                            </div>
-                        </div>
-
-                        <!-- Jumlah Guru -->
-                        <div class="mb-4 position-relative">
-                            <p class="text-sm font-weight-bold text-dark">Jumlah Guru</p>
-                            <div class="progress rounded-pill" style="height: 12px;">
-                                <div class="progress-bar bg-success progress-hover" role="progressbar"
-                                    style="width: {{ ($jumlahGuru / ($jumlahSiswa + $jumlahGuru + $jumlahKelas)) * 100 }}%;"
-                                    aria-valuenow="{{ $jumlahGuru }}" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                            <div
-                                class="tooltip-text d-none position-absolute bg-dark text-white px-2 py-1 rounded shadow-sm">
-                                {{ $jumlahGuru }}
-                            </div>
-                        </div>
-
-                        <!-- Jumlah Kelas -->
-                        <div class="mb-4 position-relative">
-                            <p class="text-sm font-weight-bold text-dark">Jumlah Kelas</p>
-                            <div class="progress rounded-pill" style="height: 12px;">
-                                <div class="progress-bar bg-warning progress-hover" role="progressbar"
-                                    style="width: {{ ($jumlahKelas / ($jumlahSiswa + $jumlahGuru + $jumlahKelas)) * 100 }}%;"
-                                    aria-valuenow="{{ $jumlahKelas }}" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                            <div
-                                class="tooltip-text d-none position-absolute bg-dark text-white px-2 py-1 rounded shadow-sm">
-                                {{ $jumlahKelas }}
-                            </div>
-                        </div>
-                    </div>
+    <div class="row mt-4">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-lg border-0 rounded-3">
+                <div class="card-header py-3 bg-primary text-white">
+                    <h6 class="m-0 font-weight-bold">Perbandingan Jumlah Guru dan Siswa</h6>
                 </div>
-            </div>
-
-            <!-- Dropdown and Chart -->
-            <div class="col-lg-6 mb-4">
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3 bg-primary text-white">
-                        <h6 class="m-0 font-weight-bold">Pilih Grafik</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="dropdown mb-3">
-                            <button class="btn btn-secondary dropdown-toggle w-100" type="button" id="dropdownChart"
-                                data-bs-toggle="dropdown" aria-expanded="false">
-                                Pilih Grafik
-                            </button>
-                            <ul class="dropdown-menu w-100" aria-labelledby="dropdownChart">
-                                <li><a class="dropdown-item" href="#" onclick="showChart('siswa')">Grafik Siswa</a>
-                                </li>
-                                <li><a class="dropdown-item" href="#" onclick="showChart('guru')">Grafik Guru</a>
-                                </li>
-                                <li><a class="dropdown-item" href="#" onclick="showChart('kelas')">Grafik Kelas</a>
-                                </li>
-                                <li><a class="dropdown-item" href="#" onclick="showChart('mapel')">Grafik Mata
-                                        Pelajaran</a></li>
-                            </ul>
-                        </div>
-                        <canvas id="chartCanvas"></canvas>
-                    </div>
+                <div class="card-body">
+                    <canvas id="chartComparison"></canvas>
                 </div>
             </div>
         </div>
     </div>
+@endsection
 
-    @push('scripts')
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script>
-            let chart;
+@push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var ctx = document.getElementById("chartComparison").getContext("2d");
+            var labels = @json($years);
+            var dataSiswa = @json($dataSiswa);
+            var dataGuru = @json($dataGuru);
 
-            function showChart(type) {
-                console.log("Menampilkan grafik:", type);
-
-                // Data untuk grafik
-                const data = {
-                    siswa: {!! json_encode($jumlahSiswa) !!},
-                    guru: {!! json_encode($jumlahGuru) !!},
-                    kelas: {!! json_encode($jumlahKelas) !!},
-                    mapel: {!! json_encode($jumlahMapel) !!}
-                };
-
-                // Hancurkan grafik sebelumnya jika ada
-                if (chart) chart.destroy();
-
-                // Konfigurasi Chart.js
-                const ctx = document.getElementById('chartCanvas').getContext('2d');
-                chart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: Array.from({
-                            length: data[type]
-                        }, (_, i) => i + 1), // Label dari 1 hingga jumlah data
-                        datasets: [{
-                            label: 'Jumlah',
-                            data: Array.from({
-                                length: data[type]
-                            }, () => 0), // Mulai dari 0
-                            borderColor: 'rgba(54, 162, 235, 1)',
-                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                            borderWidth: 2,
-                            tension: 0.4, // Efek kurva smooth
+            new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                            label: "Jumlah Siswa",
+                            data: dataSiswa,
+                            borderColor: "#4e73df",
+                            backgroundColor: "rgba(78, 115, 223, 0.1)",
                             fill: true,
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: {
-                                display: true,
-                            }
                         },
-                        scales: {
-                            x: {
-                                grid: {
-                                    display: false,
-                                }
-                            },
-                            y: {
-                                beginAtZero: true,
-                                grid: {
-                                    color: '#e5e7eb',
-                                }
-                            }
-                        },
-                        animation: {
-                            duration: 2000, // Durasi animasi dalam milidetik
-                            easing: 'easeInOutBounce', // Efek bouncing
+                        {
+                            label: "Jumlah Guru",
+                            data: dataGuru,
+                            borderColor: "#1cc88a",
+                            backgroundColor: "rgba(28, 200, 138, 0.1)",
+                            fill: true,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
                         }
                     }
-                });
-
-                // Animasi memantul untuk menampilkan data
-                setTimeout(() => {
-                    chart.data.datasets[0].data = Array.from({
-                        length: data[type]
-                    }, (_, i) => i + 1); // Isi data sesuai ID
-                    chart.update(); // Perbarui grafik
-                }, 500);
-            }
-
-            // Efek hover untuk progress bar
-            document.querySelectorAll('.progress-hover').forEach((progressBar) => {
-                const tooltip = progressBar.parentElement.nextElementSibling;
-
-                progressBar.addEventListener('mouseenter', (e) => {
-                    tooltip.classList.remove('d-none');
-                    tooltip.style.opacity = "1";
-                    tooltip.style.transform = "translateY(-10px)";
-                    tooltip.style.left = `${e.target.offsetWidth / 2 - tooltip.offsetWidth / 2}px`;
-                });
-
-                progressBar.addEventListener('mouseleave', () => {
-                    tooltip.style.opacity = "0";
-                    tooltip.style.transform = "translateY(0px)";
-                    setTimeout(() => tooltip.classList.add('d-none'), 300);
-                });
+                }
             });
-        </script>
-    @endpush
-@endsection
+        });
+    </script>
+@endpush

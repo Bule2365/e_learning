@@ -13,23 +13,21 @@ class UserController extends Controller
     // Menampilkan daftar pengguna
     public function index(Request $request)
     {
-        $query = User::query();
-    
+        // Menyembunyikan admin dari daftar pengguna
+        $query = User::where('role', '!=', 'admin');
+
         // Pencarian berdasarkan nama
         if ($request->has('search') && $request->search != '') {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
-    
-        // Filter berdasarkan role
-        if ($request->has('role') && $request->role != '') {
+
+        // Filter berdasarkan role (tanpa admin)
+        if ($request->has('role') && $request->role != '' && $request->role != 'admin') {
             $query->where('role', $request->role);
         }
-    
+
         $users = $query->paginate(35);
-    
-        // Baris berikut menimpa hasil query di atas.  Hapus jika ingin menggunakan hasil filter dan pagination.
-        // $users = User::all(); 
-    
+
         return view('admin.users.index', compact('users'));
     }
 
@@ -115,10 +113,10 @@ class UserController extends Controller
     public function export()
     {
         $users = User::all();
-    
+
         // Nama file CSV
         $filename = 'users.csv';
-    
+
         // Header untuk respons
         $headers = [
             "Content-type" => "text/csv",
@@ -127,13 +125,13 @@ class UserController extends Controller
             "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
             "Expires" => "0",
         ];
-    
+
         // Mengembalikan response dengan file CSV
         $callback = function () use ($users) {
             $handle = fopen('php://output', 'w');
             // Menulis header CSV
             fputcsv($handle, ['ID', 'Name', 'Email', 'Role', 'Created At', 'Updated At']);
-    
+
             // Menulis data setiap user ke CSV
             foreach ($users as $user) {
                 fputcsv($handle, [
@@ -145,10 +143,10 @@ class UserController extends Controller
                     $user->updated_at,
                 ]);
             }
-    
+
             fclose($handle);
         };
-    
+
         return response()->stream($callback, 200, $headers);
     }
 
@@ -158,34 +156,34 @@ class UserController extends Controller
         $request->validate([
             'file' => 'required|mimes:csv,txt|max:10240',
         ]);
-    
+
         // Debugging: cek apakah file diterima
         if (!$request->hasFile('file')) {
             return back()->withErrors(['file' => 'File tidak ditemukan.']);
         }
-    
+
         $file = $request->file('file');
-    
+
         // Debugging: tampilkan informasi file
         logger('File diterima: ' . $file->getClientOriginalName());
-    
+
         // Membaca file CSV
         $handle = fopen($file->getPathname(), 'r');
         if (!$handle) {
             return back()->withErrors(['file' => 'Gagal membaca file.']);
         }
-    
+
         // Lewati header CSV
         $header = fgetcsv($handle);
-    
+
         // Debugging: tampilkan header CSV
         logger('Header CSV: ' . implode(', ', $header));
-    
+
         // Proses data CSV
         while (($row = fgetcsv($handle)) !== false) {
             // Debugging: tampilkan baris CSV
             logger('Baris CSV: ' . implode(', ', $row));
-    
+
             User::updateOrCreate(
                 ['email' => $row[2]], // Identifier unik
                 [
@@ -196,9 +194,9 @@ class UserController extends Controller
                 ]
             );
         }
-    
+
         fclose($handle);
-    
+
         return redirect()->route('users.index')->with('success', 'Users imported successfully.');
-    }        
+    }
 }

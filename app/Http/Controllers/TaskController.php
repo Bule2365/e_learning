@@ -8,6 +8,7 @@ use App\Models\Subject;
 use App\Models\TaskUser;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
@@ -22,22 +23,26 @@ class TaskController extends Controller
     {
         // Ambil ID kelas dari query string URL
         $classId = $request->query('class_id');
-        
+
         // Ambil semua mata pelajaran yang relevan untuk guru
         $subjects = Subject::where('user_id', Auth::id())->get();
-        
+
         // Ambil kelas berdasarkan ID jika ada
         $classes = ClassModel::find($classId);
-    
+
         if (!$classes) {
             // Jika kelas tidak ditemukan, arahkan ke halaman sebelumnya atau tampilkan error
             return redirect()->back()->with('error', 'Kelas dengan ID ' . $classId . ' tidak ditemukan.');
         }
-    
+
+        if ($subjects->isEmpty()) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki mata pelajaran yang dapat diajar.');
+        }
+
         // Pass kelas yang terpilih ke view
         return view('guru.tasks.create', compact('subjects', 'classes'));
     }
-    
+
     public function store(Request $request)
     {
         // Validasi data yang diterima
@@ -50,7 +55,7 @@ class TaskController extends Controller
             'subject_id' => 'required|exists:subjects,id',
             'class_id' => 'required|exists:classes,id',
         ]);
-    
+
         // Menyimpan setiap file
         $filePaths = [];
         if ($request->hasFile('files')) {
@@ -59,12 +64,12 @@ class TaskController extends Controller
                 if ($file->getSize() > 102400000) {
                     return redirect()->back()->with('error', 'Ukuran file tidak boleh lebih dari 100MB.');
                 }
-    
+
                 // Menyimpan file ke dalam direktori 'tasks' dan menyimpan path-nya
                 $filePaths[] = $file->store('tasks', 'public');
             }
         }
-    
+
         // Membuat data tugas baru
         $task = Task::create([
             'title' => $validated['title'],
@@ -75,11 +80,11 @@ class TaskController extends Controller
             'user_id' => Auth::id(),
             'due_date' => $validated['due_date'],
         ]);
-    
+
         // Mendapatkan siswa yang ada di kelas terkait
         $class = ClassModel::find($validated['class_id']);
         $students = $class->siswa()->pluck('users.id');
-    
+
         // Menambahkan tugas untuk setiap siswa
         foreach ($students as $student) {
             TaskUser::create([
@@ -87,7 +92,7 @@ class TaskController extends Controller
                 'user_id' => $student,
             ]);
         }
-    
+
         // Redirect setelah tugas berhasil dibuat
         return redirect()->route('tasks.index')->with('success', 'Tugas berhasil dibuat');
     }
@@ -111,21 +116,21 @@ class TaskController extends Controller
         if ($task->user_id !== Auth::id()) {
             return redirect()->route('tasks.index')->with('error', 'Anda tidak memiliki akses untuk mengedit tugas ini.');
         }
-    
+
         // Ambil daftar mata pelajaran dan kelas
         $subjects = Subject::where('user_id', Auth::id())->get();
         $classes = ClassModel::all();
-    
+
         return view('guru.tasks.edit', compact('task', 'subjects', 'classes'));
     }
-    
+
     public function update(Request $request, Task $task)
     {
         // Pastikan hanya guru pemilik tugas yang bisa mengedit
         if ($task->user_id !== Auth::id()) {
             return redirect()->route('tasks.index')->with('error', 'Anda tidak memiliki akses untuk mengubah tugas ini.');
         }
-    
+
         // Validasi input tanpa subject_id dan class_id karena akan otomatis diisi
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -134,24 +139,24 @@ class TaskController extends Controller
             'files.*' => 'file|mimes:pdf,jpeg,png,jpg,mp4,avi,mov|max:102400', // Maksimal 100MB
             'due_date' => 'required|date',
         ]);
-    
+
         // Ambil subject_id dan class_id secara otomatis berdasarkan tugas
         $subjectId = $task->subject_id; // Mengambil subject_id yang terkait dengan task
         $classId = $task->class_id; // Mengambil class_id yang terkait dengan task
-    
+
         // Debug: Cek apakah data yang didapat sudah benar
         // dd($subjectId, $classId);
-    
+
         // Ambil file lama dari database
         $filePaths = json_decode($task->file_path, true) ?? [];
-    
+
         // Jika ada file baru yang diunggah, hapus file lama dan simpan yang baru
         if ($request->hasFile('files')) {
             // Hapus file lama dari storage
             foreach ($filePaths as $file) {
                 \Storage::disk('public')->delete($file);
             }
-    
+
             // Simpan file baru
             $filePaths = [];
             foreach ($request->file('files') as $file) {
@@ -161,7 +166,7 @@ class TaskController extends Controller
                 $filePaths[] = $file->store('tasks', 'public');
             }
         }
-    
+
         // Update tugas, hanya ubah field yang diubah
         $task->update([
             'title' => $validated['title'] !== $task->title ? $validated['title'] : $task->title,
@@ -171,17 +176,17 @@ class TaskController extends Controller
             'class_id' => $classId, // Menggunakan class_id yang sudah ada sebelumnya
             'due_date' => $validated['due_date'] !== $task->due_date ? $validated['due_date'] : $task->due_date,
         ]);
-    
+
         return redirect()->route('tasks.index')->with('success', 'Tugas berhasil diperbarui.');
     }
-    
+
     public function destroy(Task $task)
     {
         // Pastikan hanya guru pemilik tugas yang bisa menghapus
         if ($task->user_id !== Auth::id()) {
             return redirect()->route('tasks.index')->with('error', 'Anda tidak memiliki akses untuk menghapus tugas ini.');
         }
-    
+
         // Hapus file terkait jika ada
         if ($task->file_path) {
             $files = json_decode($task->file_path, true);
@@ -191,10 +196,10 @@ class TaskController extends Controller
                 }
             }
         }
-    
+
         // Hapus tugas dari database
         $task->delete();
-    
+
         return redirect()->route('tasks.index')->with('success', 'Tugas berhasil dihapus.');
     }
 }

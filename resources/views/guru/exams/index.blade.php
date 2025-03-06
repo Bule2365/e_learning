@@ -3,35 +3,33 @@
 @section('content')
     @push('styles')
         <style>
-            /* Improved Typography */
+            /* Typography Enhancements */
             .card-title {
-                font-size: 1.25rem;
-                font-weight: 600;
-                line-height: 1.3;
+                font-size: 1.3rem;
+                font-weight: 700;
                 color: #1a237e;
             }
 
             .card-subtitle {
-                font-size: 0.9rem;
+                font-size: 0.95rem;
                 color: #546e7a;
-                letter-spacing: 0.03em;
             }
 
             .exam-description {
-                font-size: 0.95rem;
-                color: #455a64;
-                line-height: 1.6;
-                white-space: pre-line;
+                font-size: 1rem;
+                color: #37474f;
+                line-height: 1.5;
                 margin-bottom: 1.5rem;
             }
 
-            /* Responsive Card Design */
+            /* Exam Card Design */
             .exam-card {
                 transition: all 0.3s ease;
-                border: 1px solid rgba(0, 0, 0, 0.08);
                 border-radius: 12px;
                 overflow: hidden;
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                background: white;
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+                border: none;
             }
 
             .exam-card:hover {
@@ -41,26 +39,25 @@
 
             /* Status Badge */
             .status-badge {
-                font-size: 0.8rem;
-                padding: 0.35rem 0.75rem;
+                font-size: 0.85rem;
+                padding: 0.4rem 0.8rem;
                 border-radius: 20px;
                 font-weight: 500;
             }
 
-            /* Responsive Button Group */
+            /* Action Buttons */
             .action-buttons {
                 display: flex;
-                gap: 0.75rem;
                 flex-wrap: wrap;
-                margin-top: 1.25rem;
+                gap: 0.75rem;
+                margin-top: 1rem;
             }
 
             .action-buttons .btn {
                 flex: 1 1 auto;
-                min-width: 140px;
-                padding: 0.5rem 1rem;
-                font-size: 0.85rem;
+                padding: 0.6rem 1rem;
                 border-radius: 8px;
+                font-size: 0.9rem;
                 transition: all 0.2s ease;
             }
 
@@ -68,59 +65,57 @@
                 transform: translateY(-2px);
             }
 
-            /* Mobile Optimization */
-            @media (max-width: 768px) {
-                .container {
-                    padding-left: 1rem;
-                    padding-right: 1rem;
-                }
+            /* Modal Styling */
+            .modal-content {
+                border-radius: 12px;
+            }
 
+            .modal-header {
+                background: #ff6f61;
+                color: white;
+                border-top-left-radius: 12px;
+                border-top-right-radius: 12px;
+            }
+
+            .modal-footer button {
+                min-width: 100px;
+            }
+
+            /* Responsive Design */
+            @media (max-width: 768px) {
                 .exam-card {
                     margin-bottom: 1rem;
                 }
 
-                .card-title {
-                    font-size: 1.1rem;
-                }
-
-                .card-subtitle {
-                    font-size: 0.85rem;
-                }
-
                 .action-buttons .btn {
                     flex: 1 1 100%;
-                    min-width: 100%;
                 }
             }
         </style>
     @endpush
 
     <div class="container-lg my-4 my-lg-5">
-        <div class="text-center mb-4 mb-lg-5">
-            <h1 class="h2 fw-bold text-primary mb-3">Daftar Ujian</h1>
-            <p class="lead text-muted">Kelola ujian untuk kelas yang Anda ajar dengan mudah.</p>
+        <div class="text-center mb-5">
+            <h1 class="h2 fw-bold text-primary">Daftar Ujian</h1>
+            <p class="lead text-muted">Kelola ujian untuk kelas Anda dengan mudah.</p>
         </div>
 
         @if ($exams->isEmpty())
-            <div class="d-flex flex-column align-items-center justify-content-center py-5">
-                <div class="alert alert-info w-100 text-center">
-                    <i class="bi bi-info-circle me-2"></i>
-                    Belum ada ujian untuk mata pelajaran yang Anda ajar
-                </div>
+            <div class="alert alert-info text-center">
+                <i class="bi bi-info-circle me-2"></i>
+                Belum ada ujian yang tersedia.
             </div>
         @else
             <div class="row g-4">
                 @foreach ($exams as $exam)
                     <div class="col-12 col-md-6 col-xl-4">
-                        <div class="exam-card h-100">
-                            <div class="card-body p-3 p-lg-4">
+                        <div class="exam-card card h-100">
+                            <div class="card-body p-4">
                                 <div class="d-flex justify-content-between align-items-start mb-3">
                                     <div>
                                         <h3 class="card-title mb-1">{{ $exam->title }}</h3>
-                                        <div class="card-subtitle mb-2">
-                                            <span class="d-block">{{ $exam->kelas->name }}</span>
-                                            <span class="d-block">{{ $exam->mataPelajaran->name }}</span>
-                                        </div>
+                                        <p class="card-subtitle">{{ $exam->kelas->name }} - {{ $exam->mataPelajaran->name }}
+                                        </p>
                                     </div>
                                     <span
                                         class="status-badge bg-{{ $exam->status == 'active' ? 'success' : 'warning' }} text-white">
@@ -129,12 +124,10 @@
                                 </div>
 
                                 <div class="action-buttons">
-                                    <a href="{{ route('guru.exams.show', $exam->id) }}"
-                                        class="btn btn-outline-primary d-flex align-items-center justify-content-center">
+                                    <a href="{{ route('guru.exams.show', $exam->id) }}" class="btn btn-outline-primary">
                                         <i class="bi bi-eye me-2"></i> Detail
                                     </a>
-                                    <a href="{{ route('guru.exams.add_questions', $exam->id) }}"
-                                        class="btn btn-primary d-flex align-items-center justify-content-center">
+                                    <a href="{{ route('guru.exams.add_questions', $exam->id) }}" class="btn btn-primary">
                                         <i class="bi bi-plus-circle me-2"></i> Tambah Soal
                                     </a>
                                     <a href="{{ route('guru.exams.edit', $exam->id) }}" class="btn btn-warning">
@@ -143,15 +136,11 @@
                                     <a href="{{ route('guru.exams.scores', $exam->id) }}" class="btn btn-info">
                                         <i class="bi bi-bar-chart-line me-2"></i> Lihat Nilai Siswa
                                     </a>
-                                    <form action="{{ route('guru.exams.destroy', $exam->id) }}" method="POST"
-                                        onsubmit="return confirm('Apakah Anda yakin ingin menghapus ujian ini?');"
-                                        style="display: inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger">
-                                            <i class="bi bi-trash me-2"></i> Hapus
-                                        </button>
-                                    </form>
+                                    <button class="btn btn-danger" data-bs-toggle="modal"
+                                        data-bs-target="#confirmDeleteModal"
+                                        onclick="setDeleteForm('{{ route('guru.exams.destroy', $exam->id) }}')">
+                                        <i class="bi bi-trash me-2"></i> Hapus
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -160,4 +149,37 @@
             </div>
         @endif
     </div>
+
+    <!-- Modal Konfirmasi Hapus -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteModalLabel"><i class="bi bi-exclamation-triangle"></i>
+                        Konfirmasi Hapus</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0">Apakah Anda yakin ingin menghapus ujian ini? Tindakan ini tidak dapat dibatalkan.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <form id="deleteForm" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">Hapus</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @push('scripts')
+        <script>
+            function setDeleteForm(action) {
+                document.getElementById('deleteForm').setAttribute('action', action);
+            }
+        </script>
+    @endpush
 @endsection

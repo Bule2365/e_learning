@@ -41,7 +41,7 @@
                             <td>{{ $attempt->submitted_at }}</td>
                             <td>
                                 <span
-                                    class="badge {{ $attempt->score >= 80 ? 'bg-success' : ($attempt->score >= 50 ? 'bg-warning' : 'bg-danger') }}">
+                                    class="badge {{ $attempt->score >= 75 ? 'bg-success' : ($attempt->score >= 70 ? 'bg-warning' : 'bg-danger') }}">
                                     {{ $attempt->score }}
                                 </span>
                             </td>

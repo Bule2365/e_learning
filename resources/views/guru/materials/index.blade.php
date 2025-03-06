@@ -7,30 +7,15 @@
             .card-title {
                 font-size: 1.25rem;
                 font-weight: 600;
-                line-height: 1.3;
                 color: #1a237e;
             }
 
-            .card-subtitle {
-                font-size: 0.9rem;
-                color: #546e7a;
-                letter-spacing: 0.03em;
-            }
-
-            .card-body p {
-                font-size: 1rem;
-                color: #455a64;
-                line-height: 1.6;
-                margin-bottom: 1.5rem;
-            }
-
-            /* Responsive Card Design */
             .material-card {
-                transition: transform 0.3s ease, box-shadow 0.3s ease;
+                transition: all 0.3s ease;
                 border-radius: 12px;
-                overflow: hidden;
-                border: 1px solid rgba(0, 0, 0, 0.1);
-                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                background: #fff;
+                padding: 1.5rem;
             }
 
             .material-card:hover {
@@ -38,97 +23,124 @@
                 box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
             }
 
-            /* Card Header */
-            .card-header {
-                background-color: #007bff;
+            /* Modal Styling */
+            .modal-content {
+                border-radius: 12px;
+            }
+
+            .modal-header {
+                background: #ff6f61;
                 color: white;
-                padding: 1.25rem;
+                border-top-left-radius: 12px;
+                border-top-right-radius: 12px;
             }
 
-            /* Button Group */
-            .action-buttons .btn {
-                flex: 1 1 auto;
-                min-width: 140px;
-                padding: 0.5rem 1rem;
-                font-size: 0.85rem;
-                border-radius: 8px;
-                transition: all 0.3s ease;
+            .modal-footer button {
+                min-width: 100px;
             }
 
-            .action-buttons .btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            }
-
-            /* Layout and Spacing */
-            .container {
-                padding-top: 4rem;
-                padding-bottom: 4rem;
-            }
-
-            /* Mobile Optimization */
+            /* Responsive Design */
             @media (max-width: 768px) {
                 .container {
-                    padding-left: 1rem;
-                    padding-right: 1rem;
+                    padding: 0 1rem;
                 }
 
                 .material-card {
-                    margin-bottom: 1.5rem;
+                    padding: 1rem;
                 }
 
                 .card-title {
                     font-size: 1.1rem;
                 }
 
-                .card-body p {
-                    font-size: 0.95rem;
+                .d-flex.gap-2 {
+                    flex-direction: column;
+                    gap: 0.5rem;
                 }
 
-                .action-buttons .btn {
-                    flex: 1 1 100%;
-                    min-width: 100%;
-                    padding: 0.75rem;
+                .d-flex.gap-2 .btn {
+                    width: 100%;
                 }
             }
         </style>
     @endpush
 
-    <div class="container-lg my-4 my-lg-5">
-        <div class="text-center mb-4 mb-lg-5">
-            <h1 class="h2 fw-bold text-primary mb-3">Daftar Materi</h1>
-            <p class="lead text-muted">Kelola materi untuk kelas yang Anda ajar dengan mudah.</p>
+    <div class="container-lg my-4">
+        <div class="text-center mb-4">
+            <h1 class="h2 fw-bold text-primary">Daftar Materi</h1>
+            <p class="lead text-muted">Kelola materi yang Anda ajar dengan mudah.</p>
         </div>
 
-        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-            @foreach ($materials as $material)
-                <div class="task-card h-100">
-                    <h3 class="card-title mb-1">{{ $material->title }}</h3>
-                    <div class="card-body">
-                        <p><strong>Deskripsi:</strong> {{ $material->description }}</p>
-                        <p><strong>Mata Pelajaran:</strong> {{ optional($material->subject)->name }}</p>
-                        <p><strong>Kelas:</strong> {{ optional($material->ClassModel)->name }}</p>
+        @if ($materials->isEmpty())
+            <div class="alert alert-info text-center">
+                <i class="bi bi-info-circle me-2"></i> Belum ada materi untuk mata pelajaran yang Anda ajar.
+            </div>
+        @else
+            <div class="row g-4">
+                @foreach ($materials as $material)
+                    <div class="col-12 col-md-6 col-xl-4">
+                        <div class="material-card card h-100">
+                            <div class="card-body">
+                                <h3 class="card-title">{{ $material->title }}</h3>
+                                <p class="text-muted">
+                                    {{ optional($material->ClassModel)->name }} -
+                                    {{ optional($material->subject)->name }}
+                                </p>
+                                <p>{{ $material->description }}</p>
 
-                        <div class="action-buttons">
-                            <a href="{{ route('guru.materials.show', $material->id) }}" class="btn btn-info mt-3">
-                                <i class="bi bi-eye me-2"></i> Lihat Materi
-                            </a>
-                            <a href="{{ route('guru.materials.edit', $material->id) }}" class="btn btn-warning mt-3">
-                                <i class="bi bi-pencil-square me-2"></i> Edit
-                            </a>
-                            <form action="{{ route('guru.materials.destroy', $material->id) }}" method="POST"
-                                style="display:inline;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger mt-3"
-                                    onclick="return confirm('Apakah Anda yakin ingin menghapus materi ini?')">
-                                    <i class="bi bi-trash me-2"></i> Hapus
-                                </button>
-                            </form>
+                                <div class="d-flex gap-2">
+                                    <a href="{{ route('guru.materials.show', $material->id) }}"
+                                        class="btn btn-outline-primary">
+                                        <i class="bi bi-eye me-2"></i> Lihat
+                                    </a>
+                                    <a href="{{ route('guru.materials.edit', $material->id) }}" class="btn btn-warning">
+                                        <i class="bi bi-pencil me-2"></i> Edit
+                                    </a>
+                                    <!-- Tombol Hapus -->
+                                    <button class="btn btn-danger" data-bs-toggle="modal"
+                                        data-bs-target="#confirmDeleteModal"
+                                        onclick="setDeleteForm('{{ route('guru.materials.destroy', $material->id) }}')">
+                                        <i class="bi bi-trash me-2"></i> Hapus
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                @endforeach
+            </div>
+        @endif
+    </div>
+
+    <!-- Modal Konfirmasi Hapus -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmDeleteModalLabel"><i class="bi bi-exclamation-triangle"></i>
+                        Konfirmasi Hapus</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-            @endforeach
+                <div class="modal-body">
+                    <p class="mb-0">Apakah Anda yakin ingin menghapus materi ini? Tindakan ini tidak dapat dibatalkan.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <form id="deleteForm" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">Hapus</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
+
+    @push('scripts')
+        <script>
+            function setDeleteForm(action) {
+                document.getElementById('deleteForm').setAttribute('action', action);
+            }
+        </script>
+    @endpush
 @endsection

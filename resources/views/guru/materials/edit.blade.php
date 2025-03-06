@@ -2,6 +2,11 @@
 
 @section('content')
     <div class="container mt-5">
+        <a href="{{ route('guru.materials.index') }}" class="btn btn-primary mb-3">
+            <i class="bi bi-arrow-left"></i>
+            <span>Kembali ke Daftar Kelas</span>
+        </a>
+
         <h1 class="mb-4 text-center">Edit Materi</h1>
 
         <form action="{{ route('guru.materials.update', $material->id) }}" method="POST" enctype="multipart/form-data">
@@ -88,8 +93,9 @@
                 @endif
             </div>
 
-            <button type="submit" class="btn btn-primary">Update Materi</button>
-            <a href="{{ route('guru.materials.index') }}" class="btn btn-secondary">Kembali</a>
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary btn-lg w-100">Simpan Perubahan</button>
+            </div>
         </form>
     </div>
 @endsection

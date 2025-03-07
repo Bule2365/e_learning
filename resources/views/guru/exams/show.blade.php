@@ -51,6 +51,7 @@
                                             <a href="{{ route('guru.exams.image', $soal->id) }}">
                                                 <img src="{{ asset('storage/' . $soal->image_path) }}" alt="Gambar Soal"
                                                     class="img-fluid" style="max-width: 300px;" />
+                                                    <p class="text-muted text-center">Klik gambar untuk mengubahnya.</p>
                                             </a>
                                         @else
                                             <!-- Jika soal belum ada gambar, tampilkan tombol untuk menambah gambar -->

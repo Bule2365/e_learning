@@ -1,96 +1,76 @@
 @extends('guru.layouts.app')
 
 @section('content')
-    <div class="container mt-5">
+    <div class="container my-5">
         <a href="{{ route('guru.materials.index') }}" class="btn btn-primary mb-3">
             <i class="bi bi-arrow-left"></i>
             <span>Kembali ke Daftar Kelas</span>
         </a>
 
-        <h1 class="mb-4 text-center">Edit Materi</h1>
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-        <form action="{{ route('guru.materials.update', $material->id) }}" method="POST" enctype="multipart/form-data">
+        <h1 class="display-4 text-center mb-4">Edit Materi</h1>
+
+        <form action="{{ route('guru.materials.update', $material->id) }}" method="POST" enctype="multipart/form-data"
+            class="shadow p-4 rounded bg-light">
             @csrf
             @method('PUT')
 
-            <!-- Menyembunyikan input class_id jika ada di URL -->
-            <input type="hidden" name="class_id" value="{{ optional($classes->first())->id }}">
-
-            <!-- Input hidden untuk subject_id -->
-            <input type="hidden" name="subject_id" value="{{ optional($subjects->first())->id }}">
-
-            <!-- Pilihan Mata Pelajaran -->
-            <div class="mb-3">
-                <label for="class_name" class="form-label">Kelas</label>
-                <input type="text" id="class_name" class="form-control"
-                    value="{{ optional($material->ClassModel)->name }}" readonly disabled>
-            </div>
-
-            <div class="mb-3">
-                <label for="subject_name" class="form-label">Mata Pelajaran</label>
-                <input type="text" id="subject_name" class="form-control"
-                    value="{{ optional($material->subject)->name }}" readonly disabled>
-            </div>
-
             <div class="mb-3">
                 <label for="title" class="form-label">Judul Materi</label>
-                <input type="text" class="form-control @error('title') is-invalid @enderror" id="title"
-                    name="title" value="{{ old('title', $material->title) }}" required>
+                <input type="text" name="title" id="title" value="{{ old('title', $material->title) }}"
+                    class="form-control @error('title') is-invalid @enderror" required>
                 @error('title')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
 
             <div class="mb-3">
-                <label for="description" class="form-label">Deskripsi Materi</label>
-                <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description"
-                    rows="4" required>{{ old('description', $material->description) }}</textarea>
+                <label for="description" class="form-label">Deskripsi</label>
+                <textarea name="description" id="description" class="form-control @error('description') is-invalid @enderror" required>{{ old('description', $material->description) }}</textarea>
                 @error('description')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
 
-            <div class="mb-3">
-                <label for="files" class="form-label">Unggah File Materi</label>
-                <input type="file" class="form-control @error('files') is-invalid @enderror" id="files"
-                    name="files[]" multiple>
-                @error('files')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
+            {{-- Menampilkan file saat ini jika ada --}}
+            @php
+                $files = json_decode($material->file_path, true) ?? [];
+            @endphp
 
-                <!-- Menampilkan file yang sudah ada -->
-                @if ($material->file_path)
-                    <div class="mt-3">
-                        <h5>File yang sudah ada:</h5>
-                        @foreach (json_decode($material->file_path, true) as $file)
-                            @php
-                                $fileExtension = pathinfo($file, PATHINFO_EXTENSION); // Ambil ekstensi file
-                                $fileUrl = asset('storage/' . $file); // URL file
-                            @endphp
-
-                            <div class="mb-3">
-                                @if (in_array(strtolower($fileExtension), ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg']))
-                                    <!-- Gambar -->
-                                    <img src="{{ $fileUrl }}" alt="Materi Gambar" class="img-fluid rounded mb-3"
-                                        style="max-height: 200px; object-fit: cover;">
-                                    <p class="mt-2">{{ ucfirst($fileExtension) }} Image</p>
-                                @elseif (in_array(strtolower($fileExtension), ['mp4', 'avi', 'mov', 'mkv']))
-                                    <!-- Video -->
-                                    <video class="img-fluid rounded mb-3" controls style="max-height: 200px;">
-                                        <source src="{{ $fileUrl }}" type="video/{{ $fileExtension }}">
-                                        Your browser does not support the video tag.
-                                    </video>
-                                    <p class="mt-2">{{ ucfirst($fileExtension) }} Video</p>
-                                @else
-                                    <!-- Jika bukan gambar atau video, tampilkan link -->
-                                    <a href="{{ $fileUrl }}" class="btn btn-link" target="_blank">Unduh File</a>
-                                    <small class="text-muted"> (File ini tidak akan diubah kecuali Anda mengunggah file
-                                        baru)</small>
-                                @endif
-                            </div>
+            @if (!empty($files) && $files[0] != '')
+                <div class="mb-3">
+                    <label class="form-label">File Saat Ini:</label>
+                    <ul>
+                        @foreach ($files as $file)
+                            <li>
+                                <a href="{{ asset('storage/' . $file) }}" target="_blank">Lihat File</a>
+                                <input type="checkbox" name="delete_old_files[]" value="{{ $file }}"> Hapus
+                            </li>
                         @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            {{-- Input Upload File Baru --}}
+            <div class="mb-3">
+                <label class="form-label">Unggah File Baru (Maksimal 5)</label>
+                <div id="file-inputs">
+                    <div class="input-group mb-2">
+                        <input type="file" name="files[]" class="form-control file-input"
+                            accept="application/pdf, image/*, video/*">
+                        <button type="button" class="btn btn-success add-file">+</button>
                     </div>
-                @endif
+                </div>
+                <small class="text-muted">Maksimal 5 file, masing-masing maksimal 100MB.</small>
             </div>
 
             <div class="mb-3">
@@ -98,4 +78,71 @@
             </div>
         </form>
     </div>
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const fileInputsContainer = document.getElementById('file-inputs');
+                const addFileButton = document.querySelector('.add-file');
+                const maxFiles = 4;
+
+                // Ambil jumlah file lama dari PHP
+                let existingFiles = {{ count($files) }};
+                let fileInputsCount = 0;
+
+                function updateAddButtonState() {
+                    if ((existingFiles + fileInputsCount) >= maxFiles) {
+                        addFileButton.disabled = true;
+                    } else {
+                        addFileButton.disabled = false;
+                    }
+                }
+
+                addFileButton.addEventListener('click', function() {
+                    if ((existingFiles + fileInputsCount) < maxFiles) {
+                        const newInputGroup = document.createElement('div');
+                        newInputGroup.classList.add('input-group', 'mb-2');
+
+                        const newFileInput = document.createElement('input');
+                        newFileInput.type = 'file';
+                        newFileInput.name = 'files[]';
+                        newFileInput.classList.add('form-control', 'file-input');
+                        newFileInput.accept = 'application/pdf, image/*, video/*';
+
+                        const removeButton = document.createElement('button');
+                        removeButton.type = 'button';
+                        removeButton.classList.add('btn', 'btn-danger', 'remove-file');
+                        removeButton.innerText = '−';
+
+                        newInputGroup.appendChild(newFileInput);
+                        newInputGroup.appendChild(removeButton);
+                        fileInputsContainer.appendChild(newInputGroup);
+
+                        fileInputsCount++;
+                        updateAddButtonState();
+
+                        removeButton.addEventListener('click', function() {
+                            newInputGroup.remove();
+                            fileInputsCount--;
+                            updateAddButtonState();
+                        });
+                    }
+                });
+
+                // Handle checkbox untuk menghapus file lama
+                document.querySelectorAll('input[name="delete_old_files[]"]').forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        if (this.checked) {
+                            existingFiles--;
+                        } else {
+                            existingFiles++;
+                        }
+                        updateAddButtonState();
+                    });
+                });
+
+                updateAddButtonState();
+            });
+        </script>
+    @endpush
 @endsection

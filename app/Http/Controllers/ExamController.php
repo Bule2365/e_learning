@@ -10,6 +10,7 @@ use App\Models\Question;
 use App\Models\Subject;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -294,6 +295,57 @@ class ExamController extends Controller
             ->get();
 
         return view('guru.exams.scores', compact('exam', 'examAttempts'));
+    }
+
+    public function exportScores($examId)
+    {
+        // Ambil data ujian
+        $exam = Exam::findOrFail($examId);
+
+        // Ambil semua attempt ujian
+        $examAttempts = ExamAttempt::with('user.kelas')
+            ->where('exam_id', $examId)
+            ->get();
+
+        // Nama file Excel
+        $fileName = 'nilai_siswa_' . Str::slug($exam->title) . '.xls';
+
+        // Header untuk file Excel
+        $headers = [
+            "Content-Type" => "application/vnd.ms-excel",
+            "Content-Disposition" => "attachment; filename=\"$fileName\"",
+            "Cache-Control" => "max-age=0",
+            "Pragma" => "public",
+        ];
+
+        // Membuat isi file
+        $content = '';
+        $content .= "Nama Siswa\tKelas\tNilai\tWaktu Mulai\tWaktu Selesai\tDurasi Pengerjaan\n";
+
+        foreach ($examAttempts as $attempt) {
+            $userName = $attempt->user->name;
+            $kelas = $attempt->user->kelas->first()->name ?? 'Tidak Ditemukan';
+            $score = $attempt->score;
+            $startedAt = $attempt->started_at;
+            $submittedAt = $attempt->submitted_at;
+
+            // Hitung durasi
+            if ($startedAt && $submittedAt) {
+                $diffInSeconds = $startedAt->diffInSeconds($submittedAt);
+                $hours = floor($diffInSeconds / 3600);
+                $minutes = floor(($diffInSeconds % 3600) / 60);
+                $seconds = $diffInSeconds % 60;
+                $duration = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+            } else {
+                $duration = 'Tidak tersedia';
+            }
+
+            // Menambahkan data ke file
+            $content .= "$userName\t$kelas\t$score\t$startedAt\t$submittedAt\t$duration\n";
+        }
+
+        // Return response dengan file Excel
+        return response($content, 200, $headers);
     }
 
     private function processWord($path, $exam)

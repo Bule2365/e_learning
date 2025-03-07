@@ -33,12 +33,12 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // Buat 5 admin
-        User::factory()->count(3)->create(['role' => 'admin']);
+        // User::factory()->count(3)->create(['role' => 'admin']);
 
-        // Buat 100 guru
-        User::factory()->count(18)->create(['role' => 'guru']);
+        // // Buat 100 guru
+        // User::factory()->count(18)->create(['role' => 'guru']);
 
-        // Buat 500 siswa
-        User::factory()->count(156)->create(['role' => 'siswa']);
+        // // Buat 500 siswa
+        // User::factory()->count(156)->create(['role' => 'siswa']);
     }
 }

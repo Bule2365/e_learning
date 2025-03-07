@@ -53,7 +53,6 @@
 @section('content')
     <div class="container-lg my-4 my-lg-5">
         <h1 class="text-center mb-4 text-primary fw-bold">Selamat Datang, {{ Auth::user()->name }}</h1>
-        <p class="lead text-center text-muted">Ini adalah platform e-learning untuk kelas online.</p>
 
         <!-- Row for stats -->
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">

@@ -12,11 +12,11 @@ class ClassModelFactory extends Factory
 
     public function definition()
     {
-        $faker = Faker::create('id_ID'); // Menggunakan Faker untuk bahasa Indonesia
+        static $index = 1; // Gunakan index untuk memastikan nama unik
 
         return [
-            'name' => $faker->randomElement(['Kelas 1', 'Kelas 2', 'Kelas 3', 'Kelas 4', 'Kelas 5', 'Kelas 6']),
-            'deskripsi' => $faker->sentence(6), // Deskripsi singkat dalam bahasa Indonesia
+            'name' => 'Kelas ' . $index++, // Pastikan tidak ada kelas ganda
+            'deskripsi' => $this->faker->sentence(6),
         ];
     }
 }

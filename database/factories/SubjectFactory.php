@@ -13,18 +13,13 @@ class SubjectFactory extends Factory
 
     public function definition()
     {
-        $faker = Faker::create('id_ID'); // Menggunakan Faker untuk bahasa Indonesia
+        static $index = 0; // Agar tidak membuat lebih dari 10 mata pelajaran
+
+        $subjects = ['Matematika', 'Bahasa Indonesia', 'IPA', 'IPS', 'Agama', 'Seni Budaya', 'Fisika', 'Kimia', 'Biologi', 'Sejarah'];
 
         return [
-            'name' => $faker->randomElement([
-                'Matematika',
-                'Bahasa Indonesia',
-                'IPA',
-                'IPS',
-                'Agama',
-                'Seni Budaya',
-            ]),
-            'user_id' => User::factory(),
+            'name' => $subjects[$index++ % count($subjects)], // Pastikan hanya ada 10
+            'user_id' => User::where('role', 'guru')->inRandomOrder()->first()->id, // Pastikan ada guru
         ];
     }
 }

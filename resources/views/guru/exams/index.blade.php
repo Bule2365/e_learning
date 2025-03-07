@@ -94,8 +94,8 @@
         </style>
     @endpush
 
-    <div class="container-lg my-4 my-lg-5">
-        <div class="text-center mb-5">
+    <div class="container-lg my-4">
+        <div class="text-center mb-4">
             <h1 class="h2 fw-bold text-primary">Daftar Ujian</h1>
             <p class="lead text-muted">Kelola ujian untuk kelas Anda dengan mudah.</p>
         </div>
@@ -113,8 +113,18 @@
                             <div class="card-body p-4">
                                 <div class="d-flex justify-content-between align-items-start mb-3">
                                     <div>
-                                        <h3 class="card-title mb-1">{{ $exam->title }}</h3>
-                                        <p class="card-subtitle">{{ $exam->kelas->name }} - {{ $exam->mataPelajaran->name }}
+                                        <!-- Batasi judul hanya 7 kata -->
+                                        @php
+                                            $titleWords = explode(' ', $exam->title);
+                                            $shortTitle =
+                                                count($titleWords) > 7
+                                                    ? implode(' ', array_slice($titleWords, 0, 7)) . '...'
+                                                    : $exam->title;
+                                        @endphp
+                                        <h3 class="card-title mb-1">{{ $shortTitle }}</h3>
+
+                                        <p class="card-subtitle">
+                                            {{ $exam->kelas->name }} - {{ $exam->mataPelajaran->name }}
                                         </p>
                                     </div>
                                     <span

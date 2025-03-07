@@ -7,7 +7,7 @@ use App\Models\User;
 use App\Models\ClassModel;
 use App\Models\Subject;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Faker\Factory as Faker;
+use Illuminate\Support\Facades\Storage;
 
 class MaterialFactory extends Factory
 {
@@ -15,16 +15,21 @@ class MaterialFactory extends Factory
 
     public function definition()
     {
-        $faker = Faker::create('id_ID'); // Menggunakan Faker untuk bahasa Indonesia
+        // Generate file acak (2-5 file)
+        $fileCount = rand(2, 5);
+        $files = [];
+        for ($i = 0; $i < $fileCount; $i++) {
+            $files[] = Storage::url('materials/' . uniqid() . '.pdf');
+        }
 
         return [
             'title' => $this->faker->sentence(4),
             'description' => $this->faker->paragraph(2),
-            'type' => $this->faker->randomElement(['video', 'image', 'text']), // Sesuaikan dengan batasan kolom
-            'file_path' => $this->faker->imageUrl(640, 480, 'nature', true), // Pastikan URL tidak terlalu panjang
-            'subject_id' => Subject::factory(),
-            'user_id' => User::factory(),
-            'class_id' => ClassModel::factory(),
+            'type' => $this->faker->randomElement(['video', 'image', 'text']),
+            'file_path' => json_encode($files), // Simpan dalam format JSON
+            'subject_id' => Subject::inRandomOrder()->first() ? Subject::inRandomOrder()->first()->id : Subject::factory()->create()->id,
+            'user_id' => User::inRandomOrder()->first() ? User::inRandomOrder()->first()->id : User::factory()->create()->id,
+            'class_id' => ClassModel::inRandomOrder()->first() ? ClassModel::inRandomOrder()->first()->id : ClassModel::factory()->create()->id,
         ];
     }
 }

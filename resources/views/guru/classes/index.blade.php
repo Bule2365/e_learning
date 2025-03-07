@@ -18,9 +18,8 @@
 
 @section('content')
     <div class="container mt-5">
-        <h1 class="mb-5 text-center text-primary fw-bold">Daftar Kelas Anda</h1>
+        <h1 class="mb-5 text-center text-primary fw-bold">Daftar Kelas Siswa</h1>
 
-        <!-- Menggunakan grid system dengan kolom yang responsif -->
         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
             @foreach ($classes as $class)
                 <div class="col">
@@ -37,29 +36,57 @@
                                 <p class="text-muted">Belum ada siswa yang bergabung.</p>
                             @else
                                 <ul class="list-unstyled">
-                                    @foreach ($class->siswa as $murid)
+                                    @foreach ($class->siswa->take(10) as $murid)
                                         <li>{{ $murid->name }}</li>
                                     @endforeach
                                 </ul>
+
+                                <!-- Jika jumlah siswa lebih dari 10, tampilkan tombol -->
+                                @if ($class->siswa->count() > 10)
+                                    <button class="btn btn-sm btn-outline-primary mt-2" data-bs-toggle="modal"
+                                        data-bs-target="#modalSiswa{{ $class->id }}">
+                                        Lihat Semua
+                                    </button>
+                                @endif
                             @endif
 
                             <div class="d-grid gap-2 mt-3">
-                                <!-- Link untuk buat ujian -->
                                 <a href="{{ route('guru.exams.create', ['class_id' => $class->id]) }}"
                                     class="btn btn-primary">
                                     <i class="bi bi-file-plus-fill"></i> Buat Ujian
                                 </a>
-
-                                <!-- Link untuk buat tugas -->
                                 <a href="{{ route('tasks.create', ['class_id' => $class->id]) }}" class="btn btn-warning">
                                     <i class="bi bi-clipboard-plus-fill"></i> Buat Tugas
                                 </a>
-
-                                <!-- Link untuk buat materi -->
                                 <a href="{{ route('guru.materials.create', ['class_id' => $class->id]) }}"
                                     class="btn btn-success">
                                     <i class="bi bi-file-earmark-plus-fill"></i> Buat Materi
                                 </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal untuk melihat daftar siswa lengkap -->
+                <div class="modal fade" id="modalSiswa{{ $class->id }}" tabindex="-1"
+                    aria-labelledby="modalLabel{{ $class->id }}" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title" id="modalLabel{{ $class->id }}">Daftar Siswa di
+                                    {{ $class->name }}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                    aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <ul class="list-group">
+                                    @foreach ($class->siswa as $murid)
+                                        <li class="list-group-item">{{ $murid->name }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
                             </div>
                         </div>
                     </div>

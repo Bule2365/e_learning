@@ -6,7 +6,6 @@ use App\Models\ExamAttempt;
 use App\Models\Exam;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Faker\Factory as Faker;
 
 class ExamAttemptFactory extends Factory
 {
@@ -14,14 +13,12 @@ class ExamAttemptFactory extends Factory
 
     public function definition()
     {
-        $faker = Faker::create('id_ID'); // Menggunakan Faker untuk bahasa Indonesia
-
         return [
-            'exam_id' => Exam::factory(),
-            'user_id' => User::factory(),
-            'started_at' => $faker->dateTimeThisMonth(), // Waktu mulai ujian
-            'submitted_at' => $faker->dateTimeThisMonth(), // Waktu selesai ujian
-            'score' => $faker->numberBetween(0, 100), // Skor ujian
+            'exam_id' => Exam::inRandomOrder()->first() ? Exam::inRandomOrder()->first()->id : Exam::factory()->create()->id,
+            'user_id' => User::where('role', 'siswa')->inRandomOrder()->first() ? User::where('role', 'siswa')->inRandomOrder()->first()->id : User::factory()->create(['role' => 'siswa'])->id,
+            'started_at' => now(),
+            'submitted_at' => now()->addMinutes(30),
+            'score' => rand(50, 100),
         ];
     }
 }

@@ -2,7 +2,6 @@
 
 @section('content')
     <div class="container my-5">
-
         <a href="{{ route('tasks.index') }}" class="btn btn-primary mb-3">
             <i class="bi bi-arrow-left"></i>
             <span>Kembali ke Daftar Tugas</span>
@@ -52,12 +51,15 @@
             </div>
 
             <div class="mb-3">
-                <label for="files" class="form-label">Unggah File Baru (Opsional, Maks 5)</label>
-                <input type="file" name="files[]" id="files" class="form-control" multiple
-                    accept="application/pdf, image/*, video/mp4, video/quicktime, video/x-msvideo">
-                @error('files')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
+                <label class="form-label">Unggah File Baru (Maksimal 5)</label>
+                <div id="file-inputs">
+                    <div class="input-group mb-2">
+                        <input type="file" name="files[]" class="form-control file-input"
+                            accept="application/pdf, image/*, video/*">
+                        <button type="button" class="btn btn-success add-file">+</button>
+                    </div>
+                </div>
+                <small class="text-muted">Maksimal 5 file, masing-masing maksimal 100MB.</small>
             </div>
 
             <div class="mb-3">
@@ -74,4 +76,44 @@
             </div>
         </form>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInputsContainer = document.getElementById('file-inputs');
+            const addFileButton = document.querySelector('.add-file');
+
+            addFileButton.addEventListener('click', function() {
+                const fileInputs = document.querySelectorAll('.file-input');
+
+                if (fileInputs.length < 5) {
+                    const newInputGroup = document.createElement('div');
+                    newInputGroup.classList.add('input-group', 'mb-2');
+
+                    const newFileInput = document.createElement('input');
+                    newFileInput.type = 'file';
+                    newFileInput.name = 'files[]';
+                    newFileInput.classList.add('form-control', 'file-input');
+                    newFileInput.accept = 'application/pdf, image/*, video/*';
+
+                    const removeButton = document.createElement('button');
+                    removeButton.type = 'button';
+                    removeButton.classList.add('btn', 'btn-danger', 'remove-file');
+                    removeButton.innerText = '−';
+
+                    newInputGroup.appendChild(newFileInput);
+                    newInputGroup.appendChild(removeButton);
+                    fileInputsContainer.appendChild(newInputGroup);
+
+                    if (fileInputs.length + 1 >= 5) {
+                        addFileButton.disabled = true;
+                    }
+
+                    removeButton.addEventListener('click', function() {
+                        newInputGroup.remove();
+                        addFileButton.disabled = false;
+                    });
+                }
+            });
+        });
+    </script>
 @endsection

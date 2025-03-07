@@ -26,12 +26,6 @@ class ExamAnswer extends Model
         return $this->belongsTo(Exam::class, 'exam_id');
     }
 
-    // Relasi ke jawaban ujian (setiap upaya ujian bisa memiliki banyak jawaban)
-    public function jawaban()
-    {
-        return $this->hasMany(ExamAnswer::class, 'exam_attempt_id');
-    }
-
     // Relasi ke tabel ExamAttempts
     public function upaya()
     {
@@ -42,5 +36,17 @@ class ExamAnswer extends Model
     public function soal()
     {
         return $this->belongsTo(Question::class);
+    }
+
+    // Relasi ke ExamAttempt (Upaya ujian yang dilakukan siswa)
+    public function attempt()
+    {
+        return $this->belongsTo(ExamAttempt::class, 'exam_attempt_id');
+    }
+
+    // Relasi ke Question (Pertanyaan yang dijawab)
+    public function question()
+    {
+        return $this->belongsTo(Question::class, 'question_id');
     }
 }

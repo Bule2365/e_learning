@@ -86,7 +86,18 @@
                                     {{ optional($material->ClassModel)->name }} -
                                     {{ optional($material->subject)->name }}
                                 </p>
-                                <p>{{ $material->description }}</p>
+
+                                <!-- Batasi deskripsi hanya 15 kata -->
+                                <p>
+                                    @php
+                                        $words = explode(' ', $material->description);
+                                        $shortDescription =
+                                            count($words) > 15
+                                                ? implode(' ', array_slice($words, 0, 15)) . '...'
+                                                : $material->description;
+                                    @endphp
+                                    {{ $shortDescription }}
+                                </p>
 
                                 <div class="d-flex gap-2">
                                     <a href="{{ route('guru.materials.show', $material->id) }}"

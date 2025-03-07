@@ -35,6 +35,12 @@ class User extends Authenticatable
         return $this->belongsToMany(ClassModel::class, 'class_user', 'user_id', 'class_id');
     }
 
+    // Relasi many-to-many dengan ClassModel
+    public function classes()
+    {
+        return $this->belongsToMany(ClassModel::class, 'class_user', 'user_id', 'class_id');
+    }
+
     public function mataPelajaran()
     {
         return $this->hasMany(Subject::class);

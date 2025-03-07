@@ -202,4 +202,31 @@ class TaskController extends Controller
 
         return redirect()->route('tasks.index')->with('success', 'Tugas berhasil dihapus.');
     }
+
+    public function deleteFile(Task $task, $file)
+    {
+        // Ambil daftar file dari database
+        $currentFiles = json_decode($task->file_path, true) ?? [];
+
+        // Pastikan file yang dihapus benar-benar ada dalam daftar
+        if (!in_array($file, $currentFiles)) {
+            return redirect()->back()->with('error', 'File tidak ditemukan.');
+        }
+
+        // Hapus file dari storage jika masih ada
+        if (Storage::disk('public')->exists($file)) {
+            Storage::disk('public')->delete($file);
+        }
+
+        // Perbarui daftar file yang tersimpan di database
+        $updatedFiles = array_values(array_filter($currentFiles, function ($existingFile) use ($file) {
+            return $existingFile !== $file;
+        }));
+
+        // Simpan perubahan
+        $task->file_path = json_encode($updatedFiles);
+        $task->save();
+
+        return redirect()->back()->with('success', 'File berhasil dihapus.');
+    }
 }

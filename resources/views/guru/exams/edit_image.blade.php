@@ -19,7 +19,6 @@
                     <!-- Menampilkan gambar jika ada -->
                     <img src="{{ asset('storage/' . $question->image_path) }}" alt="Gambar Soal" class="img-fluid mb-3"
                         style="max-width: 300px;">
-                    <p class="text-muted">Klik gambar untuk mengubahnya.</p>
                 @else
                     <!-- Jika tidak ada gambar -->
                     <p class="text-muted">Belum ada gambar. Upload gambar untuk soal ini.</p>

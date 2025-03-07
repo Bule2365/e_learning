@@ -5,7 +5,6 @@ namespace Database\Factories;
 use App\Models\Question;
 use App\Models\Exam;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Faker\Factory as Faker;
 
 class QuestionFactory extends Factory
 {
@@ -13,15 +12,13 @@ class QuestionFactory extends Factory
 
     public function definition()
     {
-        $faker = Faker::create('id_ID'); // Menggunakan Faker untuk bahasa Indonesia
-
         return [
-            'exam_id' => Exam::factory(),
-            'question_text' => $faker->sentence(8), // Pertanyaan dalam bahasa Indonesia
-            'options' => json_encode($faker->randomElements(['A', 'B', 'C', 'D'], 4)), // Opsi jawaban
-            'correct_answer' => $faker->randomElement(['A', 'B', 'C', 'D']), // Jawaban benar
-            'type' => $faker->randomElement(['multiple_choice', 'essay']), // Tipe soal
-            'image_path' => $faker->optional()->imageUrl(), // Gambar opsional
+            'exam_id' => Exam::inRandomOrder()->first()->id ?? Exam::factory()->create()->id,
+            'question_text' => $this->faker->sentence(10),
+            'options' => json_encode(['A', 'B', 'C', 'D']),
+            'correct_answer' => $this->faker->randomElement(['A', 'B', 'C', 'D']),
+            'type' => 'multiple_choice',
+            'image_path' => $this->faker->optional()->imageUrl(),
         ];
     }
 }

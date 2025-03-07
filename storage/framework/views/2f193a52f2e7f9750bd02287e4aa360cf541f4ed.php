@@ -1,0 +1,163 @@
+
+
+<?php $__env->startSection('content'); ?>
+    <div class="container my-5">
+        <a href="<?php echo e(route('tasks.index')); ?>" class="btn btn-primary mb-3">
+            <i class="bi bi-arrow-left"></i>
+            <span>Kembali ke Daftar Tugas</span>
+        </a>
+
+        <?php if($errors->any()): ?>
+            <ul>
+                <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <li><?php echo e($error); ?></li>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            </ul>
+        <?php endif; ?>
+
+        <h1 class="display-4 text-center mb-4">Edit Tugas</h1>
+
+        <form action="<?php echo e(route('tasks.update', $task->id)); ?>" method="POST" enctype="multipart/form-data"
+            class="shadow p-4 rounded bg-light">
+            <?php echo csrf_field(); ?>
+            <?php echo method_field('PUT'); ?>
+
+            <div class="mb-3">
+                <label for="title" class="form-label">Judul Tugas</label>
+                <input type="text" name="title" id="title" value="<?php echo e(old('title', $task->title)); ?>"
+                    class="form-control <?php $__errorArgs = ['title'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" required>
+                <?php $__errorArgs = ['title'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <div class="invalid-feedback"><?php echo e($message); ?></div>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+            </div>
+
+            <div class="mb-3">
+                <label for="description" class="form-label">Deskripsi</label>
+                <textarea name="description" id="description" class="form-control <?php $__errorArgs = ['description'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" required><?php echo e(old('description', $task->description)); ?></textarea>
+                <?php $__errorArgs = ['description'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <div class="invalid-feedback"><?php echo e($message); ?></div>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">File Saat Ini:</label>
+                <ul>
+                    <?php $__currentLoopData = json_decode($task->file_path, true) ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $file): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <li>
+                            <a href="<?php echo e(asset('storage/' . $file)); ?>" target="_blank">Lihat File</a>
+                        </li>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </ul>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Unggah File Baru (Maksimal 5)</label>
+                <div id="file-inputs">
+                    <div class="input-group mb-2">
+                        <input type="file" name="files[]" class="form-control file-input"
+                            accept="application/pdf, image/*, video/*">
+                        <button type="button" class="btn btn-success add-file">+</button>
+                    </div>
+                </div>
+                <small class="text-muted">Maksimal 5 file, masing-masing maksimal 100MB.</small>
+            </div>
+
+            <div class="mb-3">
+                <label for="due_date" class="form-label">Batas Pengumpulan</label>
+                <input type="datetime-local" name="due_date" id="due_date" value="<?php echo e(old('due_date', $task->due_date)); ?>"
+                    class="form-control <?php $__errorArgs = ['due_date'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" required>
+                <?php $__errorArgs = ['due_date'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                    <div class="invalid-feedback"><?php echo e($message); ?></div>
+                <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
+            </div>
+
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary btn-lg w-100">Simpan Perubahan</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInputsContainer = document.getElementById('file-inputs');
+            const addFileButton = document.querySelector('.add-file');
+
+            addFileButton.addEventListener('click', function() {
+                const fileInputs = document.querySelectorAll('.file-input');
+
+                if (fileInputs.length < 5) {
+                    const newInputGroup = document.createElement('div');
+                    newInputGroup.classList.add('input-group', 'mb-2');
+
+                    const newFileInput = document.createElement('input');
+                    newFileInput.type = 'file';
+                    newFileInput.name = 'files[]';
+                    newFileInput.classList.add('form-control', 'file-input');
+                    newFileInput.accept = 'application/pdf, image/*, video/*';
+
+                    const removeButton = document.createElement('button');
+                    removeButton.type = 'button';
+                    removeButton.classList.add('btn', 'btn-danger', 'remove-file');
+                    removeButton.innerText = '−';
+
+                    newInputGroup.appendChild(newFileInput);
+                    newInputGroup.appendChild(removeButton);
+                    fileInputsContainer.appendChild(newInputGroup);
+
+                    if (fileInputs.length + 1 >= 5) {
+                        addFileButton.disabled = true;
+                    }
+
+                    removeButton.addEventListener('click', function() {
+                        newInputGroup.remove();
+                        addFileButton.disabled = false;
+                    });
+                }
+            });
+        });
+    </script>
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('guru.layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\xampp\htdocs\e_learning\resources\views/guru/tasks/edit.blade.php ENDPATH**/ ?>

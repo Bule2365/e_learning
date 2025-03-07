@@ -34,10 +34,10 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware(['auth'])->group(function () {
     // Admin-Specific Dashboard
     Route::get('/admin/dashboard', [DashboardController::class, 'adminDashboard'])->name('admin.dashboard')->middleware('role:admin');
-    
+
     // Guru-Specific Dashboard
     Route::get('/guru/dashboard', [DashboardController::class, 'guruDashboard'])->name('guru.dashboard')->middleware('role:guru');
-    
+
     // Siswa-Specific Dashboard
     Route::get('/siswa/dashboard', [DashboardController::class, 'siswaDashboard'])->name('siswa.dashboard')->middleware('role:siswa');
 });
@@ -105,6 +105,8 @@ Route::middleware(['auth', 'role:guru'])->group(function () {
     Route::put('/exams/{exam}', [ExamController::class, 'update'])->name('guru.exams.update');
     Route::delete('/exams/{exam}', [ExamController::class, 'destroy'])->name('guru.exams.destroy');
     Route::get('guru/ujian/{examId}/nilai', [ExamController::class, 'showStudentScores'])->name('guru.exams.scores');
+    Route::get('/guru/exams/{examId}/export', [ExamController::class, 'exportScores'])
+        ->name('guru.exams.export');
 
     // Menampilkan halaman untuk mengedit gambar soal
     Route::get('/question/{questionId}/edit-image', [ExamController::class, 'showImage'])->name('guru.exams.image');
@@ -183,7 +185,7 @@ Route::middleware(['auth', 'role:siswa'])->group(function () {
     Route::post('/siswa/exams/answer/{attemptId}', [ExamAttemptController::class, 'saveAnswer'])->name('siswa.exams.answer');
     Route::post('/siswa/exams/submit/{attemptId}', [ExamAttemptController::class, 'submit'])->name('siswa.exams.submit');
     Route::get('/siswa/exams/{examId}/remedial', [ExamAttemptController::class, 'remedial'])
-    ->name('siswa.exams.remedial');
+        ->name('siswa.exams.remedial');
 
     Route::get('/siswa/materials', [StudentMaterialController::class, 'index'])->name('siswa.material.index');
     Route::get('/siswa/materials/{subject_id}', [StudentMaterialController::class, 'showMaterials'])->name('siswa.material.list');

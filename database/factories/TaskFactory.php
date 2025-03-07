@@ -7,7 +7,7 @@ use App\Models\User;
 use App\Models\ClassModel;
 use App\Models\Subject;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Faker\Factory as Faker;
+use Illuminate\Support\Facades\Storage;
 
 class TaskFactory extends Factory
 {
@@ -15,22 +15,27 @@ class TaskFactory extends Factory
 
     public function definition()
     {
-        $faker = Faker::create('id_ID'); // Menggunakan Faker untuk bahasa Indonesia
+        // Generate file acak (2-5 file)
+        $fileCount = rand(2, 5);
+        $files = [];
+        for ($i = 0; $i < $fileCount; $i++) {
+            $files[] = Storage::url('tasks/' . uniqid() . '.pdf');
+        }
 
         return [
-            'title' => $faker->randomElement([
+            'title' => $this->faker->randomElement([
                 'Tugas Matematika',
                 'Tugas Bahasa Indonesia',
                 'Tugas IPA',
                 'Tugas IPS',
-                'Tugas Agama',
+                'Tugas Agama'
             ]),
-            'description' => $faker->paragraph(2), // Deskripsi tugas dalam bahasa Indonesia
-            'file_path' => $faker->imageUrl(), // Gambar dummy sebagai file path
+            'description' => $this->faker->paragraph(2),
+            'file_path' => json_encode($files), // Simpan dalam format JSON
             'subject_id' => Subject::factory(),
             'class_id' => ClassModel::factory(),
             'user_id' => User::factory(),
-            'due_date' => $faker->dateTimeBetween('+1 week', '+1 month'), // Batas waktu tugas
+            'due_date' => $this->faker->dateTimeBetween('+1 week', '+1 month'),
         ];
     }
 }

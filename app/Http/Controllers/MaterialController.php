@@ -45,12 +45,12 @@ class MaterialController extends Controller
     {
         // Validasi data
         $validated = $request->validate([
-            'title'       => 'required|string|max:255',
+            'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'files'       => 'nullable|array|max:5', // Maksimal 5 file
-            'files.*'     => 'file|mimes:pdf,jpeg,png,jpg,mp4,avi,mov|max:102400', // Maksimal 100MB per file
-            'subject_id'  => 'required|exists:subjects,id',
-            'class_id'    => 'required|exists:classes,id',
+            'files' => 'nullable|array|max:5', // Maksimal 5 file
+            'files.*' => 'file|mimes:pdf,jpeg,png,jpg,mp4,avi,mov|max:102400', // Maksimal 100MB per file
+            'subject_id' => 'required|exists:subjects,id',
+            'class_id' => 'required|exists:classes,id',
         ]);
 
         // Array untuk menyimpan path file
@@ -72,12 +72,12 @@ class MaterialController extends Controller
 
         // Simpan ke database
         Material::create([
-            'title'       => $validated['title'],
+            'title' => $validated['title'],
             'description' => $validated['description'],
-            'file_path'   => $filePathsJson, // Simpan path dalam format JSON
-            'subject_id'  => $validated['subject_id'],
-            'class_id'    => $validated['class_id'],
-            'user_id'     => Auth::id(),
+            'file_path' => $filePathsJson, // Simpan path dalam format JSON
+            'subject_id' => $validated['subject_id'],
+            'class_id' => $validated['class_id'],
+            'user_id' => Auth::id(),
         ]);
 
         return redirect()->route('guru.materials.index')->with('success', 'Materi berhasil dibuat');
@@ -109,39 +109,29 @@ class MaterialController extends Controller
             return redirect()->route('guru.materials.index')->with('error', 'Anda tidak memiliki akses untuk mengubah materi ini.');
         }
 
-        // Validasi input tanpa subject_id dan class_id karena akan otomatis diisi
+        // Validasi input
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'files' => 'nullable|array|max:5', // Maksimal 5 file
-            'files.*' => 'file|mimes:pdf,jpeg,png,jpg,mp4,avi,mov|max:102400', // Maksimal 100MB
+            'files.*' => 'nullable|file|mimes:pdf,jpeg,png,jpg,mp4,avi,mov|max:102400', // Maks 100MB per file
         ]);
 
-        // Ambil file lama dari database
-        $filePaths = json_decode($material->file_path, true) ?? [];
+        // Ambil file lama
+        $existingFiles = json_decode($material->file_path, true) ?? [];
 
-        // Jika ada file baru yang diunggah, hapus file lama dan simpan yang baru
+        // Simpan file baru jika ada
         if ($request->hasFile('files')) {
-            // Hapus file lama dari storage
-            foreach ($filePaths as $file) {
-                \Storage::disk('public')->delete($file);
-            }
-
-            // Simpan file baru
-            $filePaths = [];
             foreach ($request->file('files') as $file) {
-                if ($file->getSize() > 102400000) { // 100MB
-                    return redirect()->back()->with('error', 'Ukuran file tidak boleh lebih dari 100MB.');
-                }
-                $filePaths[] = $file->store('materials', 'public');
+                $path = $file->store('materials', 'public');
+                $existingFiles[] = $path;
             }
         }
 
-        // Update materi, hanya ubah field yang diubah
+        // Simpan data ke database
         $material->update([
-            'title' => $validated['title'] !== $material->title ? $validated['title'] : $material->title,
-            'description' => $validated['description'] !== $material->description ? $validated['description'] : $material->description,
-            'file_path' => count($filePaths) > 0 ? json_encode($filePaths) : $material->file_path, // Hanya update file jika ada file baru
+            'title' => $validated['title'],
+            'description' => $validated['description'],
+            'file_path' => json_encode($existingFiles), // Simpan dalam bentuk JSON
         ]);
 
         return redirect()->route('guru.materials.index')->with('success', 'Materi berhasil diperbarui.');

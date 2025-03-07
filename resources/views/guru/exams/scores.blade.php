@@ -8,6 +8,9 @@
         </a>
 
         <h1>Nilai Siswa untuk Ujian: {{ $exam->title }}</h1>
+        <a href="{{ route('guru.exams.export', $exam->id) }}" class="btn btn-success mb-3">
+            <i class="bi bi-file-earmark-excel"></i> Export ke Excel
+        </a>
         <table class="table table-bordered">
             <thead>
                 <tr>

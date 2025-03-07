@@ -41,14 +41,14 @@ class SubjectSeeder extends Seeder
 
     public function run()
     {
-        // Buat 15 mata pelajaran
-        $subjects = Subject::factory()->count(15)->create();
+        // // Buat 15 mata pelajaran
+        // $subjects = Subject::factory()->count(15)->create();
 
-        // Hubungkan mata pelajaran dengan guru
-        $teachers = User::where('role', 'guru')->get();
-        foreach ($subjects as $subject) {
-            $subject->guru()->associate($teachers->random()); // Random guru per mata pelajaran
-            $subject->save();
-        }
+        // // Hubungkan mata pelajaran dengan guru
+        // $teachers = User::where('role', 'guru')->get();
+        // foreach ($subjects as $subject) {
+        //     $subject->guru()->associate($teachers->random()); // Random guru per mata pelajaran
+        //     $subject->save();
+        // }
     }
 }

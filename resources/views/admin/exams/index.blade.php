@@ -45,7 +45,7 @@
 @section('content')
     <div class="container mt-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="fw-bold text-primary">Daftar Kelas</h2>
+            <h2 class="fw-bold text-primary">Daftar Ujian Siswa</h2>
         </div>
 
         @if (isset($message))

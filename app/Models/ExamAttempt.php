@@ -32,7 +32,7 @@ class ExamAttempt extends Model
     public function exam()
     {
         return $this->belongsTo(Exam::class, 'exam_id');
-    }    
+    }
 
     // Relasi ke percakapan ujian (jawaban terkait dengan upaya ujian tertentu)
     public function upayaUjian()
@@ -44,5 +44,11 @@ class ExamAttempt extends Model
     public function soal()
     {
         return $this->belongsTo(Exam::class, 'question_id');
+    }
+
+    // Relasi ke ExamAnswer (Jawaban yang diberikan dalam ujian ini)
+    public function answers()
+    {
+        return $this->hasMany(ExamAnswer::class, 'exam_attempt_id');
     }
 }

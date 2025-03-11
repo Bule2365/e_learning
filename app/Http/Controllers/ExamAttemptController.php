@@ -23,10 +23,14 @@ class ExamAttemptController extends Controller
      */
     public function index()
     {
-        // Mengambil semua ujian beserta soal-soalnya
-        $exams = Exam::with('soal')->orderBy('id', 'desc')->get();
+        // Hanya ambil ujian yang statusnya bukan draft
+        $exams = Exam::with('soal')
+            ->where('status', '!=', 'draft') // Pastikan ujian bukan draft
+            ->orderBy('id', 'desc')
+            ->get();
+    
         return view('siswa.exams.index', compact('exams'));
-    }
+    }    
 
     /**
      * Siswa memulai ujian
@@ -203,5 +207,15 @@ class ExamAttemptController extends Controller
 
         return redirect()->route('siswa.exams.show', ['examId' => $examId, 'attemptId' => $attempt->id])
             ->with('info', 'Silakan mengerjakan ulang ujian.');
+    }
+
+    /**
+     * Menampilkan halaman persiapan sebelum ujian dimulai.
+     */
+    public function preparation($examId)
+    {
+        $exam = Exam::findOrFail($examId);
+
+        return view('siswa.exams.preparation', compact('exam'));
     }
 }

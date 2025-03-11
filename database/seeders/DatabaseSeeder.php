@@ -2,6 +2,9 @@
 
 namespace Database\Seeders;
 
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use App\Models\User;
 use App\Models\ClassModel;
 use App\Models\Subject;
@@ -12,8 +15,7 @@ use App\Models\ExamAnswer;
 use App\Models\Material;
 use App\Models\Task;
 use App\Models\TaskUser;
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\File;
 
 class DatabaseSeeder extends Seeder
 {
@@ -74,53 +76,33 @@ class DatabaseSeeder extends Seeder
 
             // ✅ 8. Buat 200 Soal (10 soal per ujian)
             $questions = $exams->flatMap(function ($exam) {
-                return Question::factory(10)->create(['exam_id' => $exam->id]);
-            });
-
-            // ✅ 9. Buat 200 Percobaan Ujian (Setiap siswa ikut 1 ujian)
-            $examAttempts = $students->map(function ($student) use ($exams) {
-                return ExamAttempt::factory()->create([
-                    'exam_id' => $exams->random()->id,
-                    'user_id' => $student->id,
+                return Question::factory(10)->create([
+                    'exam_id' => $exam->id,
+                    'image_path' => $this->generateDummyFile('question_images'), // Generate file soal
                 ]);
             });
 
-            // ✅ 10. Buat 2000 Jawaban Ujian (Setiap siswa menjawab semua soal)
-            $examAnswers = [];
-            foreach ($examAttempts as $attempt) {
-                $examQuestions = $questions->where('exam_id', $attempt->exam_id);
-                foreach ($examQuestions as $question) {
-                    $examAnswers[] = [
-                        'exam_attempt_id' => $attempt->id,
-                        'question_id' => $question->id,
-                        'answer' => ['A', 'B', 'C', 'D'][rand(0, 3)],
-                        'is_correct' => rand(0, 1),
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ];
-                }
-            }
-            DB::table('exam_answers')->insert($examAnswers);
-
-            // ✅ 11. Buat 30 Materi (3 Materi per Guru)
+            // ✅ 9. Buat 30 Materi (3 Materi per Guru) dengan file
             $teachers->each(function ($teacher) use ($subjects, $classes) {
                 Material::factory(3)->create([
                     'user_id' => $teacher->id,
                     'subject_id' => $subjects->where('user_id', $teacher->id)->first()->id,
                     'class_id' => $classes->random()->id,
+                    'file_path' => json_encode($this->generateMultipleFiles('materials')), // Generate file materi
                 ]);
             });
 
-            // ✅ 12. Buat 50 Tugas (5 Tugas per Guru)
+            // ✅ 10. Buat 50 Tugas (5 Tugas per Guru) dengan file
             $teachers->each(function ($teacher) use ($subjects, $classes) {
                 Task::factory(5)->create([
                     'user_id' => $teacher->id,
                     'subject_id' => $subjects->where('user_id', $teacher->id)->first()->id,
                     'class_id' => $classes->random()->id,
+                    'file_path' => json_encode($this->generateMultipleFiles('tasks')), // Generate file tugas
                 ]);
             });
 
-            // ✅ 13. Buat 200 Jawaban Tugas (Setiap siswa mengerjakan 1 tugas)
+            // ✅ 11. Buat 200 Jawaban Tugas (Setiap siswa mengerjakan 1 tugas)
             $taskUserInserts = $students->map(function ($student) {
                 return [
                     'task_id' => Task::inRandomOrder()->first()->id,
@@ -141,6 +123,34 @@ class DatabaseSeeder extends Seeder
         }
 
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+    }
+
+    /**
+     * Generate satu file dummy untuk storage
+     */
+    private function generateDummyFile($directory)
+    {
+        // Pilih format file secara random
+        $extensions = ['jpg', 'png', 'pdf', 'mp4'];
+        $extension = $extensions[array_rand($extensions)];
+        $fileName = uniqid('file_') . '.' . $extension;
+
+        // Simpan file ke storage
+        Storage::put("public/{$directory}/{$fileName}", 'Dummy Content');
+
+        return "storage/{$directory}/{$fileName}";
+    }
+
+    /**
+     * Generate beberapa file dummy untuk storage (materi/tugas)
+     */
+    private function generateMultipleFiles($directory)
+    {
+        $files = [];
+        for ($i = 0; $i < rand(1, 3); $i++) { // Maksimal 3 file
+            $files[] = $this->generateDummyFile($directory);
+        }
+        return $files;
     }
 
     // public function run()

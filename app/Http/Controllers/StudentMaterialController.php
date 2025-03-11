@@ -12,12 +12,23 @@ class StudentMaterialController extends Controller
 {
     public function index()
     {
+        // Ambil semua mata pelajaran
         $subjects = Subject::all();
-        // Logging: Simpan data subjects ke log
-        Log::info('Subjects:', $subjects->toArray());
-
+    
+        // Ambil ID kelas yang diikuti oleh siswa
+        $classIds = DB::table('class_user')
+                      ->where('user_id', Auth::id())
+                      ->pluck('class_id');
+    
+        // Tambahkan jumlah materi ke setiap mata pelajaran
+        foreach ($subjects as $subject) {
+            $subject->material_count = Material::where('subject_id', $subject->id)
+                                               ->whereIn('class_id', $classIds)
+                                               ->count();
+        }
+    
         return view('siswa.material.index', compact('subjects'));
-    }
+    }    
 
     public function showMaterials($subject_id)
     {

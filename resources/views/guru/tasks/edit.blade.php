@@ -8,11 +8,13 @@
         </a>
 
         @if ($errors->any())
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
         @endif
 
         <h1 class="display-4 text-center mb-4">Edit Tugas</h1>
@@ -39,19 +41,25 @@
                 @enderror
             </div>
 
+            @php
+                $files = json_decode($task->file_path, true) ?? [];
+            @endphp
+
             <div class="mb-3">
                 <label class="form-label">File Saat Ini:</label>
-                <ul>
-                    @foreach (json_decode($task->file_path, true) ?? [] as $file)
+                <ul id="current-files">
+                    @foreach ($files as $file)
                         <li>
                             <a href="{{ asset('storage/' . $file) }}" target="_blank">Lihat File</a>
+                            <input type="checkbox" name="delete_old_files[]" value="{{ $file }}"
+                                class="delete-file-checkbox"> Hapus
                         </li>
                     @endforeach
                 </ul>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Unggah File Baru (Maksimal 5)</label>
+                <label class="form-label">Unggah File Baru</label>
                 <div id="file-inputs">
                     <div class="input-group mb-2">
                         <input type="file" name="files[]" class="form-control file-input"
@@ -77,43 +85,67 @@
         </form>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const fileInputsContainer = document.getElementById('file-inputs');
-            const addFileButton = document.querySelector('.add-file');
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const fileInputsContainer = document.getElementById('file-inputs');
+                const addFileButton = document.querySelector('.add-file');
+                const maxFiles = 4;
+                let existingFiles = {{ count($files) }};
+                let fileInputsCount = 0;
 
-            addFileButton.addEventListener('click', function() {
-                const fileInputs = document.querySelectorAll('.file-input');
-
-                if (fileInputs.length < 5) {
-                    const newInputGroup = document.createElement('div');
-                    newInputGroup.classList.add('input-group', 'mb-2');
-
-                    const newFileInput = document.createElement('input');
-                    newFileInput.type = 'file';
-                    newFileInput.name = 'files[]';
-                    newFileInput.classList.add('form-control', 'file-input');
-                    newFileInput.accept = 'application/pdf, image/*, video/*';
-
-                    const removeButton = document.createElement('button');
-                    removeButton.type = 'button';
-                    removeButton.classList.add('btn', 'btn-danger', 'remove-file');
-                    removeButton.innerText = '−';
-
-                    newInputGroup.appendChild(newFileInput);
-                    newInputGroup.appendChild(removeButton);
-                    fileInputsContainer.appendChild(newInputGroup);
-
-                    if (fileInputs.length + 1 >= 5) {
+                function updateAddButtonState() {
+                    if ((existingFiles + fileInputsCount) >= maxFiles) {
                         addFileButton.disabled = true;
-                    }
-
-                    removeButton.addEventListener('click', function() {
-                        newInputGroup.remove();
+                    } else {
                         addFileButton.disabled = false;
-                    });
+                    }
                 }
+
+                addFileButton.addEventListener('click', function() {
+                    if ((existingFiles + fileInputsCount) < maxFiles) {
+                        const newInputGroup = document.createElement('div');
+                        newInputGroup.classList.add('input-group', 'mb-2');
+
+                        const newFileInput = document.createElement('input');
+                        newFileInput.type = 'file';
+                        newFileInput.name = 'files[]';
+                        newFileInput.classList.add('form-control', 'file-input');
+                        newFileInput.accept = 'application/pdf, image/*, video/*';
+
+                        const removeButton = document.createElement('button');
+                        removeButton.type = 'button';
+                        removeButton.classList.add('btn', 'btn-danger', 'remove-file');
+                        removeButton.innerText = '−';
+
+                        newInputGroup.appendChild(newFileInput);
+                        newInputGroup.appendChild(removeButton);
+                        fileInputsContainer.appendChild(newInputGroup);
+
+                        fileInputsCount++;
+                        updateAddButtonState();
+
+                        removeButton.addEventListener('click', function() {
+                            newInputGroup.remove();
+                            fileInputsCount--;
+                            updateAddButtonState();
+                        });
+                    }
+                });
+
+                document.querySelectorAll('.delete-file-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        if (this.checked) {
+                            existingFiles--;
+                        } else {
+                            existingFiles++;
+                        }
+                        updateAddButtonState();
+                    });
+                });
+
+                updateAddButtonState();
             });
-        });
-    </script>
+        </script>
+    @endpush
 @endsection

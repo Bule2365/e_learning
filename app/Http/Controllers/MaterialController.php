@@ -108,32 +108,59 @@ class MaterialController extends Controller
         if ($material->user_id !== Auth::id()) {
             return redirect()->route('guru.materials.index')->with('error', 'Anda tidak memiliki akses untuk mengubah materi ini.');
         }
-
+    
         // Validasi input
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'files.*' => 'nullable|file|mimes:pdf,jpeg,png,jpg,mp4,avi,mov|max:102400', // Maks 100MB per file
+            'description' => 'nullable|string',
+            'files' => 'nullable|array',
+            'files.*' => 'file|mimes:pdf,jpeg,png,jpg,mp4,avi,mov|max:102400', // Maks 100MB per file
+            'delete_old_files' => 'nullable|array',
         ]);
-
+    
         // Ambil file lama
         $existingFiles = json_decode($material->file_path, true) ?? [];
-
-        // Simpan file baru jika ada
-        if ($request->hasFile('files')) {
-            foreach ($request->file('files') as $file) {
-                $path = $file->store('materials', 'public');
-                $existingFiles[] = $path;
+    
+        // Hapus file yang dipilih pengguna
+        if ($request->has('delete_old_files')) {
+            foreach ($request->delete_old_files as $fileToDelete) {
+                if (($key = array_search($fileToDelete, $existingFiles)) !== false) {
+                    // Hapus file dari storage
+                    if (\Storage::disk('public')->exists($fileToDelete)) {
+                        \Storage::disk('public')->delete($fileToDelete);
+                    }
+                    // Hapus dari array existingFiles
+                    unset($existingFiles[$key]);
+                }
             }
         }
-
+    
+        // Reset array key index
+        $existingFiles = array_values($existingFiles);
+    
+        // Periksa apakah masih ada ruang untuk menambahkan file baru
+        $maxFilesAllowed = 5;
+        $remainingSlots = $maxFilesAllowed - count($existingFiles);
+    
+        if ($request->hasFile('files')) {
+            $newFiles = $request->file('files');
+    
+            if (count($newFiles) > $remainingSlots) {
+                return redirect()->back()->with('error', 'Anda hanya dapat mengunggah maksimal ' . $remainingSlots . ' file tambahan.');
+            }
+    
+            foreach ($newFiles as $file) {
+                $existingFiles[] = $file->store('materials', 'public');
+            }
+        }
+    
         // Simpan data ke database
         $material->update([
             'title' => $validated['title'],
-            'description' => $validated['description'],
+            'description' => $validated['description'] ?? $material->description,
             'file_path' => json_encode($existingFiles), // Simpan dalam bentuk JSON
         ]);
-
+    
         return redirect()->route('guru.materials.index')->with('success', 'Materi berhasil diperbarui.');
     }
 

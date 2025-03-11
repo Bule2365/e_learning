@@ -18,7 +18,7 @@ class CreateMaterialsTable extends Migration
             $table->string('title');
             $table->text('description')->nullable();
             $table->enum('type', ['video', 'image', 'text']);
-            $table->string('file_path')->nullable();
+            $table->text('file_path')->nullable();
             $table->foreignId('subject_id')->constrained('subjects')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('class_id')->constrained('classes')->onDelete('cascade');

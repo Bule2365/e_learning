@@ -8,11 +8,13 @@
         </a>
 
         <?php if($errors->any()): ?>
-            <ul>
-                <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                    <li><?php echo e($error); ?></li>
-                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-            </ul>
+            <div class="alert alert-danger">
+                <ul>
+                    <?php $__currentLoopData = $errors->all(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $error): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <li><?php echo e($error); ?></li>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </ul>
+            </div>
         <?php endif; ?>
 
         <h1 class="display-4 text-center mb-4">Edit Tugas</h1>
@@ -67,19 +69,25 @@ endif;
 unset($__errorArgs, $__bag); ?>
             </div>
 
+            <?php
+                $files = json_decode($task->file_path, true) ?? [];
+            ?>
+
             <div class="mb-3">
                 <label class="form-label">File Saat Ini:</label>
-                <ul>
-                    <?php $__currentLoopData = json_decode($task->file_path, true) ?? []; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $file): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <ul id="current-files">
+                    <?php $__currentLoopData = $files; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $file): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                         <li>
                             <a href="<?php echo e(asset('storage/' . $file)); ?>" target="_blank">Lihat File</a>
+                            <input type="checkbox" name="delete_old_files[]" value="<?php echo e($file); ?>"
+                                class="delete-file-checkbox"> Hapus
                         </li>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                 </ul>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Unggah File Baru (Maksimal 5)</label>
+                <label class="form-label">Unggah File Baru</label>
                 <div id="file-inputs">
                     <div class="input-group mb-2">
                         <input type="file" name="files[]" class="form-control file-input"
@@ -119,45 +127,69 @@ unset($__errorArgs, $__bag); ?>
         </form>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const fileInputsContainer = document.getElementById('file-inputs');
-            const addFileButton = document.querySelector('.add-file');
+    <?php $__env->startPush('scripts'); ?>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const fileInputsContainer = document.getElementById('file-inputs');
+                const addFileButton = document.querySelector('.add-file');
+                const maxFiles = 4;
+                let existingFiles = <?php echo e(count($files)); ?>;
+                let fileInputsCount = 0;
 
-            addFileButton.addEventListener('click', function() {
-                const fileInputs = document.querySelectorAll('.file-input');
-
-                if (fileInputs.length < 5) {
-                    const newInputGroup = document.createElement('div');
-                    newInputGroup.classList.add('input-group', 'mb-2');
-
-                    const newFileInput = document.createElement('input');
-                    newFileInput.type = 'file';
-                    newFileInput.name = 'files[]';
-                    newFileInput.classList.add('form-control', 'file-input');
-                    newFileInput.accept = 'application/pdf, image/*, video/*';
-
-                    const removeButton = document.createElement('button');
-                    removeButton.type = 'button';
-                    removeButton.classList.add('btn', 'btn-danger', 'remove-file');
-                    removeButton.innerText = '−';
-
-                    newInputGroup.appendChild(newFileInput);
-                    newInputGroup.appendChild(removeButton);
-                    fileInputsContainer.appendChild(newInputGroup);
-
-                    if (fileInputs.length + 1 >= 5) {
+                function updateAddButtonState() {
+                    if ((existingFiles + fileInputsCount) >= maxFiles) {
                         addFileButton.disabled = true;
-                    }
-
-                    removeButton.addEventListener('click', function() {
-                        newInputGroup.remove();
+                    } else {
                         addFileButton.disabled = false;
-                    });
+                    }
                 }
+
+                addFileButton.addEventListener('click', function() {
+                    if ((existingFiles + fileInputsCount) < maxFiles) {
+                        const newInputGroup = document.createElement('div');
+                        newInputGroup.classList.add('input-group', 'mb-2');
+
+                        const newFileInput = document.createElement('input');
+                        newFileInput.type = 'file';
+                        newFileInput.name = 'files[]';
+                        newFileInput.classList.add('form-control', 'file-input');
+                        newFileInput.accept = 'application/pdf, image/*, video/*';
+
+                        const removeButton = document.createElement('button');
+                        removeButton.type = 'button';
+                        removeButton.classList.add('btn', 'btn-danger', 'remove-file');
+                        removeButton.innerText = '−';
+
+                        newInputGroup.appendChild(newFileInput);
+                        newInputGroup.appendChild(removeButton);
+                        fileInputsContainer.appendChild(newInputGroup);
+
+                        fileInputsCount++;
+                        updateAddButtonState();
+
+                        removeButton.addEventListener('click', function() {
+                            newInputGroup.remove();
+                            fileInputsCount--;
+                            updateAddButtonState();
+                        });
+                    }
+                });
+
+                document.querySelectorAll('.delete-file-checkbox').forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        if (this.checked) {
+                            existingFiles--;
+                        } else {
+                            existingFiles++;
+                        }
+                        updateAddButtonState();
+                    });
+                });
+
+                updateAddButtonState();
             });
-        });
-    </script>
+        </script>
+    <?php $__env->stopPush(); ?>
 <?php $__env->stopSection(); ?>
 
 <?php echo $__env->make('guru.layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\xampp\htdocs\e_learning\resources\views/guru/tasks/edit.blade.php ENDPATH**/ ?>

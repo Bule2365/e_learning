@@ -80,9 +80,18 @@
 @section('content')
     <div class="container mt-3 mt-md-5">
         <!-- Header -->
-        <h1 class="text-center mb-4 text-primary fw-bold">Detail Kelas: {{ $class->name }}</h1>
+        <!-- Page Header -->
+
+        <h1 class="text-center mb-4 text-primary fw-bold">Detail Kelas {{ $class->name }}</h1>
 
         <!-- Kelas Info -->
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <a href="{{ route('admin.classes.index') }}" class="btn btn-outline-secondary d-flex align-items-center gap-2">
+                <i class="bi bi-arrow-left"></i>
+                <span>Kembali</span>
+            </a>
+        </div>
+
         <div class="card card-custom mb-4">
             <div class="card-header">
                 <h5 class="card-title mb-0">{{ $class->name }}</h5>

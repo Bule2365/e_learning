@@ -186,6 +186,8 @@ Route::middleware(['auth', 'role:siswa'])->group(function () {
     Route::post('/siswa/exams/submit/{attemptId}', [ExamAttemptController::class, 'submit'])->name('siswa.exams.submit');
     Route::get('/siswa/exams/{examId}/remedial', [ExamAttemptController::class, 'remedial'])
         ->name('siswa.exams.remedial');
+    Route::get('/siswa/exams/preparation/{examId}', [ExamAttemptController::class, 'preparation'])
+        ->name('siswa.exams.preparation');
 
     Route::get('/siswa/materials', [StudentMaterialController::class, 'index'])->name('siswa.material.index');
     Route::get('/siswa/materials/{subject_id}', [StudentMaterialController::class, 'showMaterials'])->name('siswa.material.list');

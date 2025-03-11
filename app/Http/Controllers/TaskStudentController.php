@@ -40,7 +40,7 @@ class TaskStudentController extends Controller
 
     public function submit(Request $request, Task $task)
     {
-        $request->validate(['file' => 'required|file|mimes:pdf,jpeg,png,jpg|max:2048']);
+        $request->validate(['file' => 'required|file|mimes:pdf,jpeg,png,jpg|max:10240']);
         $filePath = $request->file('file')->store('task_submissions', 'public');
 
         TaskUser::updateOrCreate(

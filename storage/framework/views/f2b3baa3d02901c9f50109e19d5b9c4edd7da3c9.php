@@ -74,23 +74,21 @@ unset($__errorArgs, $__bag); ?>
                 $files = json_decode($material->file_path, true) ?? [];
             ?>
 
-            <?php if(!empty($files) && $files[0] != ''): ?>
-                <div class="mb-3">
-                    <label class="form-label">File Saat Ini:</label>
-                    <ul>
-                        <?php $__currentLoopData = $files; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $file): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                            <li>
-                                <a href="<?php echo e(asset('storage/' . $file)); ?>" target="_blank">Lihat File</a>
-                                <input type="checkbox" name="delete_old_files[]" value="<?php echo e($file); ?>"> Hapus
-                            </li>
-                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                    </ul>
-                </div>
-            <?php endif; ?>
-
-            
             <div class="mb-3">
-                <label class="form-label">Unggah File Baru (Maksimal 5)</label>
+                <label class="form-label">File Saat Ini:</label>
+                <ul id="current-files">
+                    <?php $__currentLoopData = $files; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $file): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <li>
+                            <a href="<?php echo e(asset('storage/' . $file)); ?>" target="_blank">Lihat File</a>
+                            <input type="checkbox" name="delete_old_files[]" value="<?php echo e($file); ?>"
+                                class="delete-file-checkbox"> Hapus
+                        </li>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                </ul>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Unggah File Baru</label>
                 <div id="file-inputs">
                     <div class="input-group mb-2">
                         <input type="file" name="files[]" class="form-control file-input"
@@ -112,9 +110,7 @@ unset($__errorArgs, $__bag); ?>
             document.addEventListener('DOMContentLoaded', function() {
                 const fileInputsContainer = document.getElementById('file-inputs');
                 const addFileButton = document.querySelector('.add-file');
-                const maxFiles = 4;
-
-                // Ambil jumlah file lama dari PHP
+                const maxFiles = 4; // Sesuai dengan batasan pada backend
                 let existingFiles = <?php echo e(count($files)); ?>;
                 let fileInputsCount = 0;
 
@@ -157,8 +153,7 @@ unset($__errorArgs, $__bag); ?>
                     }
                 });
 
-                // Handle checkbox untuk menghapus file lama
-                document.querySelectorAll('input[name="delete_old_files[]"]').forEach(checkbox => {
+                document.querySelectorAll('.delete-file-checkbox').forEach(checkbox => {
                     checkbox.addEventListener('change', function() {
                         if (this.checked) {
                             existingFiles--;

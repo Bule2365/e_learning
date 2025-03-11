@@ -4,41 +4,43 @@
     <div class="container">
         <h2 class="text-center mb-4">Daftar Ujian</h2>
 
-        <div class="row">
+        <div class="row g-4">
             <?php $__currentLoopData = $exams; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $exam): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                <?php
-                    // Mendapatkan upaya ujian untuk pengguna yang sedang login
-                    $attempt = $exam
-                        ->upayaUjian()
-                        ->where('user_id', auth()->id())
-                        ->latest()
-                        ->first();
-                ?>
+                <?php if($exam->status !== 'draft'): ?>
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title"><?php echo e($exam->title); ?></h5>
+                                <p class="text-muted flex-grow-1"><?php echo e($exam->description); ?></p>
 
-                <div class="col-md-4">
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title"><?php echo e($exam->title); ?></h5>
-                            <p class="text-muted"><?php echo e($exam->description); ?></p>
+                                <?php
+                                    $attempt = $exam
+                                        ->upayaUjian()
+                                        ->where('user_id', auth()->id())
+                                        ->latest()
+                                        ->first();
+                                ?>
 
-                            <?php if($attempt && $attempt->submitted_at): ?>
-                                <p><strong>Nilai Anda: <?php echo e($attempt->score); ?></strong></p>
-                                <?php if($attempt->score < 75): ?>
-                                    <a href="<?php echo e(route('siswa.exams.remedial', $exam->id)); ?>"
-                                        class="btn btn-warning btn-block">
-                                        Remedial Ujian
-                                    </a>
+                                <?php if($attempt && $attempt->submitted_at): ?>
+                                    <p><strong>Nilai Anda: <?php echo e($attempt->score); ?></strong></p>
+                                    <?php if($attempt->score < 75): ?>
+                                        <a href="<?php echo e(route('siswa.exams.remedial', $exam->id)); ?>"
+                                            class="btn btn-warning w-100">
+                                            Remedial Ujian
+                                        </a>
+                                    <?php else: ?>
+                                        <p class="text-success">Lulus</p>
+                                    <?php endif; ?>
                                 <?php else: ?>
-                                    <p class="text-success">Lulus</p>
+                                    <a href="<?php echo e(route('siswa.exams.preparation', $exam->id)); ?>"
+                                        class="btn btn-primary w-100">
+                                        Persiapan Ujian
+                                    </a>
                                 <?php endif; ?>
-                            <?php else: ?>
-                                <a href="<?php echo e(route('siswa.exams.start', $exam->id)); ?>" class="btn btn-primary btn-block">
-                                    Mulai Ujian
-                                </a>
-                            <?php endif; ?>
+                            </div>
                         </div>
                     </div>
-                </div>
+                <?php endif; ?>
             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         </div>
     </div>

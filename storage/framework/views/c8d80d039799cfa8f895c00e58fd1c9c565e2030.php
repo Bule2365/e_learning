@@ -66,6 +66,9 @@
                     <div class="card shadow-lg rounded-4 hover-shadow">
                         <div class="card-body">
                             <h5 class="card-title text-center"><?php echo e($subject->name); ?></h5>
+                            <p class="text-muted text-center">
+                                <?php echo e($subject->material_count); ?> Materi tersedia
+                            </p>
                             <a href="<?php echo e(route('siswa.material.list', $subject->id)); ?>" class="btn btn-primary w-100 mt-3">
                                 Lihat Materi
                             </a>

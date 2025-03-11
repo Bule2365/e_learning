@@ -443,6 +443,13 @@
         </div>
     </div>
 
+    @stack('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script src="{{ asset('assets/libs/jquery/dist/jquery.min.js') }}"></script>
     <script src="{{ asset('assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('assets/js/sidebarmenu.js') }}"></script>
@@ -451,22 +458,27 @@
     <script src="{{ asset('assets/libs/simplebar/dist/simplebar.js') }}"></script>
     <script src="{{ asset('assets/js/dashboard.js') }}"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- Script untuk menampilkan modal logout -->
     <script>
-        function showLogoutModal() {
-            var logoutModal = new bootstrap.Modal(document.getElementById('logoutModal'));
-            logoutModal.show();
-        }
-
-        document.getElementById('headerCollapse').addEventListener('click', function() {
-            document.querySelector('.left-sidebar').classList.toggle('active');
+        document.addEventListener("DOMContentLoaded", function() {
+            var headerCollapse = document.getElementById('headerCollapse');
+            if (headerCollapse) {
+                headerCollapse.addEventListener('click', function() {
+                    document.querySelector('.left-sidebar').classList.toggle('active');
+                });
+            }
         });
+
+        function showLogoutModal() {
+            var logoutModalElement = document.getElementById('logoutModal');
+            if (logoutModalElement) {
+                var logoutModal = new bootstrap.Modal(logoutModalElement);
+                logoutModal.show();
+            } else {
+                console.error("Modal logout tidak ditemukan!");
+            }
+        }
     </script>
 </body>
 

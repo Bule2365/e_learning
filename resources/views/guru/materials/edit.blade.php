@@ -46,23 +46,21 @@
                 $files = json_decode($material->file_path, true) ?? [];
             @endphp
 
-            @if (!empty($files) && $files[0] != '')
-                <div class="mb-3">
-                    <label class="form-label">File Saat Ini:</label>
-                    <ul>
-                        @foreach ($files as $file)
-                            <li>
-                                <a href="{{ asset('storage/' . $file) }}" target="_blank">Lihat File</a>
-                                <input type="checkbox" name="delete_old_files[]" value="{{ $file }}"> Hapus
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            {{-- Input Upload File Baru --}}
             <div class="mb-3">
-                <label class="form-label">Unggah File Baru (Maksimal 5)</label>
+                <label class="form-label">File Saat Ini:</label>
+                <ul id="current-files">
+                    @foreach ($files as $file)
+                        <li>
+                            <a href="{{ asset('storage/' . $file) }}" target="_blank">Lihat File</a>
+                            <input type="checkbox" name="delete_old_files[]" value="{{ $file }}"
+                                class="delete-file-checkbox"> Hapus
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Unggah File Baru</label>
                 <div id="file-inputs">
                     <div class="input-group mb-2">
                         <input type="file" name="files[]" class="form-control file-input"
@@ -84,9 +82,7 @@
             document.addEventListener('DOMContentLoaded', function() {
                 const fileInputsContainer = document.getElementById('file-inputs');
                 const addFileButton = document.querySelector('.add-file');
-                const maxFiles = 4;
-
-                // Ambil jumlah file lama dari PHP
+                const maxFiles = 4; // Sesuai dengan batasan pada backend
                 let existingFiles = {{ count($files) }};
                 let fileInputsCount = 0;
 
@@ -129,8 +125,7 @@
                     }
                 });
 
-                // Handle checkbox untuk menghapus file lama
-                document.querySelectorAll('input[name="delete_old_files[]"]').forEach(checkbox => {
+                document.querySelectorAll('.delete-file-checkbox').forEach(checkbox => {
                     checkbox.addEventListener('change', function() {
                         if (this.checked) {
                             existingFiles--;

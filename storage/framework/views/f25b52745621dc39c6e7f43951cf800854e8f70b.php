@@ -1,15 +1,66 @@
+<!DOCTYPE html>
+<html lang="id">
 
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?php echo e($attempt->exam->title); ?> - Ujian</title>
 
-<?php $__env->startSection('content'); ?>
+    <!-- Bootstrap CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #f4f7fc;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .card {
+            border-radius: 10px;
+            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-check-label {
+            font-weight: 500;
+        }
+
+        .btn-success {
+            border-radius: 50px;
+            font-weight: bold;
+        }
+
+        #exam-timer {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .container {
+            max-width: 900px;
+            margin-top: 50px;
+        }
+
+        .form-check {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+
+<body>
+
     <div class="container">
         <h2 class="text-center"><?php echo e($attempt->exam->title); ?></h2>
         <p class="text-center text-muted"><?php echo e($attempt->exam->description); ?></p>
+
+        <!-- Timer Countdown -->
+        <div id="exam-timer" class="text-center bg-danger text-white py-2 rounded mb-3">
+            ⏳ Sisa Waktu: 60:00
+        </div>
 
         <form id="exam-form" action="<?php echo e(route('siswa.exams.submit', $attempt->id)); ?>" method="POST">
             <?php echo csrf_field(); ?>
             <?php $__currentLoopData = $soal; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $question): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                 <?php
-                    // Ambil jawaban siswa jika ada
                     $studentAnswer = $attempt->upayaUjian->where('question_id', $question->id)->first();
                 ?>
 
@@ -29,7 +80,8 @@
                                         <input class="form-check-input answer-input" type="radio"
                                             name="answers[<?php echo e($question->id); ?>]" value="<?php echo e($key); ?>"
                                             id="option<?php echo e($question->id); ?>_<?php echo e($key); ?>"
-                                            data-question-id="<?php echo e($question->id); ?>" data-attempt-id="<?php echo e($attempt->id); ?>"
+                                            data-question-id="<?php echo e($question->id); ?>"
+                                            data-attempt-id="<?php echo e($attempt->id); ?>"
                                             <?php echo e($studentAnswer && $studentAnswer->answer == $key ? 'checked' : ''); ?>>
                                         <label class="form-check-label"
                                             for="option<?php echo e($question->id); ?>_<?php echo e($key); ?>">
@@ -51,7 +103,36 @@
         </form>
     </div>
 
+    <!-- Bootstrap JS and Popper.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+
+    <!-- Custom JS for Timer and Autosave -->
     <script>
+        let timeLimit = 60 * 60; // 60 menit dalam detik
+        let timerElement = document.getElementById("exam-timer");
+
+        function updateTimerDisplay() {
+            let minutes = Math.floor(timeLimit / 60);
+            let seconds = timeLimit % 60;
+            timerElement.innerHTML = `⏳ Sisa Waktu: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        }
+
+        function countdown() {
+            if (timeLimit <= 0) {
+                alert("⏳ Waktu habis! Ujian akan dikumpulkan otomatis.");
+                document.getElementById("exam-form").submit();
+                return;
+            }
+            timeLimit--;
+            updateTimerDisplay();
+            setTimeout(countdown, 1000);
+        }
+
+        updateTimerDisplay();
+        countdown();
+
+        // Auto-save jawaban siswa saat memilih opsi
         document.querySelectorAll('.answer-input').forEach(input => {
             input.addEventListener('change', function() {
                 let attemptId = this.dataset.attemptId;
@@ -72,10 +153,10 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            console.log('Jawaban berhasil disimpan.');
+                            console.log('✅ Jawaban berhasil disimpan.');
                         } else {
-                            console.error('Gagal menyimpan jawaban:', data.message);
-                            alert(data.message); // Tampilkan error ke pengguna
+                            console.error('❌ Gagal menyimpan jawaban:', data.message);
+                            alert(data.message);
                         }
                     })
                     .catch(error => {
@@ -84,6 +165,7 @@
             });
         });
     </script>
-<?php $__env->stopSection(); ?>
+</body>
 
-<?php echo $__env->make('siswa.layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\xampp\htdocs\e_learning\resources\views/siswa/exams/show.blade.php ENDPATH**/ ?>
+</html>
+<?php /**PATH C:\xampp\htdocs\e_learning\resources\views/siswa/exams/show.blade.php ENDPATH**/ ?>

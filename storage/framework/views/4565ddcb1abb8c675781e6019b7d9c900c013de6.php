@@ -58,27 +58,23 @@
 <body>
 
     <div class="container">
-        <h2 class="text-center mb-4">Persiapan Ujian</h2>
+        <div class="text-center">
+            <h2 class="fw-bold">⏳ Persiapan Ujian</h2>
+            <p class="text-muted">Pastikan Anda siap sebelum memulai ujian ini.</p>
+        </div>
 
-        <div class="card shadow-sm p-4">
-            <h4 class="text-primary">📌 Instruksi Ujian</h4>
-            <ul>
-                <li>Pastikan Anda berada di tempat yang nyaman dan tenang.</li>
-                <li>Gunakan perangkat dengan koneksi internet yang stabil.</li>
-                <li>Siapkan alat tulis jika diperlukan.</li>
-                <li>Jangan keluar dari halaman ujian sebelum selesai.</li>
+        <div class="card border-0 shadow-sm p-4">
+            <h4 class="text-primary fw-bold"><?php echo e($exam->title); ?></h4>
+            <p><?php echo e($exam->description); ?></p>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">📄 Jumlah Soal: <strong><?php echo e($exam->soal->count()); ?></strong></li>
+                <li class="list-group-item">⏳ Waktu: <strong>60 menit</strong>
+                </li>
             </ul>
 
-            <h4 class="text-primary mt-3">📄 Detail Ujian</h4>
-            <p><strong>Nama Ujian:</strong> <?php echo e($exam->title); ?></p>
-            <p><strong>Durasi:</strong> <span class="text-danger"><b>60 menit</b></span></p>
-            <p><strong>Jumlah Soal:</strong> <?php echo e($exam->questions_count); ?></p>
-
-            <div class="text-center mt-4">
-                <a href="<?php echo e(route('siswa.exams.start', $exam->id)); ?>" class="btn btn-success btn-lg">
-                    Saya Siap, Mulai Ujian 🚀
-                </a>
-            </div>
+            <a href="<?php echo e(route('siswa.exams.start', $exam->id)); ?>" class="btn btn-success w-100 mt-3">
+                🚀 Mulai Ujian
+            </a>
         </div>
     </div>
 

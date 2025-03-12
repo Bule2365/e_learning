@@ -8,10 +8,11 @@
 
     <!-- Bootstrap CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <!-- Custom CSS -->
     <style>
         body {
+            padding: 20px;
             background-color: #f4f7fc;
             font-family: 'Arial', sans-serif;
         }
@@ -19,10 +20,6 @@
         .card {
             border-radius: 10px;
             box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .form-check-label {
-            font-weight: 500;
         }
 
         .btn-success {
@@ -33,15 +30,6 @@
         #exam-timer {
             font-size: 20px;
             font-weight: 700;
-        }
-
-        .container {
-            max-width: 900px;
-            margin-top: 50px;
-        }
-
-        .form-check {
-            margin-bottom: 15px;
         }
     </style>
 </head>
@@ -69,9 +57,12 @@
                         <h6>{{ $loop->iteration }}. {{ $question->question_text }}</h6>
 
                         @if ($question->image_path)
-                            <img src="{{ asset('storage/' . $question->image_path) }}" alt="Gambar Soal"
-                                class="img-fluid mb-2" style="max-width: 400px;">
+                            <div class="text-center">
+                                <img src="{{ asset('storage/' . $question->image_path) }}" alt="Gambar Soal"
+                                    class="img-fluid rounded mb-2" style="max-width: 100%; height: auto;">
+                            </div>
                         @endif
+
 
                         <div class="mb-4">
                             @if ($question->type == 'multiple_choice')
@@ -98,18 +89,15 @@
                 </div>
             @endforeach
 
-            <button type="submit" class="btn btn-success btn-block">Kumpulkan Ujian</button>
+            <button type="button" id="submit-exam" class="btn btn-success btn-block">Kumpulkan Ujian</button>
         </form>
     </div>
 
-    <!-- Bootstrap JS and Popper.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
-
-    <!-- Custom JS for Timer and Autosave -->
     <script>
-        let timeLimit = 60 * 60; // 60 menit dalam detik
-        let timerElement = document.getElementById("exam-timer");
+        let examKey = "exam_timer_{{ $attempt->id }}";
+        let timeLimit = localStorage.getItem(examKey) ? parseInt(localStorage.getItem(examKey)) :
+            300; // 5 menit (300 detik)
+        let timerElement = document.getElementById("exam-timer")
 
         function updateTimerDisplay() {
             let minutes = Math.floor(timeLimit / 60);
@@ -119,11 +107,20 @@
 
         function countdown() {
             if (timeLimit <= 0) {
-                alert("⏳ Waktu habis! Ujian akan dikumpulkan otomatis.");
-                document.getElementById("exam-form").submit();
+                Swal.fire({
+                    title: "⏳ Waktu Habis!",
+                    text: "Ujian akan dikumpulkan otomatis.",
+                    icon: "warning",
+                    showConfirmButton: false,
+                    timer: 2000,
+                    willClose: () => {
+                        document.getElementById("exam-form").submit();
+                    }
+                });
                 return;
             }
             timeLimit--;
+            localStorage.setItem(examKey, timeLimit); // Simpan waktu ke LocalStorage
             updateTimerDisplay();
             setTimeout(countdown, 1000);
         }
@@ -131,7 +128,38 @@
         updateTimerDisplay();
         countdown();
 
-        // Auto-save jawaban siswa saat memilih opsi
+        document.getElementById("exam-form").addEventListener("submit", function() {
+            localStorage.removeItem(examKey); // Hapus waktu setelah submit
+        });
+
+
+        document.getElementById("submit-exam").addEventListener("click", function() {
+            Swal.fire({
+                title: "Yakin ingin mengumpulkan?",
+                text: "Pastikan semua jawaban sudah diisi dengan benar.",
+                icon: "question",
+                showCancelButton: true,
+                confirmButtonText: "Ya, Kumpulkan",
+                cancelButtonText: "Batal"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: "Mengumpulkan Ujian...",
+                        text: "Mohon tunggu sebentar.",
+                        icon: "info",
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                            setTimeout(() => {
+                                document.getElementById("exam-form").submit();
+                            }, 2000);
+                        }
+                    });
+                }
+            });
+        });
+
         document.querySelectorAll('.answer-input').forEach(input => {
             input.addEventListener('change', function() {
                 let attemptId = this.dataset.attemptId;
@@ -152,14 +180,20 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            console.log('✅ Jawaban berhasil disimpan.');
+                            Swal.fire({
+                                toast: true,
+                                position: "top-end",
+                                icon: "success",
+                                title: "Jawaban tersimpan",
+                                showConfirmButton: false,
+                                timer: 1000
+                            });
                         } else {
-                            console.error('❌ Gagal menyimpan jawaban:', data.message);
-                            alert(data.message);
+                            Swal.fire("Gagal!", data.message, "error");
                         }
                     })
                     .catch(error => {
-                        console.error('Error:', error);
+                        Swal.fire("Kesalahan!", "Gagal menyimpan jawaban.", "error");
                     });
             });
         });

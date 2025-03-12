@@ -47,7 +47,7 @@
                     labels: [
                         '0', // Menambahkan 0 sebagai titik awal
                         <?php $__currentLoopData = $taskValues; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $taskValue): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                            'Tugas <?php echo e($index + 1); ?>',
+                            '<?php echo e($index + 1); ?>',
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     ], // Label untuk tugas
                     datasets: [{
@@ -81,7 +81,7 @@
                     labels: [
                         '0', // Menambahkan 0 sebagai titik awal
                         <?php $__currentLoopData = $examValues; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $examValue): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                            'Ujian <?php echo e($index + 1); ?>',
+                            '<?php echo e($index + 1); ?>',
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     ], // Label untuk ujian
                     datasets: [{

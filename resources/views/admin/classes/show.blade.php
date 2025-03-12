@@ -180,17 +180,21 @@
             <h5 class="mb-3">Tambah Siswa ke Kelas</h5>
             <form action="{{ route('admin.classes.addStudentToClass', $class->id) }}" method="POST">
                 @csrf
-                <div class="form-group mb-3">
-                    <label for="user_id" class="form-label">Pilih Siswa</label>
-                    <select name="user_id" id="user_id" class="form-control">
-                        @foreach ($users->where('role', 'siswa') as $user)
-                            <option value="{{ $user->id }}">{{ $user->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-success btn-action">
-                    <i class="bi bi-plus-circle me-2"></i> Tambah Siswa
-                </button>
+                @if ($users->where('role', 'siswa')->whereNotIn('id', $class->siswa->pluck('id'))->isNotEmpty())
+                    <div class="form-group mb-3">
+                        <label for="user_id" class="form-label">Pilih Siswa</label>
+                        <select name="user_id" id="user_id" class="form-control">
+                            @foreach ($users->where('role', 'siswa')->whereNotIn('id', $class->siswa->pluck('id')) as $user)
+                                <option value="{{ $user->id }}">{{ $user->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-action">
+                        <i class="bi bi-plus-circle me-2"></i> Tambah Siswa
+                    </button>
+                @else
+                    <div class="alert alert-warning">Semua siswa sudah tergabung dalam kelas.</div>
+                @endif
             </form>
         </div>
     </div>

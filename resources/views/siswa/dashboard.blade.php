@@ -46,7 +46,7 @@
                     labels: [
                         '0', // Menambahkan 0 sebagai titik awal
                         @foreach ($taskValues as $index => $taskValue)
-                            'Tugas {{ $index + 1 }}',
+                            '{{ $index + 1 }}',
                         @endforeach
                     ], // Label untuk tugas
                     datasets: [{
@@ -80,7 +80,7 @@
                     labels: [
                         '0', // Menambahkan 0 sebagai titik awal
                         @foreach ($examValues as $index => $examValue)
-                            'Ujian {{ $index + 1 }}',
+                            '{{ $index + 1 }}',
                         @endforeach
                     ], // Label untuk ujian
                     datasets: [{

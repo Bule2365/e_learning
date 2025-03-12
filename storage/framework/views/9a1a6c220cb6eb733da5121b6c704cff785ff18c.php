@@ -180,17 +180,21 @@
             <h5 class="mb-3">Tambah Siswa ke Kelas</h5>
             <form action="<?php echo e(route('admin.classes.addStudentToClass', $class->id)); ?>" method="POST">
                 <?php echo csrf_field(); ?>
-                <div class="form-group mb-3">
-                    <label for="user_id" class="form-label">Pilih Siswa</label>
-                    <select name="user_id" id="user_id" class="form-control">
-                        <?php $__currentLoopData = $users->where('role', 'siswa'); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                            <option value="<?php echo e($user->id); ?>"><?php echo e($user->name); ?></option>
-                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-success btn-action">
-                    <i class="bi bi-plus-circle me-2"></i> Tambah Siswa
-                </button>
+                <?php if($users->where('role', 'siswa')->whereNotIn('id', $class->siswa->pluck('id'))->isNotEmpty()): ?>
+                    <div class="form-group mb-3">
+                        <label for="user_id" class="form-label">Pilih Siswa</label>
+                        <select name="user_id" id="user_id" class="form-control">
+                            <?php $__currentLoopData = $users->where('role', 'siswa')->whereNotIn('id', $class->siswa->pluck('id')); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $user): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <option value="<?php echo e($user->id); ?>"><?php echo e($user->name); ?></option>
+                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-action">
+                        <i class="bi bi-plus-circle me-2"></i> Tambah Siswa
+                    </button>
+                <?php else: ?>
+                    <div class="alert alert-warning">Semua siswa sudah tergabung dalam kelas.</div>
+                <?php endif; ?>
             </form>
         </div>
     </div>

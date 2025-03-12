@@ -261,7 +261,7 @@ class ExamController extends Controller
 
         // Validasi gambar
         $validated = $request->validate([
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Maks 2MB
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:102400', // Maks 2MB
         ]);
 
         // Hapus gambar lama jika ada

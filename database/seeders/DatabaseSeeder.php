@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Hash;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -21,137 +22,147 @@ class DatabaseSeeder extends Seeder
 {
     public function run()
     {
-        DB::disableQueryLog();
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-
-        // Hapus semua data agar tidak terjadi duplikasi
-        foreach ([User::class, ClassModel::class, Subject::class, Exam::class, Question::class, ExamAttempt::class, ExamAnswer::class, Material::class, Task::class, TaskUser::class] as $model) {
-            $model::truncate();
-        }
-
-        DB::table('class_user')->truncate();
-        DB::table('subject_class')->truncate();
-
-        DB::beginTransaction();
-        try {
-            // ✅ 1. Buat Admin (2 admin)
-            User::factory(2)->create(['role' => 'admin']);
-
-            // ✅ 2. Buat Guru (10 guru)
-            $teachers = User::factory(10)->create(['role' => 'guru']);
-
-            // ✅ 3. Buat Siswa (200 siswa)
-            $students = User::factory(200)->create(['role' => 'siswa']);
-
-            // ✅ 4. Buat Kelas (10 kelas, masing-masing 20 siswa)
-            $classes = ClassModel::factory(10)->create();
-            $classes->each(function ($class) use ($students) {
-                $class->users()->attach($students->random(20)->pluck('id'));
-            });
-
-            // ✅ 5. Buat Mata Pelajaran (1 guru = 1 mata pelajaran)
-            $subjects = $teachers->map(function ($teacher) {
-                return Subject::factory()->create([
-                    'user_id' => $teacher->id,
-                ]);
-            });
-
-            // ✅ 6. Setiap mata pelajaran terkait dengan 1-3 kelas
-            $subjects->each(function ($subject) use ($classes) {
-                $subject->kelas()->attach($classes->random(rand(1, 3))->pluck('id'));
-            });
-
-            // ✅ 7. Buat 20 Ujian (1 guru = 2 ujian)
-            $exams = collect();
-            foreach ($teachers as $teacher) {
-                for ($i = 0; $i < 2; $i++) {
-                    $exams->push(Exam::factory()->create([
-                        'user_id' => $teacher->id,
-                        'subject_id' => $subjects->where('user_id', $teacher->id)->first()->id,
-                        'class_id' => $classes->random()->id,
-                        'status' => ['draft', 'published'][rand(0, 1)],
-                    ]));
-                }
-            }
-
-            // ✅ 8. Buat 200 Soal (10 soal per ujian)
-            $questions = $exams->flatMap(function ($exam) {
-                return Question::factory(10)->create([
-                    'exam_id' => $exam->id,
-                    'image_path' => $this->generateDummyFile('question_images'), // Generate file soal
-                ]);
-            });
-
-            // ✅ 9. Buat 30 Materi (3 Materi per Guru) dengan file
-            $teachers->each(function ($teacher) use ($subjects, $classes) {
-                Material::factory(3)->create([
-                    'user_id' => $teacher->id,
-                    'subject_id' => $subjects->where('user_id', $teacher->id)->first()->id,
-                    'class_id' => $classes->random()->id,
-                    'file_path' => json_encode($this->generateMultipleFiles('materials')), // Generate file materi
-                ]);
-            });
-
-            // ✅ 10. Buat 50 Tugas (5 Tugas per Guru) dengan file
-            $teachers->each(function ($teacher) use ($subjects, $classes) {
-                Task::factory(5)->create([
-                    'user_id' => $teacher->id,
-                    'subject_id' => $subjects->where('user_id', $teacher->id)->first()->id,
-                    'class_id' => $classes->random()->id,
-                    'file_path' => json_encode($this->generateMultipleFiles('tasks')), // Generate file tugas
-                ]);
-            });
-
-            // ✅ 11. Buat 200 Jawaban Tugas (Setiap siswa mengerjakan 1 tugas)
-            $taskUserInserts = $students->map(function ($student) {
-                return [
-                    'task_id' => Task::inRandomOrder()->first()->id,
-                    'user_id' => $student->id,
-                    'submission' => 'Submission for task',
-                    'score' => rand(50, 100),
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-            })->toArray();
-
-            DB::table('task_user')->insert($taskUserInserts);
-
-            DB::commit(); // ✅ Jika semua sukses, commit perubahan
-        } catch (\Exception $e) {
-            DB::rollBack(); // 🔴 Jika error, rollback semua perubahan
-            throw $e;
-        }
-
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        User::create([
+            'name' => 'bule',
+            'email' => 'bule@gmail.com',
+            'password' => Hash::make('password'),
+            'role' => 'admin',
+        ]);
     }
 
-    /**
-     * Generate satu file dummy untuk storage
-     */
-    private function generateDummyFile($directory)
-    {
-        // Pilih format file secara random
-        $extensions = ['jpg', 'png', 'pdf', 'mp4'];
-        $extension = $extensions[array_rand($extensions)];
-        $fileName = uniqid('file_') . '.' . $extension;
+    // public function run()
+    // {
+    //     DB::disableQueryLog();
+    //     DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
-        // Simpan file ke storage
-        Storage::put("public/{$directory}/{$fileName}", 'Dummy Content');
+    //     // Hapus semua data agar tidak terjadi duplikasi
+    //     foreach ([User::class, ClassModel::class, Subject::class, Exam::class, Question::class, ExamAttempt::class, ExamAnswer::class, Material::class, Task::class, TaskUser::class] as $model) {
+    //         $model::truncate();
+    //     }
 
-        return "storage/{$directory}/{$fileName}";
-    }
+    //     DB::table('class_user')->truncate();
+    //     DB::table('subject_class')->truncate();
 
-    /**
-     * Generate beberapa file dummy untuk storage (materi/tugas)
-     */
-    private function generateMultipleFiles($directory)
-    {
-        $files = [];
-        for ($i = 0; $i < rand(1, 3); $i++) { // Maksimal 3 file
-            $files[] = $this->generateDummyFile($directory);
-        }
-        return $files;
-    }
+    //     DB::beginTransaction();
+    //     try {
+    //         // ✅ 1. Buat Admin (2 admin)
+    //         User::factory(2)->create(['role' => 'admin']);
+
+    //         // ✅ 2. Buat Guru (10 guru)
+    //         $teachers = User::factory(10)->create(['role' => 'guru']);
+
+    //         // ✅ 3. Buat Siswa (200 siswa)
+    //         $students = User::factory(200)->create(['role' => 'siswa']);
+
+    //         // ✅ 4. Buat Kelas (10 kelas, masing-masing 20 siswa)
+    //         $classes = ClassModel::factory(10)->create();
+    //         $classes->each(function ($class) use ($students) {
+    //             $class->users()->attach($students->random(20)->pluck('id'));
+    //         });
+
+    //         // ✅ 5. Buat Mata Pelajaran (1 guru = 1 mata pelajaran)
+    //         $subjects = $teachers->map(function ($teacher) {
+    //             return Subject::factory()->create([
+    //                 'user_id' => $teacher->id,
+    //             ]);
+    //         });
+
+    //         // ✅ 6. Setiap mata pelajaran terkait dengan 1-3 kelas
+    //         $subjects->each(function ($subject) use ($classes) {
+    //             $subject->kelas()->attach($classes->random(rand(1, 3))->pluck('id'));
+    //         });
+
+    //         // ✅ 7. Buat 20 Ujian (1 guru = 2 ujian)
+    //         $exams = collect();
+    //         foreach ($teachers as $teacher) {
+    //             for ($i = 0; $i < 2; $i++) {
+    //                 $exams->push(Exam::factory()->create([
+    //                     'user_id' => $teacher->id,
+    //                     'subject_id' => $subjects->where('user_id', $teacher->id)->first()->id,
+    //                     'class_id' => $classes->random()->id,
+    //                     'status' => ['draft', 'published'][rand(0, 1)],
+    //                 ]));
+    //             }
+    //         }
+
+    //         // ✅ 8. Buat 200 Soal (10 soal per ujian)
+    //         $questions = $exams->flatMap(function ($exam) {
+    //             return Question::factory(10)->create([
+    //                 'exam_id' => $exam->id,
+    //                 'image_path' => $this->generateDummyFile('question_images'), // Generate file soal
+    //             ]);
+    //         });
+
+    //         // ✅ 9. Buat 30 Materi (3 Materi per Guru) dengan file
+    //         $teachers->each(function ($teacher) use ($subjects, $classes) {
+    //             Material::factory(3)->create([
+    //                 'user_id' => $teacher->id,
+    //                 'subject_id' => $subjects->where('user_id', $teacher->id)->first()->id,
+    //                 'class_id' => $classes->random()->id,
+    //                 'file_path' => json_encode($this->generateMultipleFiles('materials')), // Generate file materi
+    //             ]);
+    //         });
+
+    //         // ✅ 10. Buat 50 Tugas (5 Tugas per Guru) dengan file
+    //         $teachers->each(function ($teacher) use ($subjects, $classes) {
+    //             Task::factory(5)->create([
+    //                 'user_id' => $teacher->id,
+    //                 'subject_id' => $subjects->where('user_id', $teacher->id)->first()->id,
+    //                 'class_id' => $classes->random()->id,
+    //                 'file_path' => json_encode($this->generateMultipleFiles('tasks')), // Generate file tugas
+    //             ]);
+    //         });
+
+    //         // ✅ 11. Buat 200 Jawaban Tugas (Setiap siswa mengerjakan 1 tugas)
+    //         $taskUserInserts = $students->map(function ($student) {
+    //             return [
+    //                 'task_id' => Task::inRandomOrder()->first()->id,
+    //                 'user_id' => $student->id,
+    //                 'submission' => 'Submission for task',
+    //                 'score' => rand(50, 100),
+    //                 'created_at' => now(),
+    //                 'updated_at' => now(),
+    //             ];
+    //         })->toArray();
+
+    //         DB::table('task_user')->insert($taskUserInserts);
+
+    //         DB::commit(); // ✅ Jika semua sukses, commit perubahan
+    //     } catch (\Exception $e) {
+    //         DB::rollBack(); // 🔴 Jika error, rollback semua perubahan
+    //         throw $e;
+    //     }
+
+    //     DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+    // }
+
+    // /**
+    //  * Generate satu file dummy untuk storage
+    //  */
+    // private function generateDummyFile($directory)
+    // {
+    //     // Pilih format file secara random
+    //     $extensions = ['jpg', 'png', 'pdf', 'mp4'];
+    //     $extension = $extensions[array_rand($extensions)];
+    //     $fileName = uniqid('file_') . '.' . $extension;
+
+    //     // Simpan file ke storage
+    //     Storage::put("public/{$directory}/{$fileName}", 'Dummy Content');
+
+    //     return "storage/{$directory}/{$fileName}";
+    // }
+
+    // /**
+    //  * Generate beberapa file dummy untuk storage (materi/tugas)
+    //  */
+    // private function generateMultipleFiles($directory)
+    // {
+    //     $files = [];
+    //     for ($i = 0; $i < rand(1, 3); $i++) { // Maksimal 3 file
+    //         $files[] = $this->generateDummyFile($directory);
+    //     }
+    //     return $files;
+    // }
 
     // public function run()
     // {

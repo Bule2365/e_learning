@@ -2,6 +2,27 @@
 
 <?php $__env->startPush('styles'); ?>
     <style>
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%;
+            /* 16:9 Aspect Ratio */
+            overflow: hidden;
+            border-radius: 10px;
+            background: black;
+        }
+
+        .video-container video {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Menyesuaikan ukuran video */
+            transform: translate(-50%, -50%);
+        }
+
         .video-thumbnail {
             position: relative;
             display: inline-block;
@@ -36,8 +57,10 @@
                     <div class="card shadow-sm border-0">
                         <a href="<?php echo e(route('siswa.material.detail', $material->id)); ?>" class="text-decoration-none">
                             <?php
-                                $thumbnail = null;
+                                $thumbnail = asset('default-thumbnail.jpg'); // Default thumbnail
                                 $isVideo = false;
+                                $isPDF = false;
+                                $videoPath = null;
 
                                 if (!empty($material->file_paths)) {
                                     foreach ($material->file_paths as $filePath) {
@@ -47,32 +70,34 @@
                                             $thumbnail = Storage::url($filePath);
                                             break;
                                         } elseif (in_array($extension, ['mp4', 'avi', 'mov'])) {
-                                            $thumbnail = asset('default-video-thumbnail.jpg'); // Gunakan gambar default untuk video
+                                            $videoPath = Storage::url($filePath);
                                             $isVideo = true;
+                                            break;
+                                        } elseif ($extension === 'pdf') {
+                                            $thumbnail = asset('default-pdf-thumbnail.jpg'); // Gunakan gambar default untuk PDF
+                                            $isPDF = true;
                                             break;
                                         }
                                     }
                                 }
                             ?>
 
-                            <?php if($thumbnail): ?>
-                                <?php if($isVideo): ?>
-                                    <!-- Video -->
-                                    <div class="video-thumbnail">
-                                        <img src="<?php echo e($thumbnail); ?>" class="card-img-top img-fluid rounded"
-                                            alt="Video Thumbnail">
-                                        <div class="play-icon">▶</div>
-                                    </div>
-                                <?php else: ?>
-                                    <!-- Gambar -->
-                                    <img src="<?php echo e($thumbnail); ?>" class="card-img-top img-fluid rounded"
-                                        alt="<?php echo e($material->title); ?>"
-                                        onerror="this.onerror=null;this.src='<?php echo e(asset('default-thumbnail.jpg')); ?>';">
-                                <?php endif; ?>
+                            <?php if($isVideo && $videoPath): ?>
+                                <!-- Video dengan ukuran proporsional -->
+                                <div class="video-container">
+                                    <video controls>
+                                        <source src="<?php echo e($videoPath); ?>" type="video/<?php echo e($extension); ?>">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                            <?php elseif($isPDF): ?>
+                                <!-- PDF -->
+                                <img src="<?php echo e($thumbnail); ?>" class="card-img-top img-fluid rounded" alt="PDF Preview">
                             <?php else: ?>
-                                <!-- Jika tidak ada gambar atau video -->
-                                <img src="<?php echo e(asset('default-thumbnail.jpg')); ?>" class="card-img-top img-fluid rounded"
-                                    alt="Default Thumbnail">
+                                <!-- Gambar -->
+                                <img src="<?php echo e($thumbnail); ?>" class="card-img-top img-fluid rounded"
+                                    alt="<?php echo e($material->title); ?>"
+                                    onerror="this.onerror=null;this.src='<?php echo e(asset('default-thumbnail.jpg')); ?>';">
                             <?php endif; ?>
                         </a>
 

@@ -112,7 +112,7 @@
             <div class="card table-custom">
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-bordered table-hover mb-0">
+                        <table class="table table-bordered table-hover mb-0" id="students-table">
                             <thead class="table-light">
                                 <tr>
                                     <th scope="col">#</th>
@@ -123,50 +123,17 @@
                             </thead>
                             <tbody>
                                 @foreach ($class->siswa as $student)
-                                    <tr>
+                                    <tr id="student-{{ $student->id }}">
                                         <td>{{ $loop->iteration }}</td>
                                         <td>{{ $student->name }}</td>
                                         <td>{{ $student->email }}</td>
                                         <td class="text-center">
-                                            <button type="button" class="btn btn-outline-danger btn-sm btn-action"
-                                                title="Hapus Siswa" data-bs-toggle="modal"
-                                                data-bs-target="#removeStudentModal{{ $student->id }}">
+                                            <button class="btn btn-outline-danger btn-sm btn-action remove-student"
+                                                data-id="{{ $student->id }}">
                                                 <i class="bi bi-trash3"></i>
                                             </button>
                                         </td>
                                     </tr>
-
-                                    <!-- Modal Konfirmasi Hapus Siswa -->
-                                    <div class="modal fade" id="removeStudentModal{{ $student->id }}" tabindex="-1"
-                                        aria-labelledby="removeStudentModalLabel{{ $student->id }}" aria-hidden="true">
-                                        <div class="modal-dialog modal-dialog-centered">
-                                            <div class="modal-content">
-                                                <div class="modal-header bg-danger text-white">
-                                                    <h5 class="modal-title"
-                                                        id="removeStudentModalLabel{{ $student->id }}">
-                                                        Konfirmasi Penghapusan
-                                                    </h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                        aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    Apakah Anda yakin ingin mengeluarkan siswa
-                                                    <strong>{{ $student->name }}</strong> dari kelas ini?
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary"
-                                                        data-bs-dismiss="modal">Batal</button>
-                                                    <form
-                                                        action="{{ route('admin.classes.removeStudentFromClass', $class->id) }}"
-                                                        method="POST">
-                                                        @csrf
-                                                        <input type="hidden" name="user_id" value="{{ $student->id }}">
-                                                        <button type="submit" class="btn btn-danger">Hapus</button>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
                                 @endforeach
                             </tbody>
                         </table>
@@ -178,14 +145,15 @@
         <!-- Menambahkan Siswa -->
         <div class="mt-4">
             <h5 class="mb-3">Tambah Siswa ke Kelas</h5>
-            <form action="{{ route('admin.classes.addStudentToClass', $class->id) }}" method="POST">
+            <form action="{{ route('admin.classes.addStudentToClass', $class->id) }}" method="POST" id="add-student-form">
                 @csrf
-                @if ($users->where('role', 'siswa')->whereNotIn('id', $class->siswa->pluck('id'))->isNotEmpty())
+                @if ($siswaBelumMasuk->isNotEmpty())
                     <div class="form-group mb-3">
                         <label for="user_id" class="form-label">Pilih Siswa</label>
                         <select name="user_id" id="user_id" class="form-control">
-                            @foreach ($users->where('role', 'siswa')->whereNotIn('id', $class->siswa->pluck('id')) as $user)
-                                <option value="{{ $user->id }}">{{ $user->name }}</option>
+                            @foreach ($siswaBelumMasuk as $siswa)
+                                <option value="{{ $siswa->id }}">{{ $siswa->name }} - {{ $siswa->email }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
@@ -196,6 +164,80 @@
                     <div class="alert alert-warning">Semua siswa sudah tergabung dalam kelas.</div>
                 @endif
             </form>
+
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Tambah Siswa
+            $('#add-student-form').submit(function(e) {
+                e.preventDefault();
+                var user_id = $('#user_id').val();
+                var class_id = "{{ $class->id }}";
+                var url = "{{ route('admin.classes.addStudentToClass', ':id') }}".replace(':id', class_id);
+
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        user_id: user_id
+                    },
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            $('#students-table tbody').append(`
+                            <tr id="student-${response.student.id}">
+                                <td>#</td>
+                                <td>${response.student.name}</td>
+                                <td>${response.student.email}</td>
+                                <td class="text-center">
+                                    <button class="btn btn-outline-danger btn-sm btn-action remove-student" data-id="${response.student.id}">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `);
+                            $('#user_id option[value="' + user_id + '"]')
+                                .remove(); // Hapus dari dropdown
+                            if ($('#user_id option').length === 0) {
+                                $('#add-student-form').html(
+                                    '<div class="alert alert-warning">Semua siswa sudah tergabung dalam kelas.</div>'
+                                );
+                            }
+                        }
+                    }
+                });
+            });
+
+            // Hapus Siswa
+            $(document).on('click', '.remove-student', function() {
+                var student_id = $(this).data('id');
+                var class_id = "{{ $class->id }}";
+                var url = "{{ route('admin.classes.removeStudentFromClass', ':id') }}".replace(':id',
+                    class_id);
+
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        user_id: student_id
+                    },
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            $('#student-' + response.student_id).remove();
+                            // Reload siswa yang belum masuk ke dropdown
+                            $('#user_id').append(
+                                `<option value="${response.student_id}">${response.student_name}</option>`
+                            );
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+@endpush

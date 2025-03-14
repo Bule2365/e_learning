@@ -92,48 +92,65 @@ class ClassController extends Controller
     }
 
     // Menampilkan detail kelas dan daftar siswa yang tergabung
-    public function show($classId)
+    public function show($id)
     {
-        $class = ClassModel::with('siswa')->findOrFail($classId); // Mengambil kelas dan siswa yang tergabung
-        $users = User::all();
-        return view('admin.classes.show', compact('class', 'users'));
+        $class = ClassModel::with('siswa')->findOrFail($id);
+
+        // Ambil siswa yang belum masuk kelas
+        $siswaBelumMasuk = User::where('role', 'siswa')
+            ->leftJoin('class_user', 'users.id', '=', 'class_user.user_id')
+            ->whereNull('class_user.user_id') // Hanya siswa yang belum memiliki kelas
+            ->select('users.id', 'users.name', 'users.email')
+            ->get();
+
+        return view('admin.classes.show', compact('class', 'siswaBelumMasuk'));
     }
 
     // Menambahkan siswa ke kelas
     public function addStudentToClass(Request $request, $classId)
     {
         $class = ClassModel::findOrFail($classId);
-        $user = User::findOrFail($request->user_id); // Mengambil ID siswa yang akan ditambahkan
+        $user = User::findOrFail($request->user_id);
 
-        // Pastikan hanya admin yang bisa menambah siswa ke kelas
         if (Auth::user()->role == 'admin') {
-            // Periksa apakah siswa sudah ada dalam kelas ini
             if (!$class->siswa->contains($user)) {
                 $class->siswa()->attach($user->id);
-                return redirect()->route('admin.classes.show', $classId)->with('success', 'Siswa berhasil ditambahkan ke kelas.');
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Siswa berhasil ditambahkan.',
+                    'student' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email
+                    ]
+                ]);
             }
-            return redirect()->route('admin.classes.show', $classId)->with('error', 'Siswa sudah tergabung di kelas ini.');
+            return response()->json(['status' => 'error', 'message' => 'Siswa sudah ada di kelas ini.']);
         }
 
-        return redirect()->route('admin.classes.index')->with('error', 'Hanya admin yang bisa menambahkan siswa.');
+        return response()->json(['status' => 'error', 'message' => 'Hanya admin yang dapat menambahkan siswa.']);
     }
 
     // Mengeluarkan siswa dari kelas
     public function removeStudentFromClass(Request $request, $classId)
     {
         $class = ClassModel::findOrFail($classId);
-        $user = User::findOrFail($request->user_id); // Mengambil ID siswa yang akan dikeluarkan
+        $user = User::findOrFail($request->user_id);
 
-        // Pastikan hanya admin yang bisa mengeluarkan siswa dari kelas
         if (Auth::user()->role == 'admin') {
-            // Periksa apakah siswa ada dalam kelas ini
             if ($class->siswa->contains($user)) {
                 $class->siswa()->detach($user->id);
-                return redirect()->route('admin.classes.show', $classId)->with('success', 'Siswa berhasil dikeluarkan dari kelas.');
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Siswa berhasil dihapus.',
+                    'student_id' => $user->id
+                ]);
             }
-            return redirect()->route('admin.classes.show', $classId)->with('error', 'Siswa tidak ditemukan dalam kelas ini.');
+            return response()->json(['status' => 'error', 'message' => 'Siswa tidak ditemukan dalam kelas ini.']);
         }
 
-        return redirect()->route('admin.classes.index')->with('error', 'Hanya admin yang bisa mengeluarkan siswa.');
+        return response()->json(['status' => 'error', 'message' => 'Hanya admin yang dapat menghapus siswa.']);
     }
 }

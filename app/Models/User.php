@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
@@ -59,5 +60,17 @@ class User extends Authenticatable
     public function ujian()
     {
         return $this->belongsToMany(Exam::class, 'exam_attempts');
+    }
+
+    public function materials()
+    {
+        return $this->hasMany(Material::class);
+    }
+
+    public function getProfilePhotoUrlAttribute()
+    {
+        return $this->profile_photo_path
+            ? Storage::url($this->profile_photo_path)
+            : 'https://ui-avatars.com/api/?name=' . urlencode($this->name);
     }
 }

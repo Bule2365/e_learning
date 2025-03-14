@@ -18,7 +18,7 @@ class CreateTasksTable extends Migration
         Schema::create('tasks', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->text('description');
+            $table->text('description')->nullable();
             $table->text('file_path')->nullable();
             $table->foreignId('subject_id')->constrained('subjects')->onDelete('cascade');
             $table->foreignId('class_id')->constrained('classes')->onDelete('cascade');

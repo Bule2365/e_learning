@@ -139,10 +139,6 @@
 <body>
     <div class="main-container">
         <div class="content-wrapper">
-            <!-- Back Button Icon -->
-            <a href="{{ url('/') }}" class="back-icon" id="backButton">
-                <i class="bi bi-arrow-left-circle-fill"></i> <!-- Arrow Back Icon -->
-            </a>
 
             <div class="login-container">
                 @if ($errors->any())

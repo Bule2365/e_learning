@@ -22,12 +22,39 @@ class DatabaseSeeder extends Seeder
 {
     public function run()
     {
-        User::create([
-            'name' => 'bule',
-            'email' => 'bule@gmail.com',
+        // Seeder untuk menambahkan 1 admin
+        DB::table('users')->insert([
+            'name' => 'Admin User',
+            'email' => 'admin@example.com',
             'password' => Hash::make('password'),
-            'role' => 'admin',
+            'role' => 'admin', // Atau bisa menggunakan nilai numerik jika role disimpan sebagai integer
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
+
+        // Seeder untuk menambahkan 3 guru
+        for ($i = 1; $i <= 3; $i++) {
+            DB::table('users')->insert([
+                'name' => 'Guru ' . $i,
+                'email' => 'guru' . $i . '@example.com',
+                'password' => Hash::make('password'),
+                'role' => 'guru', // Atau bisa menggunakan nilai numerik jika role disimpan sebagai integer
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        // Seeder untuk menambahkan 40 siswa
+        for ($i = 1; $i <= 40; $i++) {
+            DB::table('users')->insert([
+                'name' => 'Siswa ' . $i,
+                'email' => 'siswa' . $i . '@example.com',
+                'password' => Hash::make('password'),
+                'role' => 'siswa', // Atau bisa menggunakan nilai numerik jika role disimpan sebagai integer
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
     }
 
     // public function run()

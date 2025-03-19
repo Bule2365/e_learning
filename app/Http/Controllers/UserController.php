@@ -94,7 +94,7 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         $user->delete();
-        return redirect()->route('users.index')->with('success', 'User  deleted successfully.');
+        return redirect()->back()->with('success', 'Pengguna terpilih berhasil dihapus.');
     }
 
     // Validasi request
@@ -157,46 +157,102 @@ class UserController extends Controller
             'file' => 'required|mimes:csv,txt|max:10240',
         ]);
 
-        // Debugging: cek apakah file diterima
+        // Cek jika file ada
         if (!$request->hasFile('file')) {
             return back()->withErrors(['file' => 'File tidak ditemukan.']);
         }
 
+        // Ambil file yang diupload
         $file = $request->file('file');
 
-        // Debugging: tampilkan informasi file
-        logger('File diterima: ' . $file->getClientOriginalName());
+        // Cek apakah file bisa dibaca
+        try {
+            $handle = fopen($file->getPathname(), 'r');
+            if (!$handle) {
+                return back()->withErrors(['file' => 'Gagal membuka file. Pastikan file CSV valid.']);
+            }
 
-        // Membaca file CSV
-        $handle = fopen($file->getPathname(), 'r');
-        if (!$handle) {
-            return back()->withErrors(['file' => 'Gagal membaca file.']);
+            // Lewati header CSV
+            $header = fgetcsv($handle);
+            if ($header === false) {
+                return back()->withErrors(['file' => 'Gagal membaca header file CSV.']);
+            }
+
+            // Proses data CSV
+            $failedImports = 0; // Menyimpan jumlah gagal impor
+            $successfulImports = 0; // Menyimpan jumlah sukses impor
+            $failedRows = []; // Menyimpan baris yang gagal
+            $failedEmails = []; // Menyimpan email yang sudah ada
+
+            while (($row = fgetcsv($handle)) !== false) {
+                // Pengecekan apakah baris memiliki data yang valid
+                if (count($row) < 3) {  // Jika baris tidak memiliki cukup kolom
+                    $failedImports++;
+                    $failedRows[] = $row; // Catat baris yang gagal
+                    continue; // Lewati baris yang tidak valid
+                }
+
+                $name = $row[0];  // Kolom pertama untuk nama
+                $email = $row[1];  // Kolom kedua untuk email
+                $role = $row[2];  // Kolom ketiga untuk role
+
+                // Validasi role
+                if (!in_array($role, ['admin', 'guru', 'siswa'])) {
+                    $failedImports++;
+                    $failedRows[] = $row; // Catat baris yang gagal
+                    continue; // Lewati baris yang role-nya tidak valid
+                }
+
+                // Cek jika email sudah ada
+                if (User::where('email', $email)->exists()) {
+                    // Catat email yang sudah ada
+                    $failedEmails[] = $email;
+                    $failedImports++;
+                    continue; // Lewati baris yang email-nya sudah ada
+                }
+
+                try {
+                    // Menyisipkan atau memperbarui pengguna
+                    User::create([
+                        'name' => $name,
+                        'email' => $email,
+                        'password' => bcrypt('password'), // Password default
+                        'role' => $role,
+                    ]);
+                    $successfulImports++;
+                } catch (\Exception $e) {
+                    // Tangani error jika ada kesalahan dalam proses penyimpanan
+                    $failedImports++;
+                    $failedRows[] = $row; // Catat baris yang gagal
+                    continue; // Lewati baris yang gagal
+                }
+            }
+
+            fclose($handle);
+
+            // Berikan respons berdasarkan jumlah impor yang berhasil dan gagal
+            if ($failedImports > 0) {
+                // Logging baris yang gagal untuk analisis lebih lanjut
+                logger()->error("Gagal mengimpor pengguna:", ['failedRows' => $failedRows, 'failedEmails' => $failedEmails]);
+
+                // Menggabungkan informasi baris yang gagal
+                $failedUserDetails = [];
+                foreach ($failedRows as $row) {
+                    $failedUserDetails[] = "Name: {$row[0]}, Email: {$row[1]}, Role: {$row[2]}";
+                }
+
+                $failedEmailDetails = [];
+                foreach ($failedEmails as $email) {
+                    $failedEmailDetails[] = "Email sudah terdaftar: $email";
+                }
+
+                return redirect()->route('users.index')->with('error', "$failedImports pengguna gagal diimpor. Berikut adalah detailnya: " . implode('; ', $failedUserDetails) . " " . implode('; ', $failedEmailDetails));
+            }
+
+            return redirect()->route('users.index')->with('success', "$successfulImports pengguna berhasil diimpor.");
+        } catch (\Exception $e) {
+            // Tangani kesalahan yang tidak terduga
+            return back()->withErrors(['file' => 'Terjadi kesalahan saat memproses file. Pesan error: ' . $e->getMessage()]);
         }
-
-        // Lewati header CSV
-        $header = fgetcsv($handle);
-
-        // Debugging: tampilkan header CSV
-        logger('Header CSV: ' . implode(', ', $header));
-
-        // Proses data CSV
-        while (($row = fgetcsv($handle)) !== false) {
-            // Debugging: tampilkan baris CSV
-            logger('Baris CSV: ' . implode(', ', $row));
-
-            User::updateOrCreate(
-                ['email' => $row[2]], // Identifier unik
-                [
-                    'name' => $row[1],
-                    'email' => $row[2],
-                    'password' => bcrypt('password'),
-                    'role' => $row[3],
-                ]
-            );
-        }
-
-        fclose($handle);
-
-        return redirect()->route('users.index')->with('success', 'Users imported successfully.');
     }
 }

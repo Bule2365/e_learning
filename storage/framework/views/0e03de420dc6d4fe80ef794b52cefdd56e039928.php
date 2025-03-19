@@ -481,7 +481,7 @@
                         </div>
                     </div>
                     <div class="card-footer bg-white border-top-0 text-center py-3">
-                        <a href="<?php echo e(route('admin.classes.index')); ?>" class="btn btn-success btn-sm rounded-pill px-4">
+                        <a href="<?php echo e(route('subjects.index')); ?>" class="btn btn-success btn-sm rounded-pill px-4">
                             <i class="bi bi-journal-text me-1"></i> Lihat Semua Materi
                         </a>
                     </div>

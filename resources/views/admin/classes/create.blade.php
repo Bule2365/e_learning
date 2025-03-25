@@ -49,7 +49,7 @@
                                         <i class="bi bi-card-text"></i>
                                     </span>
                                     <textarea id="deskripsi" name="deskripsi" class="form-control @error('deskripsi') is-invalid @enderror" rows="4"
-                                        required placeholder="Deskripsikan kelas ini...">{{ old('deskripsi') }}</textarea>
+                                        placeholder="Deskripsikan kelas ini...">{{ old('deskripsi') }}</textarea>
                                     @error('deskripsi')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror

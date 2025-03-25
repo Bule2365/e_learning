@@ -40,7 +40,7 @@ class TaskController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'description' => 'required|string',
+            'description' => 'nullable|string',
             'files' => 'nullable|array|max:5',
             'files.*' => 'file|mimes:pdf,jpeg,png,jpg,mp4,avi,mov|max:102400',
             'due_date' => 'required|date',
@@ -103,7 +103,7 @@ class TaskController extends Controller
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'description' => 'required|string',
+            'description' => 'nullable|string',
             'files' => 'nullable|array|max:5',
             'files.*' => 'file|mimes:pdf,jpeg,png,jpg,mp4,avi,mov|max:102400',
             'due_date' => 'required|date',

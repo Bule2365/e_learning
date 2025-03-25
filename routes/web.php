@@ -114,6 +114,15 @@ Route::middleware(['auth', 'role:guru'])->group(function () {
     Route::get('guru/ujian/{examId}/nilai', [ExamController::class, 'showStudentScores'])->name('guru.exams.scores');
     Route::get('/guru/exams/{examId}/export', [ExamController::class, 'exportScores'])
         ->name('guru.exams.export');
+    // Menampilkan halaman edit nilai ujian siswa
+    Route::get('/guru/exams/{exam}/scores/{attempt}/edit', 
+        [ExamController::class, 'editScore']
+    )->name('guru.exams.scores.edit');
+
+    // Memproses update nilai ujian siswa
+    Route::put('/guru/exams/{exam}/scores/{attempt}', 
+        [ExamController::class, 'updateStudentScore']
+    )->name('guru.exams.scores.update');
 
     // Menampilkan halaman untuk mengedit gambar soal
     Route::get('/question/{questionId}/edit-image', [ExamController::class, 'showImage'])->name('guru.exams.image');

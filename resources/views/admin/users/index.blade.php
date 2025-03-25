@@ -133,22 +133,30 @@
                 <div class="input-group">
                     <form action="{{ route('users.index') }}" method="GET" class="d-flex justify-content-between gap-3">
                         <!-- Search Input -->
-                        <div class="input-group w-75">
+                        <div class="input-group w-50">
                             <span class="input-group-text bg-light border-end-0">
                                 <i class="bi bi-search"></i>
                             </span>
                             <input type="text" name="search" class="form-control border-start-0 shadow-sm"
-                                placeholder="Cari pengguna..." value="{{ request()->search }}"
-                                aria-label="Cari pengguna...">
+                                placeholder="Cari pengguna..." value="{{ request()->search }}">
                         </div>
 
-                        <!-- Role Dropdown with Smooth Transition -->
-                        <select name="role" class="form-select w-25 shadow-sm border-start-0"
-                            onchange="this.form.submit()">
-                            <option value="">Semua</option>
-                            <option value="guru" {{ request()->role == 'guru' ? 'selected' : '' }}>Guru</option>
-                            <option value="siswa" {{ request()->role == 'siswa' ? 'selected' : '' }}>Siswa</option>
+                        <!-- Dropdown Peran -->
+                        <select name="role" class="form-select w-25 shadow-sm" onchange="this.form.submit()">
+                            <option value="siswa" {{ $selectedRole == 'siswa' ? 'selected' : '' }}>Siswa</option>
+                            <option value="guru" {{ $selectedRole == 'guru' ? 'selected' : '' }}>Guru</option>
                         </select>
+
+                        <!-- Dropdown Tahun (Hanya muncul jika peran yang dipilih adalah siswa) -->
+                        @if ($selectedRole == 'siswa')
+                            <select name="tahun" class="form-select w-20 shadow-sm" onchange="this.form.submit()">
+                                @foreach ($availableYears as $year)
+                                    <option value="{{ $year }}" {{ $selectedYear == $year ? 'selected' : '' }}>
+                                        Tahun {{ $year }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        @endif
                     </form>
                 </div>
             </div>

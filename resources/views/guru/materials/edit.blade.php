@@ -33,12 +33,20 @@
                 @enderror
             </div>
 
-            <div class="mb-3">
-                <label for="description" class="form-label">Deskripsi</label>
-                <textarea name="description" id="description" class="form-control @error('description') is-invalid @enderror" required>{{ old('description', $material->description) }}</textarea>
-                @error('description')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
+            <div class="container mt-4">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-md-10 col-lg-8">
+                        <label for="description" class="form-label fw-semibold">Deskripsi</label>
+                        <div class="form-floating">
+                            <textarea name="description" id="description" class="form-control @error('description') is-invalid @enderror"
+                                placeholder="Deskripsikan materi secara detail..." style="min-height: 200px;">{{ old('description', $material->description) }}</textarea>
+                            <label for="description">Deskripsikan materi secara detail...</label>
+                        </div>
+                        @error('description')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
             </div>
 
             {{-- Menampilkan file saat ini jika ada --}}

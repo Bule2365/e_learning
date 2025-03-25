@@ -47,26 +47,34 @@ endif;
 unset($__errorArgs, $__bag); ?>
             </div>
 
-            <div class="mb-3">
-                <label for="description" class="form-label">Deskripsi</label>
-                <textarea name="description" id="description" class="form-control <?php $__errorArgs = ['description'];
+            <div class="container mt-4">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-md-10 col-lg-8">
+                        <label for="description" class="form-label fw-semibold">Deskripsi</label>
+                        <div class="form-floating">
+                            <textarea name="description" id="description" class="form-control <?php $__errorArgs = ['description'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
 $message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
-unset($__errorArgs, $__bag); ?>" required><?php echo e(old('description', $material->description)); ?></textarea>
-                <?php $__errorArgs = ['description'];
+unset($__errorArgs, $__bag); ?>"
+                                placeholder="Deskripsikan materi secara detail..." style="min-height: 200px;"><?php echo e(old('description', $material->description)); ?></textarea>
+                            <label for="description">Deskripsikan materi secara detail...</label>
+                        </div>
+                        <?php $__errorArgs = ['description'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
 $message = $__bag->first($__errorArgs[0]); ?>
-                    <div class="invalid-feedback"><?php echo e($message); ?></div>
-                <?php unset($message);
+                            <div class="invalid-feedback"><?php echo e($message); ?></div>
+                        <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?>
+                    </div>
+                </div>
             </div>
 
             

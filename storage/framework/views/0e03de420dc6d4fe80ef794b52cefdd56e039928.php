@@ -299,56 +299,36 @@
 
         <!-- Grafik dan Statistik Utama -->
         <div class="row g-4 mt-2">
-            <div class="col-lg-8">
+            <!-- Grafik Jumlah Siswa -->
+            <div class="col-lg-6">
                 <div class="card content-card mb-0">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">
-                            <i class="bi bi-bar-chart-line-fill me-2 text-primary"></i>
-                            Perbandingan Jumlah Guru dan Siswa
+                            <i class="bi bi-graph-up me-2 text-primary"></i>
+                            Statistik Jumlah Siswa
                         </h5>
-                        <!-- Dropdown Tahun Ajaran -->
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-outline-primary dropdown-toggle d-flex align-items-center"
-                                type="button" id="dropdownTahunAjaran" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-calendar me-2"></i> <?php echo e($tahunAjaran); ?>
-
-                            </button>
-
-                            <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownTahunAjaran">
-                                <?php $__currentLoopData = $years; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $year): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                    <li>
-                                        <a class="dropdown-item d-flex justify-content-between align-items-center"
-                                            href="<?php echo e(route('admin.dashboard', ['tahun_ajaran' => explode('/', $year)[0]])); ?>">
-                                            <span><?php echo e($year); ?></span>
-                                            <?php if($tahunAjaran == $year): ?>
-                                                <i class="bi bi-check-circle-fill text-primary"></i>
-                                            <?php endif; ?>
-                                        </a>
-                                    </li>
-                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                            </ul>
-                        </div>
                     </div>
                     <div class="card-body">
                         <div class="chart-container">
-                            <canvas id="comparisonChart"></canvas>
+                            <canvas id="chartSiswa"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-4">
+
+            <!-- Grafik Jumlah Guru -->
+            <div class="col-lg-6">
                 <div class="card content-card mb-0">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">
-                            <i class="bi bi-pie-chart-fill me-2 text-success"></i>
-                            Rasio Siswa Per Kelas
+                            <i class="bi bi-graph-up me-2 text-danger"></i>
+                            Statistik Jumlah Guru
                         </h5>
-                        <button class="btn btn-sm btn-outline-secondary" type="button">
-                            <i class="bi bi-download"></i>
-                        </button>
                     </div>
                     <div class="card-body">
-                        
+                        <div class="chart-container">
+                            <canvas id="chartGuru"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -362,20 +342,8 @@
                     <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center py-3">
                         <h5 class="mb-0 fw-bold text-dark">
                             <i class="bi bi-trophy-fill me-2 text-warning"></i>
-                            Top 5 Guru Produktif
+                            Daftar nama-nama guru.
                         </h5>
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-light rounded-pill" type="button" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                <i class="bi bi-three-dots"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                                <li><a class="dropdown-item" href="#"><i class="bi bi-download me-2"></i>Download
-                                        Data</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="bi bi-share me-2"></i>Bagikan</a>
-                                </li>
-                            </ul>
-                        </div>
                     </div>
                     <div class="card-body p-0">
                         <div class="list-group list-group-flush">
@@ -385,8 +353,8 @@
                                     <div class="d-flex align-items-center">
                                         <div class="position-relative me-3">
                                             <img src="<?php echo e($guru->profile_photo_url); ?>" alt="Avatar"
-                                                class="rounded-circle avatar shadow-sm border-2 border-white"
-                                                width="50" height="50">
+                                                class="rounded-circle avatar shadow-sm border-2 border-white" width="50"
+                                                height="50">
                                             <span
                                                 class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary"
                                                 style="font-size: 0.65rem; margin-left: -15px;">
@@ -428,24 +396,12 @@
                     <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center py-3">
                         <h5 class="mb-0 fw-bold text-dark">
                             <i class="bi bi-star-fill me-2 text-warning"></i>
-                            Materi Paling Populer
+                            Daftar Materi terbaru yang dibuat para guru.
                         </h5>
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-light rounded-pill" type="button" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                <i class="bi bi-three-dots"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                                <li><a class="dropdown-item" href="#"><i class="bi bi-graph-up me-2"></i>Lihat
-                                        Analytics</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="bi bi-filter me-2"></i>Filter</a>
-                                </li>
-                            </ul>
-                        </div>
                     </div>
                     <div class="card-body p-0">
                         <div class="list-group list-group-flush">
-                            <?php $__currentLoopData = $topMateri; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $materi): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <?php $__currentLoopData = $topMateri->sortByDesc('created_at'); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $materi): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                 <div
                                     class="list-group-item border-start-0 border-end-0 d-flex justify-content-between align-items-center py-3 hover-bg-light transition-all">
                                     <div class="d-flex align-items-center">
@@ -464,7 +420,7 @@
                                                 </span>
                                                 <small class="text-muted">
                                                     <i class="bi bi-calendar-event me-1"></i>
-                                                    <?php echo e($materi->created_at ? $materi->created_at->format('d M Y') : 'Tanggal tidak tersedia'); ?>
+                                                    <?php echo e(($materi->created_at ?? now())->format('d M Y')); ?>
 
                                                 </small>
                                             </div>
@@ -481,6 +437,7 @@
                         </div>
                     </div>
                     <div class="card-footer bg-white border-top-0 text-center py-3">
+<<<<<<< HEAD
                         <a href="<?php echo e(route('subjects.index')); ?>" class="btn btn-success btn-sm rounded-pill px-4">
                             <i class="bi bi-journal-text me-1"></i> Lihat Semua Materi
                         </a>
@@ -571,6 +528,9 @@
                                 </div>
                             </div>
                         </div>
+=======
+                        
+>>>>>>> 2b9fc02c030efeccd88115baa6a489ef6d7870ae
                     </div>
                 </div>
             </div>
@@ -582,35 +542,72 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            var ctx = document.getElementById("comparisonChart").getContext("2d");
-            var chart = new Chart(ctx, {
-                type: "bar",
-                data: {
-                    labels: <?php echo json_encode(array_keys($dataSiswa)); ?>, // Tahun Ajaran
-                    datasets: [{
-                            label: "Jumlah Siswa",
-                            data: <?php echo json_encode(array_values($dataSiswa)); ?>,
-                            backgroundColor: "rgba(54, 162, 235, 0.5)",
-                            borderColor: "rgba(54, 162, 235, 1)",
-                            borderWidth: 1,
+            var labels = <?php echo json_encode(array_keys($dataSiswa)); ?>; // Tahun Ajaran
+            var dataSiswa = <?php echo json_encode(array_values($dataSiswa)); ?>; // Data siswa
+            var dataGuru = <?php echo json_encode(array_values($dataGuru)); ?>; // Data guru
+
+            // Opsi konfigurasi umum
+            var chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: "Jumlah",
                         },
-                        {
-                            label: "Jumlah Guru",
-                            data: <?php echo json_encode(array_values($dataGuru)); ?>,
-                            backgroundColor: "rgba(255, 99, 132, 0.5)",
-                            borderColor: "rgba(255, 99, 132, 1)",
-                            borderWidth: 1,
-                        },
-                    ],
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: "Tahun Ajaran",
                         },
                     },
                 },
+                plugins: {
+                    legend: {
+                        position: "top",
+                    },
+                },
+            };
+
+            // Grafik Jumlah Siswa
+            var ctxSiswa = document.getElementById("chartSiswa").getContext("2d");
+            new Chart(ctxSiswa, {
+                type: "line",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "Jumlah Siswa",
+                        data: dataSiswa,
+                        borderColor: "rgba(54, 162, 235, 1)",
+                        backgroundColor: "rgba(54, 162, 235, 0.2)",
+                        borderWidth: 2,
+                        tension: 0.4, // Buat garis smooth
+                        fill: true, // Warna transparan di bawah garis
+                    }, ],
+                },
+                options: chartOptions,
+            });
+
+            // Grafik Jumlah Guru
+            var ctxGuru = document.getElementById("chartGuru").getContext("2d");
+            new Chart(ctxGuru, {
+                type: "line",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "Jumlah Guru",
+                        data: dataGuru,
+                        borderColor: "rgba(255, 99, 132, 1)",
+                        backgroundColor: "rgba(255, 99, 132, 0.2)",
+                        borderWidth: 2,
+                        tension: 0.4, // Buat garis smooth
+                        fill: true, // Warna transparan di bawah garis
+                    }, ],
+                },
+                options: chartOptions,
             });
         });
 

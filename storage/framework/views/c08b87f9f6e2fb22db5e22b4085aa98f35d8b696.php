@@ -2,42 +2,49 @@
 
 <?php $__env->startPush('styles'); ?>
     <style>
-        .video-container {
-            position: relative;
+        .media-container {
             width: 100%;
-            padding-top: 56.25%;
-            /* 16:9 Aspect Ratio */
-            overflow: hidden;
+            height: 200px;
+            /* Ukuran tetap */
+            display: flex;
+            justify-content: center;
+            align-items: center;
             border-radius: 10px;
-            background: black;
+            overflow: hidden;
         }
 
-        .video-container video {
-            position: absolute;
-            top: 50%;
-            left: 50%;
+        .media-container img,
+        .media-container video {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            /* Menyesuaikan ukuran video */
-            transform: translate(-50%, -50%);
         }
 
-        .video-thumbnail {
-            position: relative;
-            display: inline-block;
-        }
-
-        .play-icon {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 2rem;
+        /* Jika tidak ada file */
+        .no-file-container {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 10px 15px;
-            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .no-file-container i {
+            font-size: 40px;
+            margin-bottom: 5px;
+        }
+
+        .text-truncate-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
     </style>
 <?php $__env->stopPush(); ?>
@@ -57,7 +64,7 @@
                     <div class="card shadow-sm border-0">
                         <a href="<?php echo e(route('siswa.material.detail', $material->id)); ?>" class="text-decoration-none">
                             <?php
-                                $thumbnail = asset('default-thumbnail.jpg'); // Default thumbnail
+                                $thumbnail = null;
                                 $isVideo = false;
                                 $isPDF = false;
                                 $videoPath = null;
@@ -74,7 +81,7 @@
                                             $isVideo = true;
                                             break;
                                         } elseif ($extension === 'pdf') {
-                                            $thumbnail = asset('default-pdf-thumbnail.jpg'); // Gunakan gambar default untuk PDF
+                                            $thumbnail = asset('default-pdf-thumbnail.jpg');
                                             $isPDF = true;
                                             break;
                                         }
@@ -82,23 +89,25 @@
                                 }
                             ?>
 
-                            <?php if($isVideo && $videoPath): ?>
-                                <!-- Video dengan ukuran proporsional -->
-                                <div class="video-container">
+                            <div class="media-container">
+                                <?php if($isVideo && $videoPath): ?>
                                     <video controls>
                                         <source src="<?php echo e($videoPath); ?>" type="video/<?php echo e($extension); ?>">
                                         Your browser does not support the video tag.
                                     </video>
-                                </div>
-                            <?php elseif($isPDF): ?>
-                                <!-- PDF -->
-                                <img src="<?php echo e($thumbnail); ?>" class="card-img-top img-fluid rounded" alt="PDF Preview">
-                            <?php else: ?>
-                                <!-- Gambar -->
-                                <img src="<?php echo e($thumbnail); ?>" class="card-img-top img-fluid rounded"
-                                    alt="<?php echo e($material->title); ?>"
-                                    onerror="this.onerror=null;this.src='<?php echo e(asset('default-thumbnail.jpg')); ?>';">
-                            <?php endif; ?>
+                                <?php elseif($isPDF): ?>
+                                    <img src="<?php echo e($thumbnail); ?>" alt="PDF Preview">
+                                <?php elseif($thumbnail): ?>
+                                    <img src="<?php echo e($thumbnail); ?>" alt="<?php echo e($material->title); ?>"
+                                        onerror="this.onerror=null;this.src='<?php echo e(asset('default-thumbnail.jpg')); ?>';">
+                                <?php else: ?>
+                                    <!-- Jika tidak ada file -->
+                                    <div class="no-file-container">
+                                        <i class="bi bi-file-earmark-text"></i>
+                                        <p>Materi Tersedia</p>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
                         </a>
 
                         <div class="card-body">
@@ -109,6 +118,7 @@
 
                                 </a>
                             </h5>
+                            <p class="text-muted text-truncate-2"><?php echo e(Str::limit($material->description, 100)); ?></p>
                         </div>
                     </div>
                 </div>

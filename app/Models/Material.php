@@ -22,6 +22,6 @@ class Material extends Model
 
     public function classModel()
     {
-        return $this->belongsTo(ClassModel::class, 'class_id');
+        return $this->belongsTo(ClassModel::class, 'class_id', 'id');
     }
 }

@@ -39,7 +39,7 @@ class ClassController extends Controller
     {
         $validatedData = $request->validate([
             'name' => 'required|string|max:50|unique:classes',
-            'deskripsi' => 'required|string',
+            'deskripsi' => 'nullable|string',
         ]);
 
         $class = ClassModel::create([
@@ -60,7 +60,7 @@ class ClassController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:50|unique:classes,name,' . $id,
-            'deskripsi' => 'required|string',
+            'deskripsi' => 'nullable|string',
         ]);
 
         $class = ClassModel::findOrFail($id);

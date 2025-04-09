@@ -299,92 +299,36 @@
 
         <!-- Grafik dan Statistik Utama -->
         <div class="row g-4 mt-2">
-            <div class="col-lg-8">
+            <!-- Grafik Jumlah Siswa -->
+            <div class="col-lg-6">
                 <div class="card content-card mb-0">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">
-                            <i class="bi bi-bar-chart-line-fill me-2 text-primary"></i>
-                            Perbandingan Jumlah Guru dan Siswa
+                            <i class="bi bi-graph-up me-2 text-primary"></i>
+                            Statistik Jumlah Siswa
                         </h5>
-                        <!-- Dropdown Tahun Ajaran -->
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-outline-primary dropdown-toggle d-flex align-items-center"
-                                type="button" id="dropdownTahunAjaran" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="bi bi-calendar me-2"></i> {{ $tahunAjaran }}
-                            </button>
-
-                            <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="dropdownTahunAjaran">
-                                @foreach ($years as $year)
-                                    <li>
-                                        <a class="dropdown-item d-flex justify-content-between align-items-center"
-                                            href="{{ route('admin.dashboard', ['tahun_ajaran' => explode('/', $year)[0]]) }}">
-                                            <span>{{ $year }}</span>
-                                            @if ($tahunAjaran == $year)
-                                                <i class="bi bi-check-circle-fill text-primary"></i>
-                                            @endif
-                                        </a>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </div>
                     </div>
                     <div class="card-body">
                         <div class="chart-container">
-                            <canvas id="comparisonChart"></canvas>
+                            <canvas id="chartSiswa"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-4">
+
+            <!-- Grafik Jumlah Guru -->
+            <div class="col-lg-6">
                 <div class="card content-card mb-0">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">
-                            <i class="bi bi-pie-chart-fill me-2 text-success"></i>
-                            Rasio Siswa Per Kelas
+                            <i class="bi bi-graph-up me-2 text-danger"></i>
+                            Statistik Jumlah Guru
                         </h5>
-                        <button class="btn btn-sm btn-outline-secondary" type="button">
-                            <i class="bi bi-download"></i>
-                        </button>
                     </div>
                     <div class="card-body">
-                        {{-- <div class="px-4">
-                            <div class="card-body">
-                                <h4>Total Siswa: {{ $total_students }}</h4>
-                                <h4>Siswa Terpintar: {{ $top_students }}</h4>
-                                <h4>Persentase Terpintar: {{ number_format($percentage_top_students, 2) }}%</h4>
-                                <h4>Rata-rata Keseluruhan: {{ number_format($overall_avg_score, 2) }}</h4>
-                            </div>
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Nama</th>
-                                        <th>Rata-rata Tugas</th>
-                                        <th>Rata-rata Ujian</th>
-                                        <th>Rata-rata Akhir</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($students as $index => $student)
-                                        <tr>
-                                            <td>{{ $index + 1 }}</td>
-                                            <td>{{ $student->name }}</td>
-                                            <td>{{ number_format($student->avg_task_score, 2) }}</td>
-                                            <td>{{ number_format($student->avg_exam_score, 2) }}</td>
-                                            <td>{{ number_format($student->final_avg_score, 2) }}</td>
-                                            <td>
-                                                @if ($student->final_avg_score > $overall_avg_score)
-                                                    <span class="badge bg-success">Terpintar</span>
-                                                @else
-                                                    <span class="badge bg-secondary">Biasa</span>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div> --}}
+                        <div class="chart-container">
+                            <canvas id="chartGuru"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -398,20 +342,8 @@
                     <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center py-3">
                         <h5 class="mb-0 fw-bold text-dark">
                             <i class="bi bi-trophy-fill me-2 text-warning"></i>
-                            Top 5 Guru Produktif
+                            Daftar nama-nama guru.
                         </h5>
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-light rounded-pill" type="button" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                <i class="bi bi-three-dots"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                                <li><a class="dropdown-item" href="#"><i class="bi bi-download me-2"></i>Download
-                                        Data</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="bi bi-share me-2"></i>Bagikan</a>
-                                </li>
-                            </ul>
-                        </div>
                     </div>
                     <div class="card-body p-0">
                         <div class="list-group list-group-flush">
@@ -421,8 +353,8 @@
                                     <div class="d-flex align-items-center">
                                         <div class="position-relative me-3">
                                             <img src="{{ $guru->profile_photo_url }}" alt="Avatar"
-                                                class="rounded-circle avatar shadow-sm border-2 border-white"
-                                                width="50" height="50">
+                                                class="rounded-circle avatar shadow-sm border-2 border-white" width="50"
+                                                height="50">
                                             <span
                                                 class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary"
                                                 style="font-size: 0.65rem; margin-left: -15px;">
@@ -461,24 +393,12 @@
                     <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center py-3">
                         <h5 class="mb-0 fw-bold text-dark">
                             <i class="bi bi-star-fill me-2 text-warning"></i>
-                            Materi Paling Populer
+                            Daftar Materi terbaru yang dibuat para guru.
                         </h5>
-                        <div class="dropdown">
-                            <button class="btn btn-sm btn-light rounded-pill" type="button" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                <i class="bi bi-three-dots"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-                                <li><a class="dropdown-item" href="#"><i class="bi bi-graph-up me-2"></i>Lihat
-                                        Analytics</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="bi bi-filter me-2"></i>Filter</a>
-                                </li>
-                            </ul>
-                        </div>
                     </div>
                     <div class="card-body p-0">
                         <div class="list-group list-group-flush">
-                            @foreach ($topMateri as $index => $materi)
+                            @foreach ($topMateri->sortByDesc('created_at') as $index => $materi)
                                 <div
                                     class="list-group-item border-start-0 border-end-0 d-flex justify-content-between align-items-center py-3 hover-bg-light transition-all">
                                     <div class="d-flex align-items-center">
@@ -496,7 +416,7 @@
                                                 </span>
                                                 <small class="text-muted">
                                                     <i class="bi bi-calendar-event me-1"></i>
-                                                    {{ $materi->created_at ? $materi->created_at->format('d M Y') : 'Tanggal tidak tersedia' }}
+                                                    {{ ($materi->created_at ?? now())->format('d M Y') }}
                                                 </small>
                                             </div>
                                         </div>
@@ -512,96 +432,13 @@
                         </div>
                     </div>
                     <div class="card-footer bg-white border-top-0 text-center py-3">
+<<<<<<< HEAD
                         <a href="{{ route('subjects.index') }}" class="btn btn-success btn-sm rounded-pill px-4">
+=======
+                        {{-- <a href="{{ route('admin.classes.index') }}" class="btn btn-success btn-sm rounded-pill px-4">
+>>>>>>> 2b9fc02c030efeccd88115baa6a489ef6d7870ae
                             <i class="bi bi-journal-text me-1"></i> Lihat Semua Materi
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Activity Timeline -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card content-card">
-                    <div class="card-header d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">
-                            <i class="bi bi-activity me-2 text-danger"></i>
-                            Aktivitas Terbaru
-                        </h5>
-                        <button class="btn btn-sm btn-outline-primary rounded-pill">
-                            <i class="bi bi-filter me-1"></i> Filter
-                        </button>
-                    </div>
-                    <div class="card-body">
-                        <div class="position-relative">
-                            <div class="position-absolute"
-                                style="width: 2px; height: 100%; background-color: #e9ecef; left: 14px; top: 0;"></div>
-
-                            <div class="d-flex mb-4">
-                                <div class="me-3 position-relative">
-                                    <div class="bg-primary rounded-circle d-flex align-items-center justify-content-center"
-                                        style="width: 30px; height: 30px; z-index: 1; position: relative;">
-                                        <i class="bi bi-person-plus-fill text-white small"></i>
-                                    </div>
-                                </div>
-                                <div class="bg-light p-3 rounded-3 w-100">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <h6 class="mb-0">Siswa Baru Terdaftar</h6>
-                                        <span class="badge bg-primary bg-opacity-10 text-primary">Baru</span>
-                                    </div>
-                                    <p class="mb-1">5 siswa baru telah terdaftar ke sistem</p>
-                                    <div class="d-flex align-items-center mt-2">
-                                        <small class="text-muted"><i class="bi bi-clock me-1"></i> Hari ini, 10:45</small>
-                                        <a href="#"
-                                            class="btn btn-sm btn-link ms-auto text-decoration-none p-0">Detail</a>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="d-flex mb-4">
-                                <div class="me-3 position-relative">
-                                    <div class="bg-success rounded-circle d-flex align-items-center justify-content-center"
-                                        style="width: 30px; height: 30px; z-index: 1; position: relative;">
-                                        <i class="bi bi-file-earmark-plus text-white small"></i>
-                                    </div>
-                                </div>
-                                <div class="bg-light p-3 rounded-3 w-100">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <h6 class="mb-0">Materi Baru Ditambahkan</h6>
-                                        <span class="badge bg-success bg-opacity-10 text-success">Materi</span>
-                                    </div>
-                                    <p class="mb-1">Guru Matematika menambahkan 3 materi baru</p>
-                                    <div class="d-flex align-items-center mt-2">
-                                        <small class="text-muted"><i class="bi bi-clock me-1"></i> Kemarin, 15:30</small>
-                                        <a href="#"
-                                            class="btn btn-sm btn-link ms-auto text-decoration-none p-0">Detail</a>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="d-flex">
-                                <div class="me-3 position-relative">
-                                    <div class="bg-warning rounded-circle d-flex align-items-center justify-content-center"
-                                        style="width: 30px; height: 30px; z-index: 1; position: relative;">
-                                        <i class="bi bi-gear-fill text-white small"></i>
-                                    </div>
-                                </div>
-                                <div class="bg-light p-3 rounded-3 w-100">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <h6 class="mb-0">Pembaruan Sistem</h6>
-                                        <span class="badge bg-warning bg-opacity-10 text-warning">Sistem</span>
-                                    </div>
-                                    <p class="mb-1">Sistem telah diperbarui ke versi terbaru</p>
-                                    <div class="d-flex align-items-center mt-2">
-                                        <small class="text-muted"><i class="bi bi-clock me-1"></i> 2 hari yang
-                                            lalu</small>
-                                        <a href="#"
-                                            class="btn btn-sm btn-link ms-auto text-decoration-none p-0">Detail</a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        </a> --}}
                     </div>
                 </div>
             </div>
@@ -613,35 +450,72 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            var ctx = document.getElementById("comparisonChart").getContext("2d");
-            var chart = new Chart(ctx, {
-                type: "bar",
-                data: {
-                    labels: {!! json_encode(array_keys($dataSiswa)) !!}, // Tahun Ajaran
-                    datasets: [{
-                            label: "Jumlah Siswa",
-                            data: {!! json_encode(array_values($dataSiswa)) !!},
-                            backgroundColor: "rgba(54, 162, 235, 0.5)",
-                            borderColor: "rgba(54, 162, 235, 1)",
-                            borderWidth: 1,
+            var labels = {!! json_encode(array_keys($dataSiswa)) !!}; // Tahun Ajaran
+            var dataSiswa = {!! json_encode(array_values($dataSiswa)) !!}; // Data siswa
+            var dataGuru = {!! json_encode(array_values($dataGuru)) !!}; // Data guru
+
+            // Opsi konfigurasi umum
+            var chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: "Jumlah",
                         },
-                        {
-                            label: "Jumlah Guru",
-                            data: {!! json_encode(array_values($dataGuru)) !!},
-                            backgroundColor: "rgba(255, 99, 132, 0.5)",
-                            borderColor: "rgba(255, 99, 132, 1)",
-                            borderWidth: 1,
-                        },
-                    ],
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: "Tahun Ajaran",
                         },
                     },
                 },
+                plugins: {
+                    legend: {
+                        position: "top",
+                    },
+                },
+            };
+
+            // Grafik Jumlah Siswa
+            var ctxSiswa = document.getElementById("chartSiswa").getContext("2d");
+            new Chart(ctxSiswa, {
+                type: "line",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "Jumlah Siswa",
+                        data: dataSiswa,
+                        borderColor: "rgba(54, 162, 235, 1)",
+                        backgroundColor: "rgba(54, 162, 235, 0.2)",
+                        borderWidth: 2,
+                        tension: 0.4, // Buat garis smooth
+                        fill: true, // Warna transparan di bawah garis
+                    }, ],
+                },
+                options: chartOptions,
+            });
+
+            // Grafik Jumlah Guru
+            var ctxGuru = document.getElementById("chartGuru").getContext("2d");
+            new Chart(ctxGuru, {
+                type: "line",
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: "Jumlah Guru",
+                        data: dataGuru,
+                        borderColor: "rgba(255, 99, 132, 1)",
+                        backgroundColor: "rgba(255, 99, 132, 0.2)",
+                        borderWidth: 2,
+                        tension: 0.4, // Buat garis smooth
+                        fill: true, // Warna transparan di bawah garis
+                    }, ],
+                },
+                options: chartOptions,
             });
         });
 

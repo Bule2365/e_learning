@@ -166,11 +166,12 @@ class ExamAttemptController extends Controller
         $essayUnanswered = $totalEssay - $essayAnswered; // Jika siswa tidak menjawab
 
         // **Hitung nilai untuk MCQ**
-        $mcqScore = ($mcqCorrect * 4) + ($mcqWrong * 2) + ($mcqUnanswered * 0);
+        // Jika soal mxq dijawab benar mendapat empat, jika dijawab salah mendapat 0, jika tidak dijawab mendapat 0
+        $mcqScore = ($mcqCorrect * 4) + ($mcqWrong * 0) + ($mcqUnanswered * 0);
 
         // **Hitung nilai untuk Essay**
         // Jika soal esai dijawab, beri nilai 4, jika tidak beri nilai 2
-        $essayScore = ($essayAnswered * 4) + ($essayUnanswered * 2);
+        $essayScore = ($essayAnswered * 4) + ($essayUnanswered * 0);
 
         // **Skor total (jumlah skor MCQ dan Essay)**
         $totalScore = $mcqScore + $essayScore;
@@ -179,7 +180,7 @@ class ExamAttemptController extends Controller
         $maxScore = ($totalMCQ * 4) + ($totalEssay * 4); // Nilai maksimal jika semua soal benar
 
         // **Skalakan skor akhir agar selalu antara 0 dan 100**
-        $finalScore = ($maxScore > 0) ? round(($totalScore / $maxScore) * 100, 2) : 0;
+        $finalScore = min(100, max(0, round(($totalScore / $maxScore) * 100, 2)));
 
         // Simpan nilai ujian
         $attempt->update([

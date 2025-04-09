@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ClassModel;
 use App\Models\Exam;
 use App\Models\ExamAttempt;
+use App\Models\ExamAnswer;
 use App\Models\Question;
 use App\Models\Subject;
 use Illuminate\Http\Request;
@@ -297,6 +298,30 @@ class ExamController extends Controller
         return view('guru.exams.scores', compact('exam', 'examAttempts'));
     }
 
+    // Load edit score page
+    public function editScore(Exam $exam, ExamAttempt $attempt)
+    {
+        // Ambil semua jawaban siswa untuk ujian ini
+        $answers = ExamAnswer::where('exam_attempt_id', $attempt->id)->get();
+    
+        return view('guru.exams.edit_score', compact('exam', 'attempt', 'answers'));
+    }
+
+    // Update score
+    public function updateStudentScore(Request $request, Exam $exam, ExamAttempt $attempt)
+    {
+        // Validasi input skor total
+        $request->validate([
+            'total_score' => 'required|integer|min:0|max:100',
+        ]);
+    
+        // Perbarui skor total siswa dalam tabel `exam_attempts`
+        $attempt->update(['score' => $request->total_score]);
+    
+        return redirect()->route('guru.exams.scores', $exam->id)
+            ->with('success', 'Nilai ujian siswa berhasil diperbarui!');
+    }
+
     public function exportScores($examId)
     {
         // Ambil data ujian
@@ -375,8 +400,8 @@ class ExamController extends Controller
             }
         }
 
-        \Log::info("Isi Word File:\n" . $text);
-        \Log::info("Total Gambar: " . count($images));
+        Log::info("Isi Word File:\n" . $text);
+        Log::info("Total Gambar: " . count($images));
 
         // Perbaikan regex untuk menangkap soal dan jawaban
         $pattern = '/Pertanyaan:\s*(.*?)\n(?:A\.\s*(.*?)\nB\.\s*(.*?)\nC\.\s*(.*?)\nD\.\s*(.*?)\n)?Jawaban:\s*([A-D]?)/s';
@@ -421,7 +446,7 @@ class ExamController extends Controller
                     'image_path' => $imagePath, // Simpan gambar jika ada
                 ]);
             } catch (\Exception $e) {
-                \Log::error("Error memproses soal dari Word: " . $e->getMessage());
+                Log::error("Error memproses soal dari Word: " . $e->getMessage());
             }
         }
     }
@@ -432,16 +457,16 @@ class ExamController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
         $data = $sheet->toArray();
 
-        \Log::info("Total Baris dalam Excel: " . count($data));
+        Log::info("Total Baris dalam Excel: " . count($data));
 
         foreach ($data as $index => $row) {
             if ($index == 0) {
-                \Log::info("Skipping header row.");
+                Log::info("Skipping header row.");
                 continue;
             }
 
             if (empty($row[0])) {
-                \Log::warning("Skipping empty row at index: " . $index);
+                Log::warning("Skipping empty row at index: " . $index);
                 continue;
             }
 
@@ -452,7 +477,7 @@ class ExamController extends Controller
                 $type = trim($row[3]);
                 $imageFileName = isset($row[4]) ? trim($row[4]) : null; // Nama file gambar
 
-                \Log::info("Processing row $index: $questionText");
+                Log::info("Processing row $index: $questionText");
 
                 $options = null;
                 if ($type === 'multiple_choice') {
@@ -477,7 +502,7 @@ class ExamController extends Controller
                         Storage::move("public/{$originalPath}", "public/{$newPath}");
                         $imagePath = $newPath;
                     } else {
-                        \Log::warning("Gambar tidak ditemukan untuk soal: " . $questionText);
+                        Log::warning("Gambar tidak ditemukan untuk soal: " . $questionText);
                     }
                 }
 
@@ -490,7 +515,7 @@ class ExamController extends Controller
                     'image_path' => $imagePath, // Simpan gambar jika ada
                 ]);
             } catch (\Exception $e) {
-                \Log::error("Error processing row $index: " . $e->getMessage());
+                Log::error("Error processing row $index: " . $e->getMessage());
             }
         }
     }

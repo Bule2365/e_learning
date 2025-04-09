@@ -26,22 +26,6 @@ class DashboardController extends Controller
         $jumlahUjian = Exam::count();
         $jumlahTugas = Task::where('due_date', '>=', now())->count();
 
-        // Ambil tahun ajaran dari request atau default ke tahun sekarang
-        $selectedYear = $request->query('tahun_ajaran', date('Y'));
-        $currentYear = date('Y');
-        $currentMonth = date('m');
-
-        // Tentukan rentang tahun ajaran berdasarkan pertengahan tahun (Juli - Juni)
-        if ($currentMonth >= 7) {
-            $activeYearStart = $currentYear;
-            $activeYearEnd = $currentYear + 1;
-        } else {
-            $activeYearStart = $currentYear - 1;
-            $activeYearEnd = $currentYear;
-        }
-
-        $tahunAjaran = "$selectedYear/" . ($selectedYear + 1);
-
         // Hitung data bulan lalu
         $bulanSekarang = Carbon::now()->month;
         $tahunSekarang = Carbon::now()->year;
@@ -63,10 +47,12 @@ class DashboardController extends Controller
             ->whereYear('created_at', $tahunLalu)
             ->count();
 
+        // Fungsi untuk menghitung persentase perubahan
         function hitungPersentase($sekarang, $bulanLalu)
         {
-            if ($bulanLalu == 0)
+            if ($bulanLalu == 0) {
                 return $sekarang > 0 ? 100 : 0;
+            }
             return round((($sekarang - $bulanLalu) / $bulanLalu) * 100, 1);
         }
 
@@ -75,34 +61,30 @@ class DashboardController extends Controller
         $persenKelas = hitungPersentase($jumlahKelas, $jumlahKelasBulanLalu);
         $persenMapel = hitungPersentase($jumlahMapel, $jumlahMapelBulanLalu);
 
-        // Statistik siswa & guru per tahun ajaran
+        // Ambil semua data siswa & guru dari semua tahun
         $data = User::whereIn('role', ['siswa', 'guru'])
-            ->whereBetween(DB::raw('YEAR(created_at)'), [$selectedYear, $selectedYear + 1]) // ✅ Gunakan whereBetween
             ->selectRaw('YEAR(created_at) as year, role, COUNT(*) as total')
             ->groupBy('year', 'role')
             ->orderBy('year')
             ->get();
 
+        // Ambil semua tahun yang ada di data
         $years = User::selectRaw("YEAR(created_at) as year")
             ->distinct()
             ->orderBy('year')
-            ->get()
             ->pluck('year')
-            ->map(function ($year) {
-                return "$year/" . ($year + 1);
-            }) // Gunakan function() sebagai pengganti arrow function
-            ->unique()
-            ->values()
             ->all();
 
+        // Siapkan array dengan default 0
         $dataSiswa = array_fill_keys($years, 0);
         $dataGuru = array_fill_keys($years, 0);
 
+        // Isi data dengan jumlah siswa & guru berdasarkan tahun
         foreach ($data as $item) {
-            $yearKey = "{$item->year}/" . ($item->year + 1);
+            $yearKey = $item->year; // Tidak perlu format "2023/2024"
             if ($item->role == 'siswa') {
                 $dataSiswa[$yearKey] = $item->total;
-            } else {
+            } elseif ($item->role == 'guru') {
                 $dataGuru[$yearKey] = $item->total;
             }
         }
@@ -111,16 +93,16 @@ class DashboardController extends Controller
         $topGuruMateri = User::where('role', 'guru')
             ->withCount('materials')
             ->orderByDesc('materials_count')
-            ->take(5)
+            ->limit(5)
             ->get();
 
         // Top 5 Materi
-        $topMateri = Material::select('id', 'title', 'class_id', DB::raw('COUNT(class_id) as class_count'))
+        $topMateri = Material::select('id', 'title', 'class_id', 'created_at', DB::raw('COUNT(class_id) as class_count'))
             ->with('classModel')
-            ->groupBy('id', 'title', 'class_id')
-            ->orderByDesc('class_count')
+            ->groupBy('id', 'title', 'class_id', 'created_at') // Tambahkan 'created_at' dalam GROUP BY
+            ->orderByDesc('created_at') // Pastikan sorting berdasarkan tanggal
             ->limit(5)
-            ->get();
+            ->get();    
 
         // Rata-rata nilai ujian per mata pelajaran
         $rataNilaiUjian = Exam::with('upayaUjian')
@@ -143,7 +125,6 @@ class DashboardController extends Controller
             'topMateri',
             'rataNilaiUjian',
             'topGuruMateri',
-            'tahunAjaran',
             'persenSiswa',
             'persenGuru',
             'persenKelas',

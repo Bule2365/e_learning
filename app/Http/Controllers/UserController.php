@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Response;
@@ -13,22 +15,44 @@ class UserController extends Controller
     // Menampilkan daftar pengguna
     public function index(Request $request)
     {
-        // Menyembunyikan admin dari daftar pengguna
-        $query = User::where('role', '!=', 'admin');
-
-        // Pencarian berdasarkan nama
+        $query = User::query();
+    
+        // Ambil tahun terbaru dari data siswa yang ada
+        $latestYear = User::where('role', 'siswa')
+            ->orderBy('created_at', 'desc')
+            ->value(DB::raw('YEAR(created_at)'));
+    
+        // Ambil daftar tahun yang tersedia untuk siswa
+        $availableYears = User::where('role', 'siswa')
+            ->selectRaw('YEAR(created_at) as year')
+            ->distinct()
+            ->pluck('year');
+    
+        // **Default peran yang ditampilkan saat pertama kali adalah siswa**
+        $selectedRole = $request->has('role') ? $request->role : 'siswa';
+    
+        // **Default tahun adalah tahun terbaru (jika siswa yang dipilih)**
+        $selectedYear = ($selectedRole == 'siswa' && $request->has('tahun')) ? $request->tahun : $latestYear;
+    
+        // Filter berdasarkan peran (Admin tidak ditampilkan)
+        $query->where('role', '!=', 'admin');
+    
+        // **Filter Peran (Siswa / Guru)**
+        if ($selectedRole == 'siswa') {
+            $query->where('role', 'siswa')->whereYear('created_at', $selectedYear);
+        } elseif ($selectedRole == 'guru') {
+            $query->where('role', 'guru'); // Guru tidak memiliki filter tahun
+        }
+    
+        // **Filter Nama (search)**
         if ($request->has('search') && $request->search != '') {
             $query->where('name', 'like', '%' . $request->search . '%');
         }
-
-        // Filter berdasarkan role (tanpa admin)
-        if ($request->has('role') && $request->role != '' && $request->role != 'admin') {
-            $query->where('role', $request->role);
-        }
-
-        $users = $query->paginate(35);
-
-        return view('admin.users.index', compact('users'));
+    
+        // **Ambil data pengguna**
+        $users = $query->paginate(30);
+    
+        return view('admin.users.index', compact('users', 'availableYears', 'selectedYear', 'selectedRole'));
     }
 
     // Menampilkan form untuk membuat pengguna baru

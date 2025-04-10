@@ -432,11 +432,7 @@
                         </div>
                     </div>
                     <div class="card-footer bg-white border-top-0 text-center py-3">
-<<<<<<< HEAD
-                        <a href="{{ route('subjects.index') }}" class="btn btn-success btn-sm rounded-pill px-4">
-=======
                         {{-- <a href="{{ route('admin.classes.index') }}" class="btn btn-success btn-sm rounded-pill px-4">
->>>>>>> 2b9fc02c030efeccd88115baa6a489ef6d7870ae
                             <i class="bi bi-journal-text me-1"></i> Lihat Semua Materi
                         </a> --}}
                     </div>
